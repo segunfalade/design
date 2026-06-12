@@ -1,0 +1,2258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Story Vault — Copy Strategist Story System</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+
+:root {
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-card: #1a1a26;
+  --bg-card-hover: #22222f;
+  --accent: #c9a55a;
+  --accent-light: #e4c87a;
+  --accent-dim: #8a7340;
+  --text-primary: #f0ede6;
+  --text-secondary: #9a9aaa;
+  --text-muted: #5a5a6a;
+  --border: #2a2a3a;
+  --border-light: #3a3a4a;
+  --danger: #e74c3c;
+  --success: #27ae60;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.playfair { font-family: 'Playfair Display', serif; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-dim); }
+
+/* Sidebar */
+.sidebar {
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  width: 260px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease;
+}
+
+.sidebar.collapsed { transform: translateX(-260px); }
+
+.sidebar-brand {
+  padding: 24px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 12px 10px;
+  overflow-y: auto;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.nav-item:hover { background: var(--bg-card); color: var(--text-primary); }
+.nav-item.active { background: var(--bg-card); color: var(--accent); }
+.nav-item .icon { font-size: 18px; width: 24px; text-align: center; }
+.nav-item .badge {
+  margin-left: auto;
+  background: var(--accent-dim);
+  color: var(--accent-light);
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.nav-section {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 18px 14px 6px;
+}
+
+.sidebar-footer {
+  padding: 16px 14px;
+  border-top: 1px solid var(--border);
+}
+
+/* Main content */
+.main-content {
+  margin-left: 260px;
+  min-height: 100vh;
+  transition: margin-left 0.3s ease;
+}
+
+.main-content.expanded { margin-left: 0; }
+
+/* Header */
+.top-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(10, 10, 15, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Cards */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: all 0.25s;
+}
+
+.card:hover { border-color: var(--border-light); }
+
+/* Tags */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tag-identity { background: rgba(155, 89, 182, 0.15); color: #bb7be8; border-color: rgba(155, 89, 182, 0.3); }
+.tag-fear { background: rgba(231, 76, 60, 0.15); color: #e98a7e; border-color: rgba(231, 76, 60, 0.3); }
+.tag-trust { background: rgba(52, 152, 219, 0.15); color: #7ec0ee; border-color: rgba(52, 152, 219, 0.3); }
+.tag-change { background: rgba(46, 204, 113, 0.15); color: #6ee8a5; border-color: rgba(46, 204, 113, 0.3); }
+.tag-opportunity { background: rgba(241, 196, 15, 0.15); color: #f0d45e; border-color: rgba(241, 196, 15, 0.3); }
+.tag-regret { background: rgba(230, 126, 34, 0.15); color: #e8a66e; border-color: rgba(230, 126, 34, 0.3); }
+.tag-confidence { background: rgba(26, 188, 156, 0.15); color: #5ee8c8; border-color: rgba(26, 188, 156, 0.3); }
+.tag-reinvention { background: rgba(201, 165, 90, 0.15); color: #e4c87a; border-color: rgba(201, 165, 90, 0.3); }
+.tag-skepticism { background: rgba(149, 165, 166, 0.15); color: #b0c0c2; border-color: rgba(149, 165, 166, 0.3); }
+.tag-transformation { background: rgba(255, 107, 129, 0.15); color: #ff8da0; border-color: rgba(255, 107, 129, 0.3); }
+.tag-marketing { background: rgba(0, 206, 209, 0.15); color: #5ee8ea; border-color: rgba(0, 206, 209, 0.3); }
+.tag-sales { background: rgba(255, 165, 0, 0.15); color: #ffc04d; border-color: rgba(255, 165, 0, 0.3); }
+
+/* Emotion badges */
+.emotion-surprise { color: #f0d45e; }
+.emotion-frustration { color: #e98a7e; }
+.emotion-realization { color: #7ec0ee; }
+.emotion-conflict { color: #e8a66e; }
+.emotion-embarrassment { color: #ff8da0; }
+.emotion-fear { color: #e74c3c; }
+.emotion-relief { color: #6ee8a5; }
+.emotion-joy { color: #f0d45e; }
+.emotion-regret { color: #e8a66e; }
+.emotion-pride { color: #bb7be8; }
+
+/* Buttons */
+.btn-primary {
+  background: var(--accent);
+  color: #0a0a0f;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary:hover { background: var(--accent-light); transform: translateY(-1px); }
+
+.btn-secondary {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-secondary:hover { border-color: var(--accent-dim); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-ghost:hover { color: var(--text-primary); background: var(--bg-card); }
+
+.btn-danger {
+  background: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.btn-danger:hover { background: rgba(231, 76, 60, 0.25); }
+
+/* Forms */
+.form-input {
+  width: 100%;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.2s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.form-input::placeholder { color: var(--text-muted); }
+
+textarea.form-input {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.6;
+}
+
+.form-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.modal-overlay.active { opacity: 1; pointer-events: all; }
+
+.modal {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  width: 95%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
+  transform: translateY(20px) scale(0.97);
+  transition: transform 0.3s;
+}
+
+.modal-overlay.active .modal { transform: translateY(0) scale(1); }
+
+/* Level indicators */
+.level-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.level-1 { background: rgba(52, 152, 219, 0.15); color: #7ec0ee; }
+.level-2 { background: rgba(155, 89, 182, 0.15); color: #bb7be8; }
+.level-3 { background: rgba(201, 165, 90, 0.15); color: #e4c87a; }
+
+/* Story type indicators */
+.story-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(201, 165, 90, 0.1);
+  color: var(--accent);
+  border: 1px solid rgba(201, 165, 90, 0.2);
+}
+
+/* Stat cards */
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--accent);
+  opacity: 0.6;
+}
+
+/* Streak indicator */
+.streak-ring {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.streak-ring svg {
+  position: absolute;
+  transform: rotate(-90deg);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in { animation: fadeInUp 0.4s ease forwards; }
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201, 165, 90, 0.3); }
+  50% { box-shadow: 0 0 0 8px rgba(201, 165, 90, 0); }
+}
+
+.pulse-glow { animation: pulse-glow 2s infinite; }
+
+/* Page sections */
+.page-section { display: none; }
+.page-section.active { display: block; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.mobile-open { transform: translateX(0); }
+  .main-content { margin-left: 0 !important; }
+  .top-header { padding: 14px 16px; }
+}
+
+/* Toast */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 20px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: fadeInUp 0.3s ease;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+.toast.success { border-color: rgba(39, 174, 96, 0.4); }
+.toast.error { border-color: rgba(231, 76, 60, 0.4); }
+
+/* Search highlight */
+.search-highlight { background: rgba(201, 165, 90, 0.3); border-radius: 2px; padding: 0 2px; }
+
+/* Story card in expanded view */
+.story-detail-section {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.story-detail-section:last-child { border-bottom: none; }
+
+/* Filter pills */
+.filter-pill {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+}
+
+.filter-pill:hover { border-color: var(--accent-dim); color: var(--text-primary); }
+.filter-pill.active { background: var(--accent); color: #0a0a0f; border-color: var(--accent); }
+
+/* Mobile menu toggle */
+.mobile-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 24px;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .mobile-toggle { display: block; }
+}
+
+/* Expand section */
+.expandable { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+.expandable.open { max-height: 2000px; }
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+
+.empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:36px;height:36px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:20px;">📖</div>
+      <div>
+        <div style="font-weight:700;font-size:16px;color:var(--text-primary);">Story Vault</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:1px;">Copy Strategist System</div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section">Command Center</div>
+    <div class="nav-item active" onclick="navigateTo('dashboard')">
+      <span class="icon">🏠</span> Dashboard
+    </div>
+
+    <div class="nav-section">Story Pipeline</div>
+    <div class="nav-item" onclick="navigateTo('homework')">
+      <span class="icon">✏️</span> Homework for Life
+      <span class="badge" id="streak-badge">0🔥</span>
+    </div>
+    <div class="nav-item" onclick="navigateTo('inbox')">
+      <span class="icon">📥</span> Story Inbox
+      <span class="badge" id="inbox-count">0</span>
+    </div>
+    <div class="nav-item" onclick="navigateTo('lab')">
+      <span class="icon">🔬</span> Story Lab
+      <span class="badge" id="lab-count">0</span>
+    </div>
+    <div class="nav-item" onclick="navigateTo('vault')">
+      <span class="icon">🏛️</span> Story Vault
+      <span class="badge" id="vault-count">0</span>
+    </div>
+
+    <div class="nav-section">Collections</div>
+    <div class="nav-item" onclick="navigateTo('swipefile')">
+      <span class="icon">📂</span> Story Swipe File
+    </div>
+    <div class="nav-item" onclick="navigateTo('buckets')">
+      <span class="icon">🪣</span> Story Buckets
+    </div>
+    <div class="nav-item" onclick="navigateTo('storyTypes')">
+      <span class="icon">🧬</span> Story Types
+    </div>
+
+    <div class="nav-section">Tools</div>
+    <div class="nav-item" onclick="navigateTo('expansion')">
+      <span class="icon">🔄</span> Story Expander
+    </div>
+    <div class="nav-item" onclick="navigateTo('search')">
+      <span class="icon">🔍</span> Search All
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="nav-item" onclick="exportData()" style="margin:0;">
+      <span class="icon">💾</span> Export Data
+    </div>
+    <div class="nav-item" onclick="document.getElementById('import-file').click()" style="margin:0;">
+      <span class="icon">📁</span> Import Data
+    </div>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+  </div>
+</aside>
+
+<!-- Main Content -->
+<main class="main-content" id="main-content">
+  <!-- Top Header -->
+  <header class="top-header">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+      <h1 id="page-title" style="font-size:18px;font-weight:700;">Dashboard</h1>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="btn-primary" onclick="openQuickCapture()">
+        <span>+</span> Quick Capture
+      </button>
+    </div>
+  </header>
+
+  <!-- =============== DASHBOARD =============== -->
+  <section id="page-dashboard" class="page-section active" style="padding:24px 32px;">
+    <!-- Stats Row -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:28px;">
+      <div class="stat-card">
+        <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Total Stories</div>
+        <div id="stat-total" style="font-size:32px;font-weight:800;color:var(--accent);margin-top:6px;">0</div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">Across all levels</div>
+      </div>
+      <div class="stat-card">
+        <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Current Streak</div>
+        <div id="stat-streak" style="font-size:32px;font-weight:800;color:#f0d45e;margin-top:6px;">0 🔥</div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">Homework for Life</div>
+      </div>
+      <div class="stat-card">
+        <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">In Lab</div>
+        <div id="stat-lab" style="font-size:32px;font-weight:800;color:#bb7be8;margin-top:6px;">0</div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">Ready for extraction</div>
+      </div>
+      <div class="stat-card">
+        <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Vault Ready</div>
+        <div id="stat-vault" style="font-size:32px;font-weight:800;color:var(--accent);margin-top:6px;">0</div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">Tagged & expanded</div>
+      </div>
+    </div>
+
+    <!-- Today's Homework + Recent -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px;">
+      <!-- Today's Homework -->
+      <div class="card" style="padding:24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <h3 style="font-size:16px;font-weight:700;">✏️ Today's Homework</h3>
+          <div id="today-status" style="font-size:12px;font-weight:600;"></div>
+        </div>
+        <div id="today-homework-area"></div>
+      </div>
+
+      <!-- Story Filter Reminder -->
+      <div class="card" style="padding:24px;">
+        <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;">🔍 The Story Filter</h3>
+        <p style="font-size:13px;color:var(--text-secondary);line-height:1.7;margin-bottom:12px;">
+          When something happens, ask: <em style="color:var(--accent);">"Why did I notice this?"</em>
+        </p>
+        <p style="font-size:13px;color:var(--text-secondary);line-height:1.7;margin-bottom:16px;">
+          The brain doesn't stop for random things. It stops for <strong style="color:var(--text-primary);">significance</strong>.
+        </p>
+        <div style="font-size:12px;color:var(--text-muted);">Look for:</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
+          <span class="tag tag-identity">😲 Surprise</span>
+          <span class="tag tag-fear">😤 Frustration</span>
+          <span class="tag tag-trust">💡 Realization</span>
+          <span class="tag tag-change">⚡ Conflict</span>
+          <span class="tag tag-transformation">💖 Emotion</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Stories -->
+    <div class="card" style="padding:24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <h3 style="font-size:16px;font-weight:700;">📋 Recent Story Seeds</h3>
+        <button class="btn-ghost" onclick="navigateTo('inbox')">View All →</button>
+      </div>
+      <div id="recent-stories"></div>
+    </div>
+
+    <!-- Tag Distribution -->
+    <div class="card" style="padding:24px;margin-top:20px;">
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;">📊 Story Type Distribution</h3>
+      <div id="tag-distribution"></div>
+    </div>
+  </section>
+
+  <!-- =============== HOMEWORK FOR LIFE =============== -->
+  <section id="page-homework" class="page-section" style="padding:24px 32px;">
+    <div style="max-width:800px;margin:0 auto;">
+      <div style="text-align:center;margin-bottom:32px;">
+        <h2 class="playfair" style="font-size:28px;font-weight:700;margin-bottom:8px;">Homework for Life</h2>
+        <p style="color:var(--text-secondary);font-size:14px;max-width:500px;margin:0 auto;">
+          Capture ONE moment every day. Not lessons. Not journal entries. Just moments. Because memory is a thief.
+        </p>
+      </div>
+
+      <!-- Streak Display -->
+      <div class="card" style="padding:24px;margin-bottom:24px;text-align:center;">
+        <div style="display:flex;align-items:center;justify-content:center;gap:32px;">
+          <div>
+            <div style="font-size:48px;font-weight:900;color:#f0d45e;" id="hw-streak-num">0</div>
+            <div style="font-size:12px;color:var(--text-muted);font-weight:600;">DAY STREAK</div>
+          </div>
+          <div style="width:1px;height:50px;background:var(--border);"></div>
+          <div>
+            <div style="font-size:48px;font-weight:900;color:var(--accent);" id="hw-total-entries">0</div>
+            <div style="font-size:12px;color:var(--text-muted);font-weight:600;">TOTAL ENTRIES</div>
+          </div>
+          <div style="width:1px;height:50px;background:var(--border);"></div>
+          <div>
+            <div style="font-size:48px;font-weight:900;color:#bb7be8;" id="hw-longest-streak">0</div>
+            <div style="font-size:12px;color:var(--text-muted);font-weight:600;">BEST STREAK</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today's Entry -->
+      <div class="card" style="padding:24px;margin-bottom:24px;">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:16px;">📅 Today — <span id="hw-today-date"></span></h3>
+        <div style="margin-bottom:16px;">
+          <label class="form-label">What was the moment?</label>
+          <textarea id="hw-moment" class="form-input" placeholder="Describe the moment... not the lesson, just the moment." style="min-height:120px;"></textarea>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+          <div>
+            <label class="form-label">Source</label>
+            <select id="hw-source" class="form-input">
+              <option value="">Where did this come from?</option>
+              <option value="personal">Personal experience</option>
+              <option value="conversation">Conversation</option>
+              <option value="observation">Observation</option>
+              <option value="movie">Movie/TV</option>
+              <option value="book">Book</option>
+              <option value="news">News</option>
+              <option value="social">Social media</option>
+              <option value="client">Client interaction</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Emotion</label>
+            <select id="hw-emotion" class="form-input">
+              <option value="">What did you feel?</option>
+              <option value="surprise">😲 Surprise</option>
+              <option value="frustration">😤 Frustration</option>
+              <option value="realization">💡 Realization</option>
+              <option value="conflict">⚡ Conflict</option>
+              <option value="embarrassment">😳 Embarrassment</option>
+              <option value="fear">😨 Fear</option>
+              <option value="relief">😌 Relief</option>
+              <option value="joy">😊 Joy</option>
+              <option value="regret">😔 Regret</option>
+              <option value="pride">🦁 Pride</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="saveHomework()" style="width:100%;justify-content:center;">
+          Save Today's Moment
+        </button>
+      </div>
+
+      <!-- Past Entries -->
+      <div class="card" style="padding:24px;">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:16px;">📚 Past Entries</h3>
+        <div id="hw-entries-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============== STORY INBOX =============== -->
+  <section id="page-inbox" class="page-section" style="padding:24px 32px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div>
+        <h2 style="font-size:22px;font-weight:700;">📥 Story Inbox</h2>
+        <p style="color:var(--text-secondary);font-size:13px;margin-top:4px;">Level 1 — Capture everything. No analysis yet.</p>
+      </div>
+      <button class="btn-primary" onclick="openStoryModal('inbox')">+ New Story Seed</button>
+    </div>
+
+    <!-- Filters -->
+    <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;" id="inbox-filters">
+      <button class="filter-pill active" onclick="filterStories('inbox','all',this)">All</button>
+      <button class="filter-pill" onclick="filterStories('inbox','surprise',this)">😲 Surprise</button>
+      <button class="filter-pill" onclick="filterStories('inbox','frustration',this)">😤 Frustration</button>
+      <button class="filter-pill" onclick="filterStories('inbox','realization',this)">💡 Realization</button>
+      <button class="filter-pill" onclick="filterStories('inbox','conflict',this)">⚡ Conflict</button>
+      <button class="filter-pill" onclick="filterStories('inbox','embarrassment',this)">😳 Embarrassment</button>
+      <button class="filter-pill" onclick="filterStories('inbox','fear',this)">😨 Fear</button>
+      <button class="filter-pill" onclick="filterStories('inbox','relief',this)">😌 Relief</button>
+      <button class="filter-pill" onclick="filterStories('inbox','joy',this)">😊 Joy</button>
+      <button class="filter-pill" onclick="filterStories('inbox','regret',this)">😔 Regret</button>
+      <button class="filter-pill" onclick="filterStories('inbox','pride',this)">🦁 Pride</button>
+    </div>
+
+    <div id="inbox-stories-list"></div>
+  </section>
+
+  <!-- =============== STORY LAB =============== -->
+  <section id="page-lab" class="page-section" style="padding:24px 32px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div>
+        <h2 style="font-size:22px;font-weight:700;">🔬 Story Lab</h2>
+        <p style="color:var(--text-secondary);font-size:13px;margin-top:4px;">Level 2 — Extract lessons. What does this reveal?</p>
+      </div>
+    </div>
+    <div id="lab-stories-list"></div>
+  </section>
+
+  <!-- =============== STORY VAULT =============== -->
+  <section id="page-vault" class="page-section" style="padding:24px 32px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div>
+        <h2 style="font-size:22px;font-weight:700;">🏛️ Story Vault</h2>
+        <p style="color:var(--text-secondary);font-size:13px;margin-top:4px;">Level 3 — Tagged, expanded, ready to deploy.</p>
+      </div>
+    </div>
+
+    <!-- Tag filter for vault -->
+    <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;" id="vault-filters">
+      <button class="filter-pill active" onclick="filterVault('all',this)">All</button>
+      <button class="filter-pill" onclick="filterVault('identity',this)">Identity</button>
+      <button class="filter-pill" onclick="filterVault('fear',this)">Fear</button>
+      <button class="filter-pill" onclick="filterVault('trust',this)">Trust</button>
+      <button class="filter-pill" onclick="filterVault('change',this)">Change</button>
+      <button class="filter-pill" onclick="filterVault('opportunity',this)">Opportunity</button>
+      <button class="filter-pill" onclick="filterVault('regret',this)">Regret</button>
+      <button class="filter-pill" onclick="filterVault('confidence',this)">Confidence</button>
+      <button class="filter-pill" onclick="filterVault('reinvention',this)">Reinvention</button>
+      <button class="filter-pill" onclick="filterVault('skepticism',this)">Skepticism</button>
+      <button class="filter-pill" onclick="filterVault('transformation',this)">Transformation</button>
+      <button class="filter-pill" onclick="filterVault('marketing',this)">Marketing</button>
+      <button class="filter-pill" onclick="filterVault('sales',this)">Sales</button>
+    </div>
+
+    <div id="vault-stories-list"></div>
+  </section>
+
+  <!-- =============== SWIPE FILE =============== -->
+  <section id="page-swipefile" class="page-section" style="padding:24px 32px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div>
+        <h2 style="font-size:22px;font-weight:700;">📂 Story Swipe File</h2>
+        <p style="color:var(--text-secondary);font-size:13px;margin-top:4px;">Collect external stories, quotes, and situations. Not your stories — stories from the wild.</p>
+      </div>
+      <button class="btn-primary" onclick="openSwipeModal()">+ Add Swipe</button>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;" id="swipe-filters">
+      <button class="filter-pill active" onclick="filterSwipes('all',this)">All</button>
+      <button class="filter-pill" onclick="filterSwipes('conversation',this)">💬 Conversation</button>
+      <button class="filter-pill" onclick="filterSwipes('movie',this)">🎬 Movie/TV</button>
+      <button class="filter-pill" onclick="filterSwipes('book',this)">📖 Book</button>
+      <button class="filter-pill" onclick="filterSwipes('news',this)">📰 News</button>
+      <button class="filter-pill" onclick="filterSwipes('social',this)">📱 Social</button>
+      <button class="filter-pill" onclick="filterSwipes('other',this)">🔗 Other</button>
+    </div>
+
+    <div id="swipe-list"></div>
+  </section>
+
+  <!-- =============== STORY BUCKETS =============== -->
+  <section id="page-buckets" class="page-section" style="padding:24px 32px;">
+    <div style="margin-bottom:24px;">
+      <h2 style="font-size:22px;font-weight:700;">🪣 Story Buckets</h2>
+      <p style="color:var(--text-secondary);font-size:13px;margin-top:4px;">For coaches, consultants, course creators & midlife reinvention</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;" id="buckets-grid">
+    </div>
+  </section>
+
+  <!-- =============== STORY TYPES =============== -->
+  <section id="page-storyTypes" class="page-section" style="padding:24px 32px;">
+    <div style="margin-bottom:24px;">
+      <h2 style="font-size:22px;font-weight:700;">🧬 Story Types</h2>
+      <p style="color:var(--text-secondary);font-size:13px;margin-top:4px;">Don't collect stories — collect STORY TYPES. Patterns become frameworks. Frameworks become products.</p>
+    </div>
+    <div id="story-types-grid"></div>
+  </section>
+
+  <!-- =============== STORY EXPANDER =============== -->
+  <section id="page-expansion" class="page-section" style="padding:24px 32px;">
+    <div style="max-width:800px;margin:0 auto;">
+      <div style="text-align:center;margin-bottom:32px;">
+        <h2 class="playfair" style="font-size:28px;font-weight:700;margin-bottom:8px;">🔄 Story Expansion Method</h2>
+        <p style="color:var(--text-secondary);font-size:14px;">Turn any story into usable content by answering these five questions.</p>
+      </div>
+
+      <div class="card" style="padding:24px;margin-bottom:20px;">
+        <label class="form-label">Select a story to expand</label>
+        <select id="expand-story-select" class="form-input" onchange="loadStoryForExpansion()">
+          <option value="">Choose a story...</option>
+        </select>
+      </div>
+
+      <div id="expansion-form" style="display:none;">
+        <div class="card" style="padding:24px;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+            <span style="font-size:20px;">1️⃣</span>
+            <label class="form-label" style="margin:0;">What happened?</label>
+          </div>
+          <textarea id="exp-q1" class="form-input" placeholder="Describe the story in detail..."></textarea>
+        </div>
+        <div class="card" style="padding:24px;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+            <span style="font-size:20px;">2️⃣</span>
+            <label class="form-label" style="margin:0;">Why did it matter?</label>
+          </div>
+          <textarea id="exp-q2" class="form-input" placeholder="What made this significant?"></textarea>
+        </div>
+        <div class="card" style="padding:24px;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+            <span style="font-size:20px;">3️⃣</span>
+            <label class="form-label" style="margin:0;">What larger truth does it reveal?</label>
+          </div>
+          <textarea id="exp-q3" class="form-input" placeholder="What universal insight is hiding here?"></textarea>
+        </div>
+        <div class="card" style="padding:24px;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+            <span style="font-size:20px;">4️⃣</span>
+            <label class="form-label" style="margin:0;">Who else experiences this?</label>
+          </div>
+          <textarea id="exp-q4" class="form-input" placeholder="What audience or group connects to this story?"></textarea>
+        </div>
+        <div class="card" style="padding:24px;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+            <span style="font-size:20px;">5️⃣</span>
+            <label class="form-label" style="margin:0;">How can this help my audience?</label>
+          </div>
+          <textarea id="exp-q5" class="form-input" placeholder="Content ideas: email, reel, webinar, sales page, lead magnet..."></textarea>
+        </div>
+        <button class="btn-primary" onclick="saveExpansion()" style="width:100%;justify-content:center;">
+          Save Expansion
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============== SEARCH =============== -->
+  <section id="page-search" class="page-section" style="padding:24px 32px;">
+    <div style="max-width:800px;margin:0 auto;">
+      <h2 style="font-size:22px;font-weight:700;margin-bottom:20px;">🔍 Search Everything</h2>
+      <input type="text" id="search-input" class="form-input" placeholder="Search stories, swipes, lessons, tags..." oninput="performSearch(this.value)" style="font-size:16px;padding:14px 18px;margin-bottom:20px;">
+      <div id="search-results"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- =============== MODALS =============== -->
+
+<!-- Story Modal (New / Edit) -->
+<div class="modal-overlay" id="story-modal">
+  <div class="modal">
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <h3 id="story-modal-title" style="font-size:17px;font-weight:700;">New Story Seed</h3>
+      <button onclick="closeModal('story-modal')" style="background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:24px;">
+      <input type="hidden" id="story-edit-id">
+      <input type="hidden" id="story-target-level">
+
+      <div style="margin-bottom:16px;">
+        <label class="form-label">Title</label>
+        <input type="text" id="story-title" class="form-input" placeholder="Give this moment a name...">
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label class="form-label">What happened?</label>
+        <textarea id="story-what" class="form-input" placeholder="Describe the moment..." style="min-height:120px;"></textarea>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div>
+          <label class="form-label">Date</label>
+          <input type="date" id="story-date" class="form-input">
+        </div>
+        <div>
+          <label class="form-label">Emotion</label>
+          <select id="story-emotion" class="form-input">
+            <option value="">Select emotion...</option>
+            <option value="surprise">😲 Surprise</option>
+            <option value="frustration">😤 Frustration</option>
+            <option value="realization">💡 Realization</option>
+            <option value="conflict">⚡ Conflict</option>
+            <option value="embarrassment">😳 Embarrassment</option>
+            <option value="fear">😨 Fear</option>
+            <option value="relief">😌 Relief</option>
+            <option value="joy">😊 Joy</option>
+            <option value="regret">😔 Regret</option>
+            <option value="pride">🦁 Pride</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label class="form-label">Source</label>
+        <select id="story-source" class="form-input">
+          <option value="">Where did this come from?</option>
+          <option value="personal">Personal experience</option>
+          <option value="conversation">Conversation</option>
+          <option value="observation">Observation</option>
+          <option value="movie">Movie/TV</option>
+          <option value="book">Book</option>
+          <option value="news">News</option>
+          <option value="social">Social media</option>
+          <option value="client">Client interaction</option>
+        </select>
+      </div>
+
+      <!-- Level 2 fields -->
+      <div id="lab-fields" style="display:none;border-top:1px solid var(--border);padding-top:16px;margin-top:16px;">
+        <h4 style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:12px;">🔬 STORY LAB — Lesson Extraction</h4>
+        <div style="margin-bottom:12px;">
+          <label class="form-label">What does this reveal?</label>
+          <textarea id="story-reveal" class="form-input" placeholder="What belief, problem, or desire does this expose?"></textarea>
+        </div>
+        <div style="margin-bottom:12px;">
+          <label class="form-label">Extracted Lessons (one per line)</label>
+          <textarea id="story-lessons" class="form-input" placeholder="People value autonomy&#10;Pride can block progress&#10;Identity affects decisions"></textarea>
+        </div>
+      </div>
+
+      <!-- Level 3 fields -->
+      <div id="vault-fields" style="display:none;border-top:1px solid var(--border);padding-top:16px;margin-top:16px;">
+        <h4 style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:12px;">🏛️ VAULT — Content Tags</h4>
+        <div style="margin-bottom:12px;">
+          <label class="form-label">Tags (select all that apply)</label>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;" id="story-tags-container">
+            <label class="tag tag-identity" style="cursor:pointer;"><input type="checkbox" value="identity" style="display:none;"> Identity</label>
+            <label class="tag tag-fear" style="cursor:pointer;"><input type="checkbox" value="fear" style="display:none;"> Fear</label>
+            <label class="tag tag-trust" style="cursor:pointer;"><input type="checkbox" value="trust" style="display:none;"> Trust</label>
+            <label class="tag tag-change" style="cursor:pointer;"><input type="checkbox" value="change" style="display:none;"> Change</label>
+            <label class="tag tag-opportunity" style="cursor:pointer;"><input type="checkbox" value="opportunity" style="display:none;"> Opportunity</label>
+            <label class="tag tag-regret" style="cursor:pointer;"><input type="checkbox" value="regret" style="display:none;"> Regret</label>
+            <label class="tag tag-confidence" style="cursor:pointer;"><input type="checkbox" value="confidence" style="display:none;"> Confidence</label>
+            <label class="tag tag-reinvention" style="cursor:pointer;"><input type="checkbox" value="reinvention" style="display:none;"> Reinvention</label>
+            <label class="tag tag-skepticism" style="cursor:pointer;"><input type="checkbox" value="skepticism" style="display:none;"> Skepticism</label>
+            <label class="tag tag-transformation" style="cursor:pointer;"><input type="checkbox" value="transformation" style="display:none;"> Transformation</label>
+            <label class="tag tag-marketing" style="cursor:pointer;"><input type="checkbox" value="marketing" style="display:none;"> Marketing</label>
+            <label class="tag tag-sales" style="cursor:pointer;"><input type="checkbox" value="sales" style="display:none;"> Sales</label>
+          </div>
+        </div>
+
+        <div style="margin-bottom:12px;">
+          <label class="form-label">Story Bucket</label>
+          <select id="story-bucket" class="form-input">
+            <option value="">Select bucket...</option>
+            <option value="identity-shift">Identity Shift — "I'm not who I used to be"</option>
+            <option value="starting-over">Starting Over — "It's too late"</option>
+            <option value="fear-of-judgment">Fear of Judgment — "What will people think?"</option>
+            <option value="reinvention">Reinvention — "Can I become someone new?"</option>
+            <option value="skepticism">Skepticism — "How do I know this will work?"</option>
+            <option value="confidence">Confidence — "What if I fail?"</option>
+            <option value="regret">Regret — "I wish I had started sooner"</option>
+            <option value="transformation">Transformation — "The moment everything changed"</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:20px;">
+        <button class="btn-primary" onclick="saveStory()" style="flex:1;justify-content:center;" id="save-story-btn">Save Story</button>
+        <button class="btn-secondary" onclick="closeModal('story-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Swipe File Modal -->
+<div class="modal-overlay" id="swipe-modal">
+  <div class="modal">
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <h3 style="font-size:17px;font-weight:700;">📂 Add to Swipe File</h3>
+      <button onclick="closeModal('swipe-modal')" style="background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:24px;">
+      <input type="hidden" id="swipe-edit-id">
+      <div style="margin-bottom:16px;">
+        <label class="form-label">Title / Headline</label>
+        <input type="text" id="swipe-title" class="form-input" placeholder="What's the hook?">
+      </div>
+      <div style="margin-bottom:16px;">
+        <label class="form-label">The Situation / Story</label>
+        <textarea id="swipe-content" class="form-input" placeholder="Describe the situation — people remember situations longer than quotes." style="min-height:140px;"></textarea>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div>
+          <label class="form-label">Source Type</label>
+          <select id="swipe-source" class="form-input">
+            <option value="conversation">💬 Conversation</option>
+            <option value="movie">🎬 Movie/TV</option>
+            <option value="book">📖 Book</option>
+            <option value="news">📰 News</option>
+            <option value="social">📱 Social Media</option>
+            <option value="other">🔗 Other</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Source Name</label>
+          <input type="text" id="swipe-source-name" class="form-input" placeholder="e.g., Book title, person name...">
+        </div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <label class="form-label">What's the lesson / insight?</label>
+        <textarea id="swipe-lesson" class="form-input" placeholder="What emotional conflict, structure, or belief is at play?"></textarea>
+      </div>
+      <div style="margin-bottom:16px;">
+        <label class="form-label">Tags</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;" id="swipe-tags-container">
+          <label class="tag tag-identity" style="cursor:pointer;"><input type="checkbox" value="identity" style="display:none;"> Identity</label>
+          <label class="tag tag-fear" style="cursor:pointer;"><input type="checkbox" value="fear" style="display:none;"> Fear</label>
+          <label class="tag tag-trust" style="cursor:pointer;"><input type="checkbox" value="trust" style="display:none;"> Trust</label>
+          <label class="tag tag-change" style="cursor:pointer;"><input type="checkbox" value="change" style="display:none;"> Change</label>
+          <label class="tag tag-opportunity" style="cursor:pointer;"><input type="checkbox" value="opportunity" style="display:none;"> Opportunity</label>
+          <label class="tag tag-regret" style="cursor:pointer;"><input type="checkbox" value="regret" style="display:none;"> Regret</label>
+          <label class="tag tag-confidence" style="cursor:pointer;"><input type="checkbox" value="confidence" style="display:none;"> Confidence</label>
+          <label class="tag tag-reinvention" style="cursor:pointer;"><input type="checkbox" value="reinvention" style="display:none;"> Reinvention</label>
+          <label class="tag tag-skepticism" style="cursor:pointer;"><input type="checkbox" value="skepticism" style="display:none;"> Skepticism</label>
+          <label class="tag tag-transformation" style="cursor:pointer;"><input type="checkbox" value="transformation" style="display:none;"> Transformation</label>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;">
+        <button class="btn-primary" onclick="saveSwipe()" style="flex:1;justify-content:center;">Save Swipe</button>
+        <button class="btn-secondary" onclick="closeModal('swipe-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Capture Modal -->
+<div class="modal-overlay" id="quick-modal">
+  <div class="modal" style="max-width:500px;">
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <h3 style="font-size:17px;font-weight:700;">⚡ Quick Capture</h3>
+      <button onclick="closeModal('quick-modal')" style="background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:24px;">
+      <div style="margin-bottom:16px;">
+        <input type="text" id="quick-title" class="form-input" placeholder="Give it a title..." style="font-size:16px;padding:12px 16px;">
+      </div>
+      <div style="margin-bottom:16px;">
+        <textarea id="quick-what" class="form-input" placeholder="What happened? Just capture the moment..." style="min-height:120px;font-size:15px;"></textarea>
+      </div>
+      <div style="margin-bottom:16px;">
+        <select id="quick-emotion" class="form-input">
+          <option value="">Emotion (optional)</option>
+          <option value="surprise">😲 Surprise</option>
+          <option value="frustration">😤 Frustration</option>
+          <option value="realization">💡 Realization</option>
+          <option value="conflict">⚡ Conflict</option>
+          <option value="embarrassment">😳 Embarrassment</option>
+          <option value="fear">😨 Fear</option>
+          <option value="relief">😌 Relief</option>
+          <option value="joy">😊 Joy</option>
+          <option value="regret">😔 Regret</option>
+          <option value="pride">🦁 Pride</option>
+        </select>
+      </div>
+      <button class="btn-primary" onclick="quickSave()" style="width:100%;justify-content:center;">
+        Save to Inbox →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Story Detail / View Modal -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal" style="max-width:700px;">
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <h3 id="detail-title" style="font-size:17px;font-weight:700;"></h3>
+      <button onclick="closeModal('detail-modal')" style="background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <div id="detail-content" style="padding:24px;"></div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ========================== DATA STORE ==========================
+const DB_KEY = 'storyVault_v2';
+
+function getDB() {
+  const raw = localStorage.getItem(DB_KEY);
+  if (!raw) {
+    const defaultDB = {
+      stories: [],
+      homework: [],
+      swipes: [],
+      expansions: {},
+      settings: { longestStreak: 0 }
+    };
+    localStorage.setItem(DB_KEY, JSON.stringify(defaultDB));
+    return defaultDB;
+  }
+  return JSON.parse(raw);
+}
+
+function saveDB(db) {
+  localStorage.setItem(DB_KEY, JSON.stringify(db));
+}
+
+function genId() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2, 6);
+}
+
+function todayStr() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  const dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+const EMOTION_MAP = {
+  surprise: '😲', frustration: '😤', realization: '💡', conflict: '⚡',
+  embarrassment: '😳', fear: '😨', relief: '😌', joy: '😊', regret: '😔', pride: '🦁'
+};
+
+const SOURCE_MAP = {
+  personal: '👤', conversation: '💬', observation: '👁️', movie: '🎬',
+  book: '📖', news: '📰', social: '📱', client: '🤝'
+};
+
+const BUCKET_LABELS = {
+  'identity-shift': { emoji: '🔄', label: 'Identity Shift', quote: '"I\'m not who I used to be."' },
+  'starting-over': { emoji: '🌅', label: 'Starting Over', quote: '"It\'s too late."' },
+  'fear-of-judgment': { emoji: '👀', label: 'Fear of Judgment', quote: '"What will people think?"' },
+  'reinvention': { emoji: '🦋', label: 'Reinvention', quote: '"Can I become someone new?"' },
+  'skepticism': { emoji: '🤔', label: 'Skepticism', quote: '"How do I know this will work?"' },
+  'confidence': { emoji: '💪', label: 'Confidence', quote: '"What if I fail?"' },
+  'regret': { emoji: '⏳', label: 'Regret', quote: '"I wish I had started sooner."' },
+  'transformation': { emoji: '✨', label: 'Transformation', quote: '"The moment everything changed."' }
+};
+
+const TAG_LIST = ['identity','fear','trust','change','opportunity','regret','confidence','reinvention','skepticism','transformation','marketing','sales'];
+
+// ========================== TAG CHECKBOX HANDLING ==========================
+document.querySelectorAll('#story-tags-container .tag, #swipe-tags-container .tag').forEach(label => {
+  label.addEventListener('click', (e) => {
+    const cb = label.querySelector('input[type="checkbox"]');
+    cb.checked = !cb.checked;
+    label.style.opacity = cb.checked ? '1' : '0.5';
+    e.preventDefault();
+  });
+  label.style.opacity = '0.5';
+});
+
+// ========================== NAVIGATION ==========================
+let currentPage = 'dashboard';
+
+function navigateTo(page) {
+  currentPage = page;
+  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+  document.getElementById(`page-${page}`).classList.add('active');
+
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  event && event.target && event.target.closest('.nav-item')?.classList.add('active');
+
+  const titles = {
+    dashboard: 'Dashboard', homework: 'Homework for Life', inbox: 'Story Inbox',
+    lab: 'Story Lab', vault: 'Story Vault', swipefile: 'Story Swipe File',
+    buckets: 'Story Buckets', storyTypes: 'Story Types', expansion: 'Story Expander', search: 'Search'
+  };
+  document.getElementById('page-title').textContent = titles[page] || page;
+
+  // Close mobile sidebar
+  document.getElementById('sidebar').classList.remove('mobile-open');
+
+  renderPage(page);
+}
+
+function renderPage(page) {
+  switch(page) {
+    case 'dashboard': renderDashboard(); break;
+    case 'homework': renderHomework(); break;
+    case 'inbox': renderInbox(); break;
+    case 'lab': renderLab(); break;
+    case 'vault': renderVault(); break;
+    case 'swipefile': renderSwipes(); break;
+    case 'buckets': renderBuckets(); break;
+    case 'storyTypes': renderStoryTypes(); break;
+    case 'expansion': renderExpansion(); break;
+    case 'search': break;
+  }
+  updateBadges();
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('mobile-open');
+}
+
+// ========================== DASHBOARD ==========================
+function renderDashboard() {
+  const db = getDB();
+  const inbox = db.stories.filter(s => s.level === 1);
+  const lab = db.stories.filter(s => s.level === 2);
+  const vault = db.stories.filter(s => s.level === 3);
+  const streak = calcStreak(db);
+
+  document.getElementById('stat-total').textContent = db.stories.length;
+  document.getElementById('stat-streak').textContent = streak + ' 🔥';
+  document.getElementById('stat-lab').textContent = lab.length;
+  document.getElementById('stat-vault').textContent = vault.length;
+
+  // Today's homework
+  const today = todayStr();
+  const todayHW = db.homework.find(h => h.date === today);
+  const hwArea = document.getElementById('today-homework-area');
+  const statusEl = document.getElementById('today-status');
+
+  if (todayHW) {
+    statusEl.innerHTML = '<span style="color:#27ae60;">✓ Done</span>';
+    hwArea.innerHTML = `
+      <div style="background:var(--bg-primary);border-radius:8px;padding:14px;border:1px solid var(--border);">
+        <p style="font-size:14px;line-height:1.6;color:var(--text-primary);">${escapeHtml(todayHW.moment)}</p>
+        ${todayHW.emotion ? `<div style="margin-top:8px;"><span class="emotion-${todayHW.emotion}" style="font-size:12px;font-weight:600;">${EMOTION_MAP[todayHW.emotion] || ''} ${todayHW.emotion}</span></div>` : ''}
+      </div>
+    `;
+  } else {
+    statusEl.innerHTML = '<span style="color:var(--accent);">⏳ Pending</span>';
+    hwArea.innerHTML = `
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">You haven't captured today's moment yet.</p>
+      <button class="btn-primary" onclick="navigateTo('homework')" style="width:100%;justify-content:center;">✏️ Capture Today's Moment</button>
+    `;
+  }
+
+  // Recent stories
+  const recent = [...db.stories].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+  const recentEl = document.getElementById('recent-stories');
+  if (recent.length === 0) {
+    recentEl.innerHTML = '<div class="empty-state"><div class="icon">📝</div><p>No stories yet. Start capturing moments!</p></div>';
+  } else {
+    recentEl.innerHTML = recent.map(s => `
+      <div style="display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="viewStory('${s.id}')">
+        <span class="level-badge level-${s.level}">L${s.level}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(s.title)}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${formatDate(s.date)}</div>
+        </div>
+        ${s.emotion ? `<span style="font-size:16px;">${EMOTION_MAP[s.emotion] || ''}</span>` : ''}
+      </div>
+    `).join('');
+  }
+
+  // Tag distribution
+  const tagCounts = {};
+  TAG_LIST.forEach(t => tagCounts[t] = 0);
+  db.stories.forEach(s => {
+    if (s.tags) s.tags.forEach(t => { if (tagCounts[t] !== undefined) tagCounts[t]++; });
+  });
+  db.swipes.forEach(s => {
+    if (s.tags) s.tags.forEach(t => { if (tagCounts[t] !== undefined) tagCounts[t]++; });
+  });
+  const maxCount = Math.max(...Object.values(tagCounts), 1);
+  const distEl = document.getElementById('tag-distribution');
+  distEl.innerHTML = TAG_LIST.map(tag => `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+      <div style="width:100px;font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:capitalize;">${tag}</div>
+      <div style="flex:1;height:24px;background:var(--bg-primary);border-radius:6px;overflow:hidden;position:relative;">
+        <div style="height:100%;width:${(tagCounts[tag]/maxCount)*100}%;border-radius:6px;transition:width 0.5s;" class="tag-${tag}"></div>
+      </div>
+      <div style="width:30px;font-size:13px;font-weight:700;color:var(--text-primary);text-align:right;">${tagCounts[tag]}</div>
+    </div>
+  `).join('');
+}
+
+// ========================== HOMEWORK FOR LIFE ==========================
+function calcStreak(db) {
+  if (!db.homework.length) return 0;
+  const dates = db.homework.map(h => h.date).sort().reverse();
+  let streak = 0;
+  let checkDate = new Date();
+
+  for (let i = 0; i < 400; i++) {
+    const ds = checkDate.toISOString().split('T')[0];
+    if (dates.includes(ds)) {
+      streak++;
+    } else if (i > 0) {
+      break;
+    }
+    checkDate.setDate(checkDate.getDate() - 1);
+  }
+  return streak;
+}
+
+function renderHomework() {
+  const db = getDB();
+  const today = todayStr();
+  document.getElementById('hw-today-date').textContent = formatDate(today);
+
+  const todayHW = db.homework.find(h => h.date === today);
+  if (todayHW) {
+    document.getElementById('hw-moment').value = todayHW.moment;
+    document.getElementById('hw-source').value = todayHW.source || '';
+    document.getElementById('hw-emotion').value = todayHW.emotion || '';
+  } else {
+    document.getElementById('hw-moment').value = '';
+    document.getElementById('hw-source').value = '';
+    document.getElementById('hw-emotion').value = '';
+  }
+
+  const streak = calcStreak(db);
+  document.getElementById('hw-streak-num').textContent = streak;
+  document.getElementById('hw-total-entries').textContent = db.homework.length;
+  document.getElementById('hw-longest-streak').textContent = db.settings.longestStreak || 0;
+
+  // Past entries
+  const sorted = [...db.homework].sort((a,b) => b.date.localeCompare(a.date));
+  const listEl = document.getElementById('hw-entries-list');
+  if (sorted.length === 0) {
+    listEl.innerHTML = '<div class="empty-state"><div class="icon">📅</div><p>No entries yet. Start your homework for life today!</p></div>';
+  } else {
+    listEl.innerHTML = sorted.map(h => `
+      <div style="padding:14px 0;border-bottom:1px solid var(--border);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span style="font-size:13px;font-weight:600;color:var(--accent);">${formatDate(h.date)}</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            ${h.emotion ? `<span style="font-size:14px;">${EMOTION_MAP[h.emotion] || ''}</span>` : ''}
+            ${h.source ? `<span style="font-size:14px;">${SOURCE_MAP[h.source] || ''}</span>` : ''}
+            <button class="btn-ghost" onclick="promoteHomework('${h.id}')" title="Send to Story Inbox" style="font-size:11px;padding:4px 8px;">📥 Promote</button>
+            <button class="btn-ghost" onclick="deleteHomework('${h.id}')" title="Delete" style="font-size:11px;padding:4px 8px;color:var(--danger);">🗑️</button>
+          </div>
+        </div>
+        <p style="font-size:14px;line-height:1.6;color:var(--text-secondary);">${escapeHtml(h.moment)}</p>
+      </div>
+    `).join('');
+  }
+}
+
+function saveHomework() {
+  const moment = document.getElementById('hw-moment').value.trim();
+  if (!moment) { showToast('Write a moment first!', 'error'); return; }
+
+  const db = getDB();
+  const today = todayStr();
+  const existing = db.homework.findIndex(h => h.date === today);
+  const entry = {
+    id: existing >= 0 ? db.homework[existing].id : genId(),
+    date: today,
+    moment,
+    source: document.getElementById('hw-source').value,
+    emotion: document.getElementById('hw-emotion').value,
+    createdAt: new Date().toISOString()
+  };
+
+  if (existing >= 0) {
+    db.homework[existing] = entry;
+  } else {
+    db.homework.push(entry);
+  }
+
+  const streak = calcStreak(db);
+  if (streak > (db.settings.longestStreak || 0)) {
+    db.settings.longestStreak = streak;
+  }
+
+  saveDB(db);
+  renderHomework();
+  updateBadges();
+  showToast("Today's moment captured! 🎯", 'success');
+}
+
+function promoteHomework(id) {
+  const db = getDB();
+  const hw = db.homework.find(h => h.id === id);
+  if (!hw) return;
+
+  const story = {
+    id: genId(),
+    title: hw.moment.substring(0, 60) + (hw.moment.length > 60 ? '...' : ''),
+    what: hw.moment,
+    date: hw.date,
+    emotion: hw.emotion || '',
+    source: hw.source || '',
+    level: 1,
+    reveal: '',
+    lessons: [],
+    tags: [],
+    bucket: '',
+    createdAt: new Date().toISOString()
+  };
+
+  db.stories.push(story);
+  saveDB(db);
+  showToast('Promoted to Story Inbox! 📥', 'success');
+  renderHomework();
+  updateBadges();
+}
+
+function deleteHomework(id) {
+  if (!confirm('Delete this entry?')) return;
+  const db = getDB();
+  db.homework = db.homework.filter(h => h.id !== id);
+  saveDB(db);
+  renderHomework();
+  updateBadges();
+  showToast('Entry deleted', 'success');
+}
+
+// ========================== STORY INBOX / LAB / VAULT ==========================
+let currentInboxFilter = 'all';
+let currentVaultFilter = 'all';
+
+function renderInbox() {
+  const db = getDB();
+  let stories = db.stories.filter(s => s.level === 1);
+  if (currentInboxFilter !== 'all') {
+    stories = stories.filter(s => s.emotion === currentInboxFilter);
+  }
+  renderStoryList(stories, 'inbox-stories-list', 1);
+}
+
+function renderLab() {
+  const db = getDB();
+  const stories = db.stories.filter(s => s.level === 2);
+  renderStoryList(stories, 'lab-stories-list', 2);
+}
+
+function renderVault() {
+  const db = getDB();
+  let stories = db.stories.filter(s => s.level === 3);
+  if (currentVaultFilter !== 'all') {
+    stories = stories.filter(s => s.tags && s.tags.includes(currentVaultFilter));
+  }
+  renderStoryList(stories, 'vault-stories-list', 3);
+}
+
+function renderStoryList(stories, containerId, level) {
+  const el = document.getElementById(containerId);
+  if (stories.length === 0) {
+    const msgs = {
+      1: 'No stories in the inbox. Capture your first moment!',
+      2: 'No stories in the lab. Promote stories from inbox to analyze them.',
+      3: 'No vault stories yet. Complete the lab process to tag and store stories.'
+    };
+    el.innerHTML = `<div class="empty-state"><div class="icon">${level===1?'📥':level===2?'🔬':'🏛️'}</div><p>${msgs[level]}</p></div>`;
+    return;
+  }
+
+  const sorted = [...stories].sort((a,b) => new Date(b.date) - new Date(a.date));
+  el.innerHTML = sorted.map(s => `
+    <div class="card" style="padding:18px 20px;margin-bottom:12px;cursor:pointer;" onclick="viewStory('${s.id}')">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+            <span class="level-badge level-${s.level}">L${s.level}</span>
+            <h4 style="font-size:15px;font-weight:600;">${escapeHtml(s.title)}</h4>
+          </div>
+          <p style="font-size:13px;color:var(--text-secondary);line-height:1.5;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+            ${escapeHtml(s.what)}
+          </p>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span style="font-size:11px;color:var(--text-muted);">${formatDate(s.date)}</span>
+            ${s.emotion ? `<span class="tag tag-${s.emotion === 'surprise' || s.emotion === 'joy' ? 'opportunity' : s.emotion === 'frustration' || s.emotion === 'fear' ? 'fear' : 'trust'}" style="font-size:10px;">${EMOTION_MAP[s.emotion] || ''} ${s.emotion}</span>` : ''}
+            ${(s.tags || []).map(t => `<span class="tag tag-${t}" style="font-size:10px;">${t}</span>`).join('')}
+          </div>
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0;">
+          ${level < 3 ? `<button class="btn-ghost" onclick="event.stopPropagation();promoteStory('${s.id}')" title="Promote to Level ${level+1}" style="font-size:12px;padding:6px 10px;">⬆️</button>` : ''}
+          <button class="btn-ghost" onclick="event.stopPropagation();editStory('${s.id}')" title="Edit" style="font-size:12px;padding:6px 10px;">✏️</button>
+          <button class="btn-ghost" onclick="event.stopPropagation();deleteStory('${s.id}')" title="Delete" style="font-size:12px;padding:6px 10px;color:var(--danger);">🗑️</button>
+        </div>
+      </div>
+      ${s.lessons && s.lessons.length ? `
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+          <div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:6px;">EXTRACTED LESSONS</div>
+          ${s.lessons.map(l => `<div style="font-size:12px;color:var(--text-secondary);padding:2px 0;">• ${escapeHtml(l)}</div>`).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `).join('');
+}
+
+function filterStories(section, filter, btn) {
+  currentInboxFilter = filter;
+  document.querySelectorAll(`#${section}-filters .filter-pill`).forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  renderInbox();
+}
+
+function filterVault(filter, btn) {
+  currentVaultFilter = filter;
+  document.querySelectorAll('#vault-filters .filter-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  renderVault();
+}
+
+// ========================== STORY CRUD ==========================
+function openStoryModal(level) {
+  const levelNum = level === 'inbox' ? 1 : level === 'lab' ? 2 : 3;
+  document.getElementById('story-edit-id').value = '';
+  document.getElementById('story-target-level').value = levelNum;
+  document.getElementById('story-modal-title').textContent = 'New Story Seed';
+  document.getElementById('story-title').value = '';
+  document.getElementById('story-what').value = '';
+  document.getElementById('story-date').value = todayStr();
+  document.getElementById('story-emotion').value = '';
+  document.getElementById('story-source').value = '';
+  document.getElementById('story-reveal').value = '';
+  document.getElementById('story-lessons').value = '';
+  document.getElementById('story-bucket').value = '';
+
+  // Reset tags
+  document.querySelectorAll('#story-tags-container input[type="checkbox"]').forEach(cb => {
+    cb.checked = false;
+    cb.closest('.tag').style.opacity = '0.5';
+  });
+
+  document.getElementById('lab-fields').style.display = levelNum >= 2 ? 'block' : 'none';
+  document.getElementById('vault-fields').style.display = levelNum >= 3 ? 'block' : 'none';
+
+  openModal('story-modal');
+}
+
+function editStory(id) {
+  const db = getDB();
+  const s = db.stories.find(st => st.id === id);
+  if (!s) return;
+
+  document.getElementById('story-edit-id').value = s.id;
+  document.getElementById('story-target-level').value = s.level;
+  document.getElementById('story-modal-title').textContent = 'Edit Story';
+  document.getElementById('story-title').value = s.title;
+  document.getElementById('story-what').value = s.what;
+  document.getElementById('story-date').value = s.date;
+  document.getElementById('story-emotion').value = s.emotion || '';
+  document.getElementById('story-source').value = s.source || '';
+  document.getElementById('story-reveal').value = s.reveal || '';
+  document.getElementById('story-lessons').value = (s.lessons || []).join('\n');
+  document.getElementById('story-bucket').value = s.bucket || '';
+
+  // Set tags
+  document.querySelectorAll('#story-tags-container input[type="checkbox"]').forEach(cb => {
+    cb.checked = (s.tags || []).includes(cb.value);
+    cb.closest('.tag').style.opacity = cb.checked ? '1' : '0.5';
+  });
+
+  document.getElementById('lab-fields').style.display = s.level >= 2 ? 'block' : 'none';
+  document.getElementById('vault-fields').style.display = s.level >= 3 ? 'block' : 'none';
+
+  openModal('story-modal');
+}
+
+function saveStory() {
+  const title = document.getElementById('story-title').value.trim();
+  const what = document.getElementById('story-what').value.trim();
+  if (!title || !what) { showToast('Title and description required!', 'error'); return; }
+
+  const editId = document.getElementById('story-edit-id').value;
+  const level = parseInt(document.getElementById('story-target-level').value);
+  const db = getDB();
+
+  const tags = [];
+  document.querySelectorAll('#story-tags-container input[type="checkbox"]:checked').forEach(cb => tags.push(cb.value));
+
+  const lessons = document.getElementById('story-lessons').value.trim().split('\n').filter(l => l.trim());
+
+  const story = {
+    id: editId || genId(),
+    title,
+    what,
+    date: document.getElementById('story-date').value || todayStr(),
+    emotion: document.getElementById('story-emotion').value,
+    source: document.getElementById('story-source').value,
+    level,
+    reveal: document.getElementById('story-reveal').value.trim(),
+    lessons,
+    tags,
+    bucket: document.getElementById('story-bucket').value,
+    createdAt: editId ? (db.stories.find(s=>s.id===editId)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  if (editId) {
+    const idx = db.stories.findIndex(s => s.id === editId);
+    if (idx >= 0) db.stories[idx] = story;
+  } else {
+    db.stories.push(story);
+  }
+
+  saveDB(db);
+  closeModal('story-modal');
+  renderPage(currentPage);
+  showToast(editId ? 'Story updated! ✏️' : 'Story saved! 📖', 'success');
+}
+
+function promoteStory(id) {
+  const db = getDB();
+  const idx = db.stories.findIndex(s => s.id === id);
+  if (idx < 0) return;
+
+  const story = db.stories[idx];
+  if (story.level >= 3) return;
+
+  story.level++;
+  db.stories[idx] = story;
+  saveDB(db);
+
+  if (story.level === 2 || story.level === 3) {
+    editStory(id);
+  } else {
+    renderPage(currentPage);
+  }
+
+  showToast(`Promoted to Level ${story.level}! ⬆️`, 'success');
+  updateBadges();
+}
+
+function deleteStory(id) {
+  if (!confirm('Delete this story?')) return;
+  const db = getDB();
+  db.stories = db.stories.filter(s => s.id !== id);
+  saveDB(db);
+  renderPage(currentPage);
+  updateBadges();
+  showToast('Story deleted', 'success');
+}
+
+function viewStory(id) {
+  const db = getDB();
+  const s = db.stories.find(st => st.id === id);
+  if (!s) return;
+
+  document.getElementById('detail-title').textContent = s.title;
+  const exp = db.expansions[id];
+
+  let html = `
+    <div class="story-detail-section">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <span class="level-badge level-${s.level}">Level ${s.level}</span>
+        ${s.emotion ? `<span style="font-size:13px;font-weight:500;" class="emotion-${s.emotion}">${EMOTION_MAP[s.emotion]} ${s.emotion}</span>` : ''}
+        ${s.source ? `<span style="font-size:13px;color:var(--text-muted);">${SOURCE_MAP[s.source] || ''} ${s.source}</span>` : ''}
+        <span style="font-size:12px;color:var(--text-muted);margin-left:auto;">${formatDate(s.date)}</span>
+      </div>
+      <p style="font-size:15px;line-height:1.7;color:var(--text-primary);white-space:pre-wrap;">${escapeHtml(s.what)}</p>
+    </div>
+  `;
+
+  if (s.reveal) {
+    html += `
+      <div class="story-detail-section">
+        <h4 style="font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">🔬 What This Reveals</h4>
+        <p style="font-size:14px;line-height:1.6;color:var(--text-secondary);white-space:pre-wrap;">${escapeHtml(s.reveal)}</p>
+      </div>
+    `;
+  }
+
+  if (s.lessons && s.lessons.length) {
+    html += `
+      <div class="story-detail-section">
+        <h4 style="font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">💡 Extracted Lessons</h4>
+        ${s.lessons.map(l => `<div style="font-size:14px;color:var(--text-secondary);padding:4px 0;">• ${escapeHtml(l)}</div>`).join('')}
+      </div>
+    `;
+  }
+
+  if (s.tags && s.tags.length) {
+    html += `
+      <div class="story-detail-section">
+        <h4 style="font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">🏷️ Tags</h4>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          ${s.tags.map(t => `<span class="tag tag-${t}">${t}</span>`).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  if (s.bucket && BUCKET_LABELS[s.bucket]) {
+    const b = BUCKET_LABELS[s.bucket];
+    html += `
+      <div class="story-detail-section">
+        <h4 style="font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">🪣 Bucket</h4>
+        <div style="font-size:14px;color:var(--text-primary);">${b.emoji} ${b.label} — <em style="color:var(--text-muted);">${b.quote}</em></div>
+      </div>
+    `;
+  }
+
+  if (exp) {
+    html += `
+      <div class="story-detail-section" style="background:rgba(201,165,90,0.05);border-radius:8px;margin:0 -24px;padding:20px 24px;">
+        <h4 style="font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:16px;">🔄 Story Expansion</h4>
+        ${exp.q1 ? `<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:4px;">1. WHAT HAPPENED</div><p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">${escapeHtml(exp.q1)}</p></div>` : ''}
+        ${exp.q2 ? `<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:4px;">2. WHY IT MATTERED</div><p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">${escapeHtml(exp.q2)}</p></div>` : ''}
+        ${exp.q3 ? `<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:4px;">3. LARGER TRUTH</div><p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">${escapeHtml(exp.q3)}</p></div>` : ''}
+        ${exp.q4 ? `<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:4px;">4. WHO ELSE EXPERIENCES THIS</div><p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">${escapeHtml(exp.q4)}</p></div>` : ''}
+        ${exp.q5 ? `<div><div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:4px;">5. HOW IT HELPS MY AUDIENCE</div><p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">${escapeHtml(exp.q5)}</p></div>` : ''}
+      </div>
+    `;
+  }
+
+  html += `
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button class="btn-secondary" onclick="closeModal('detail-modal');editStory('${s.id}')">✏️ Edit</button>
+      ${s.level < 3 ? `<button class="btn-primary" onclick="closeModal('detail-modal');promoteStory('${s.id}')">⬆️ Promote to L${s.level+1}</button>` : ''}
+    </div>
+  `;
+
+  document.getElementById('detail-content').innerHTML = html;
+  openModal('detail-modal');
+}
+
+// ========================== QUICK CAPTURE ==========================
+function openQuickCapture() {
+  document.getElementById('quick-title').value = '';
+  document.getElementById('quick-what').value = '';
+  document.getElementById('quick-emotion').value = '';
+  openModal('quick-modal');
+  setTimeout(() => document.getElementById('quick-title').focus(), 200);
+}
+
+function quickSave() {
+  const title = document.getElementById('quick-title').value.trim();
+  const what = document.getElementById('quick-what').value.trim();
+  if (!title && !what) { showToast('Write something!', 'error'); return; }
+
+  const db = getDB();
+  db.stories.push({
+    id: genId(),
+    title: title || what.substring(0, 60),
+    what: what || title,
+    date: todayStr(),
+    emotion: document.getElementById('quick-emotion').value,
+    source: '',
+    level: 1,
+    reveal: '',
+    lessons: [],
+    tags: [],
+    bucket: '',
+    createdAt: new Date().toISOString()
+  });
+  saveDB(db);
+  closeModal('quick-modal');
+  renderPage(currentPage);
+  updateBadges();
+  showToast('Captured! 📥', 'success');
+}
+
+// ========================== SWIPE FILE ==========================
+let currentSwipeFilter = 'all';
+
+function renderSwipes() {
+  const db = getDB();
+  let swipes = db.swipes || [];
+  if (currentSwipeFilter !== 'all') {
+    swipes = swipes.filter(s => s.sourceType === currentSwipeFilter);
+  }
+  const el = document.getElementById('swipe-list');
+  if (swipes.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="icon">📂</div><p>No swipes yet. Start collecting external stories, conversations, and situations!</p></div>';
+    return;
+  }
+
+  const sorted = [...swipes].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+  el.innerHTML = sorted.map(s => `
+    <div class="card" style="padding:18px 20px;margin-bottom:12px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+            <span style="font-size:16px;">${SOURCE_MAP[s.sourceType] || '🔗'}</span>
+            <h4 style="font-size:15px;font-weight:600;">${escapeHtml(s.title)}</h4>
+          </div>
+          ${s.sourceName ? `<div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">Source: ${escapeHtml(s.sourceName)}</div>` : ''}
+          <p style="font-size:13px;color:var(--text-secondary);line-height:1.5;margin-bottom:8px;">${escapeHtml(s.content)}</p>
+          ${s.lesson ? `<div style="font-size:12px;color:var(--accent);font-style:italic;">💡 ${escapeHtml(s.lesson)}</div>` : ''}
+          <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+            ${(s.tags || []).map(t => `<span class="tag tag-${t}" style="font-size:10px;">${t}</span>`).join('')}
+          </div>
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0;">
+          <button class="btn-ghost" onclick="editSwipe('${s.id}')" style="font-size:12px;padding:6px 10px;">✏️</button>
+          <button class="btn-ghost" onclick="deleteSwipe('${s.id}')" style="font-size:12px;padding:6px 10px;color:var(--danger);">🗑️</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterSwipes(filter, btn) {
+  currentSwipeFilter = filter;
+  document.querySelectorAll('#swipe-filters .filter-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  renderSwipes();
+}
+
+function openSwipeModal() {
+  document.getElementById('swipe-edit-id').value = '';
+  document.getElementById('swipe-title').value = '';
+  document.getElementById('swipe-content').value = '';
+  document.getElementById('swipe-source').value = 'conversation';
+  document.getElementById('swipe-source-name').value = '';
+  document.getElementById('swipe-lesson').value = '';
+  document.querySelectorAll('#swipe-tags-container input[type="checkbox"]').forEach(cb => {
+    cb.checked = false;
+    cb.closest('.tag').style.opacity = '0.5';
+  });
+  openModal('swipe-modal');
+}
+
+function editSwipe(id) {
+  const db = getDB();
+  const s = db.swipes.find(sw => sw.id === id);
+  if (!s) return;
+
+  document.getElementById('swipe-edit-id').value = s.id;
+  document.getElementById('swipe-title').value = s.title;
+  document.getElementById('swipe-content').value = s.content;
+  document.getElementById('swipe-source').value = s.sourceType;
+  document.getElementById('swipe-source-name').value = s.sourceName || '';
+  document.getElementById('swipe-lesson').value = s.lesson || '';
+  document.querySelectorAll('#swipe-tags-container input[type="checkbox"]').forEach(cb => {
+    cb.checked = (s.tags || []).includes(cb.value);
+    cb.closest('.tag').style.opacity = cb.checked ? '1' : '0.5';
+  });
+  openModal('swipe-modal');
+}
+
+function saveSwipe() {
+  const title = document.getElementById('swipe-title').value.trim();
+  const content = document.getElementById('swipe-content').value.trim();
+  if (!title) { showToast('Add a title!', 'error'); return; }
+
+  const editId = document.getElementById('swipe-edit-id').value;
+  const tags = [];
+  document.querySelectorAll('#swipe-tags-container input[type="checkbox"]:checked').forEach(cb => tags.push(cb.value));
+
+  const db = getDB();
+  const swipe = {
+    id: editId || genId(),
+    title,
+    content,
+    sourceType: document.getElementById('swipe-source').value,
+    sourceName: document.getElementById('swipe-source-name').value.trim(),
+    lesson: document.getElementById('swipe-lesson').value.trim(),
+    tags,
+    createdAt: editId ? (db.swipes.find(s=>s.id===editId)?.createdAt || new Date().toISOString()) : new Date().toISOString()
+  };
+
+  if (editId) {
+    const idx = db.swipes.findIndex(s => s.id === editId);
+    if (idx >= 0) db.swipes[idx] = swipe;
+  } else {
+    db.swipes.push(swipe);
+  }
+
+  saveDB(db);
+  closeModal('swipe-modal');
+  renderSwipes();
+  showToast(editId ? 'Swipe updated!' : 'Swipe saved! 📂', 'success');
+}
+
+function deleteSwipe(id) {
+  if (!confirm('Delete this swipe?')) return;
+  const db = getDB();
+  db.swipes = db.swipes.filter(s => s.id !== id);
+  saveDB(db);
+  renderSwipes();
+  showToast('Swipe deleted', 'success');
+}
+
+// ========================== BUCKETS ==========================
+function renderBuckets() {
+  const db = getDB();
+  const grid = document.getElementById('buckets-grid');
+  grid.innerHTML = Object.entries(BUCKET_LABELS).map(([key, val]) => {
+    const count = db.stories.filter(s => s.bucket === key).length;
+    return `
+      <div class="card" style="padding:20px;cursor:pointer;" onclick="showBucketStories('${key}')">
+        <div style="font-size:32px;margin-bottom:10px;">${val.emoji}</div>
+        <h4 style="font-size:15px;font-weight:700;margin-bottom:4px;">${val.label}</h4>
+        <p style="font-size:13px;color:var(--text-muted);font-style:italic;margin-bottom:10px;">${val.quote}</p>
+        <div style="font-size:24px;font-weight:800;color:var(--accent);">${count}</div>
+        <div style="font-size:11px;color:var(--text-muted);">stories</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function showBucketStories(bucket) {
+  const db = getDB();
+  const stories = db.stories.filter(s => s.bucket === bucket);
+  const b = BUCKET_LABELS[bucket];
+
+  document.getElementById('detail-title').textContent = `${b.emoji} ${b.label}`;
+  let html = `<p style="font-size:14px;color:var(--text-muted);font-style:italic;margin-bottom:16px;">${b.quote}</p>`;
+
+  if (stories.length === 0) {
+    html += '<div class="empty-state"><p>No stories in this bucket yet.</p></div>';
+  } else {
+    html += stories.map(s => `
+      <div style="padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="closeModal('detail-modal');viewStory('${s.id}')">
+        <div style="font-size:14px;font-weight:600;">${escapeHtml(s.title)}</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${formatDate(s.date)}</div>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('detail-content').innerHTML = html;
+  openModal('detail-modal');
+}
+
+// ========================== STORY TYPES ==========================
+function renderStoryTypes() {
+  const db = getDB();
+  const types = {};
+  TAG_LIST.forEach(t => types[t] = []);
+  db.stories.forEach(s => {
+    (s.tags || []).forEach(t => {
+      if (types[t]) types[t].push(s);
+    });
+  });
+
+  const grid = document.getElementById('story-types-grid');
+  grid.innerHTML = `
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:24px;">
+      <p style="font-size:14px;color:var(--text-secondary);line-height:1.7;">
+        <strong style="color:var(--accent);">The secret most storytelling books miss:</strong> Don't collect stories — collect <strong style="color:var(--text-primary);">STORY TYPES</strong>.
+        Once you have 50 stories about fear, identity, trust, reinvention... you'll begin noticing <em>patterns</em>.
+        Patterns become frameworks. Frameworks become products. Products become positioning. Positioning becomes <strong style="color:var(--accent);">authority</strong>.
+      </p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
+      ${TAG_LIST.map(tag => `
+        <div class="card" style="padding:18px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <span class="tag tag-${tag}" style="font-size:12px;text-transform:capitalize;">${tag}</span>
+            <span style="font-size:20px;font-weight:800;color:var(--accent);">${types[tag].length}</span>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);">
+            ${types[tag].length === 0 ? 'No stories yet' : types[tag].slice(0,3).map(s => `<div style="padding:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">• ${escapeHtml(s.title)}</div>`).join('')}
+            ${types[tag].length > 3 ? `<div style="color:var(--accent);margin-top:4px;">+${types[tag].length - 3} more</div>` : ''}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// ========================== STORY EXPANDER ==========================
+function renderExpansion() {
+  const db = getDB();
+  const select = document.getElementById('expand-story-select');
+  const sorted = [...db.stories].sort((a,b) => new Date(b.date) - new Date(a.date));
+  select.innerHTML = '<option value="">Choose a story...</option>' +
+    sorted.map(s => `<option value="${s.id}">${escapeHtml(s.title)} (L${s.level})</option>`).join('');
+}
+
+function loadStoryForExpansion() {
+  const id = document.getElementById('expand-story-select').value;
+  const form = document.getElementById('expansion-form');
+  if (!id) { form.style.display = 'none'; return; }
+
+  form.style.display = 'block';
+  const db = getDB();
+  const s = db.stories.find(st => st.id === id);
+  const exp = db.expansions[id] || {};
+
+  document.getElementById('exp-q1').value = exp.q1 || s.what || '';
+  document.getElementById('exp-q2').value = exp.q2 || '';
+  document.getElementById('exp-q3').value = exp.q3 || '';
+  document.getElementById('exp-q4').value = exp.q4 || '';
+  document.getElementById('exp-q5').value = exp.q5 || '';
+}
+
+function saveExpansion() {
+  const id = document.getElementById('expand-story-select').value;
+  if (!id) return;
+
+  const db = getDB();
+  db.expansions[id] = {
+    q1: document.getElementById('exp-q1').value.trim(),
+    q2: document.getElementById('exp-q2').value.trim(),
+    q3: document.getElementById('exp-q3').value.trim(),
+    q4: document.getElementById('exp-q4').value.trim(),
+    q5: document.getElementById('exp-q5').value.trim(),
+    savedAt: new Date().toISOString()
+  };
+  saveDB(db);
+  showToast('Expansion saved! 🔄', 'success');
+}
+
+// ========================== SEARCH ==========================
+function performSearch(query) {
+  const q = query.toLowerCase().trim();
+  const results = document.getElementById('search-results');
+  if (!q) { results.innerHTML = ''; return; }
+
+  const db = getDB();
+  let matches = [];
+
+  // Search stories
+  db.stories.forEach(s => {
+    const text = [s.title, s.what, s.reveal, ...(s.lessons || []), ...(s.tags || [])].join(' ').toLowerCase();
+    if (text.includes(q)) {
+      matches.push({ type: 'story', item: s, level: s.level });
+    }
+  });
+
+  // Search homework
+  db.homework.forEach(h => {
+    if (h.moment.toLowerCase().includes(q)) {
+      matches.push({ type: 'homework', item: h });
+    }
+  });
+
+  // Search swipes
+  (db.swipes || []).forEach(s => {
+    const text = [s.title, s.content, s.lesson, s.sourceName, ...(s.tags || [])].join(' ').toLowerCase();
+    if (text.includes(q)) {
+      matches.push({ type: 'swipe', item: s });
+    }
+  });
+
+  // Search expansions
+  Object.entries(db.expansions || {}).forEach(([storyId, exp]) => {
+    const text = [exp.q1, exp.q2, exp.q3, exp.q4, exp.q5].join(' ').toLowerCase();
+    if (text.includes(q)) {
+      const story = db.stories.find(s => s.id === storyId);
+      if (story) matches.push({ type: 'expansion', item: { ...exp, storyTitle: story.title, storyId } });
+    }
+  });
+
+  if (matches.length === 0) {
+    results.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>No matches found.</p></div>';
+    return;
+  }
+
+  results.innerHTML = `<div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">${matches.length} result${matches.length !== 1 ? 's' : ''}</div>` +
+    matches.map(m => {
+      if (m.type === 'story') {
+        return `
+          <div class="card" style="padding:14px 18px;margin-bottom:10px;cursor:pointer;" onclick="viewStory('${m.item.id}')">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="level-badge level-${m.item.level}">L${m.item.level}</span>
+              <span style="font-size:14px;font-weight:600;">${escapeHtml(m.item.title)}</span>
+            </div>
+            <p style="font-size:12px;color:var(--text-muted);margin-top:4px;">${escapeHtml(m.item.what.substring(0, 120))}...</p>
+          </div>
+        `;
+      } else if (m.type === 'homework') {
+        return `
+          <div class="card" style="padding:14px 18px;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:12px;background:rgba(52,152,219,0.15);color:#7ec0ee;padding:2px 8px;border-radius:4px;font-weight:600;">HW</span>
+              <span style="font-size:13px;color:var(--accent);">${formatDate(m.item.date)}</span>
+            </div>
+            <p style="font-size:12px;color:var(--text-muted);margin-top:4px;">${escapeHtml(m.item.moment.substring(0, 120))}</p>
+          </div>
+        `;
+      } else if (m.type === 'swipe') {
+        return `
+          <div class="card" style="padding:14px 18px;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:12px;background:rgba(201,165,90,0.15);color:#e4c87a;padding:2px 8px;border-radius:4px;font-weight:600;">SWIPE</span>
+              <span style="font-size:14px;font-weight:600;">${escapeHtml(m.item.title)}</span>
+            </div>
+            <p style="font-size:12px;color:var(--text-muted);margin-top:4px;">${escapeHtml(m.item.content.substring(0, 120))}</p>
+          </div>
+        `;
+      } else {
+        return `
+          <div class="card" style="padding:14px 18px;margin-bottom:10px;cursor:pointer;" onclick="viewStory('${m.item.storyId}')">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:12px;background:rgba(155,89,182,0.15);color:#bb7be8;padding:2px 8px;border-radius:4px;font-weight:600;">EXPANSION</span>
+              <span style="font-size:14px;font-weight:600;">${escapeHtml(m.item.storyTitle)}</span>
+            </div>
+          </div>
+        `;
+      }
+    }).join('');
+}
+
+// ========================== MODAL HELPERS ==========================
+function openModal(id) {
+  document.getElementById(id).classList.add('active');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.classList.remove('active');
+  });
+});
+
+// Keyboard shortcut
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+  }
+  // Ctrl+K for quick capture
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    openQuickCapture();
+  }
+});
+
+// ========================== EXPORT / IMPORT ==========================
+function exportData() {
+  const db = getDB();
+  const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `story-vault-backup-${todayStr()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Data exported! 💾', 'success');
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.stories && data.homework) {
+        // Merge with existing
+        const db = getDB();
+        const existingStoryIds = new Set(db.stories.map(s => s.id));
+        const existingHwIds = new Set(db.homework.map(h => h.id));
+        const existingSwipeIds = new Set(db.swipes.map(s => s.id));
+
+        (data.stories || []).forEach(s => { if (!existingStoryIds.has(s.id)) db.stories.push(s); });
+        (data.homework || []).forEach(h => { if (!existingHwIds.has(h.id)) db.homework.push(h); });
+        (data.swipes || []).forEach(s => { if (!existingSwipeIds.has(s.id)) db.swipes.push(s); });
+        Object.assign(db.expansions, data.expansions || {});
+
+        saveDB(db);
+        renderPage(currentPage);
+        updateBadges();
+        showToast('Data imported successfully! 📁', 'success');
+      } else {
+        showToast('Invalid file format', 'error');
+      }
+    } catch (err) {
+      showToast('Error reading file', 'error');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ========================== TOAST ==========================
+function showToast(message, type = 'success') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<span style="font-size:16px;">${type === 'success' ? '✅' : '⚠️'}</span> ${message}`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(10px)';
+    toast.style.transition = 'all 0.3s';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+// ========================== BADGES ==========================
+function updateBadges() {
+  const db = getDB();
+  const streak = calcStreak(db);
+  document.getElementById('streak-badge').textContent = streak + '🔥';
+  document.getElementById('inbox-count').textContent = db.stories.filter(s => s.level === 1).length;
+  document.getElementById('lab-count').textContent = db.stories.filter(s => s.level === 2).length;
+  document.getElementById('vault-count').textContent = db.stories.filter(s => s.level === 3).length;
+}
+
+// ========================== HELPERS ==========================
+function escapeHtml(str) {
+  if (!str) return '';
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ========================== INIT ==========================
+function init() {
+  renderDashboard();
+  updateBadges();
+
+  // Set today's date default
+  document.getElementById('hw-today-date').textContent = formatDate(todayStr());
+}
+
+init();
+</script>
+
+</body>
+</html>
