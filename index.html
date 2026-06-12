@@ -1,387 +1,1808 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Design Your Life — Transition OS</title>
-    <link rel="icon" href="/favicon-light.svg" type="image/svg+xml" media="(prefers-color-scheme: light)" />
-    <link rel="icon" href="/favicon-dark.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)" />
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://019eb917-6c87-76ce-889c-06ef64e2b04c.arena.site/" />
-    <meta property="og:title" content="Design Your Life — Transition OS" />
-    <meta
-      property="og:description"
-      content="Check out what I built in Arena's Code Arena - Content is user-generated and unverified"
-    />
-    <meta property="og:image" content="https://screenshot-taker-prod.weichiang.workers.dev/message/019eb917-6c87-76ce-889c-06ef64e2b04c/og-image.webp" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://019eb917-6c87-76ce-889c-06ef64e2b04c.arena.site/" />
-    <meta property="twitter:title" content="Design Your Life — Transition OS" />
-    <meta
-      property="twitter:description"
-      content="Check out what I built in Arena's Code Arena - Content is user-generated and unverified"
-    />
-    <meta property="twitter:image" content="https://screenshot-taker-prod.weichiang.workers.dev/message/019eb917-6c87-76ce-889c-06ef64e2b04c/og-image.webp" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
-    <script>
-      const REPORT_SURVEY_ID = "019a46ef-f7dd-0000-58be-14fbb8b91d15";
-      const MESSAGE_ID = "019eb917-6c87-76ce-889c-06ef64e2b04c";
-      const EVALUATION_SESSION_ID = "019eb8db-916b-7ba8-9124-cef7d62976fb";
-      const getStorageKey = (prefix) => `${prefix}_${MESSAGE_ID}`;
-      const hasStorageKey = (prefix) => !!localStorage.getItem(getStorageKey(prefix));
-
-      // snippet below comes from posthog's documentation for running in html pages
-      // prettier-ignore
-      !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
-
-      const POSTHOG_API_KEY = "phc_LG7IJbVJqBsk584rbcKca0D5lV2vHguiijDrVji7yDM";
-      if (POSTHOG_API_KEY) {
-        posthog.init(POSTHOG_API_KEY, {
-          api_host: "/ph",
-          ui_host: "https://us.posthog.com",
-          person_profiles: "identified_only",
-          autocapture: false,
-          disable_session_recording: true,
-          before_send: (event) => {
-            if (event.event === "survey sent") {
-              // On the first survey answer sent, also send the report event
-              if (!hasStorageKey("code_reported")) {
-                localStorage.setItem(getStorageKey("code_reported"), "true");
-                posthog.capture?.("code_preview_banner_report");
-              }
-              // When the survey is completed, hide the report button
-              if (event.properties?.$survey_completed === true) {
-                localStorage.setItem(getStorageKey("survey_completed"), "true");
-                document.querySelector(".report-content-btn").style.display = "none";
-              }
-            }
-            return event;
-          },
-        });
-        posthog.register({ message_id: MESSAGE_ID, evaluation_session_id: EVALUATION_SESSION_ID });
-      }
-    </script>
-    <style>
-      * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-a {
-  text-decoration: none;
-}
-
-html,
-body {
-  height: 100%;
-  overflow: hidden;
-}
-
-body {
-  font-family:
-    "Inter",
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    "Helvetica Neue",
-    Arial,
-    sans-serif;
-  display: flex;
-  flex-direction: column;
-  background: #f5f5f5;
-}
-
-/* Banner styles */
-.floating-banner {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  animation: slideIn 0.3s ease-out;
-  display: flex;
-  align-items: center;
-  will-change: transform, opacity;
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateY(100px) translateZ(0);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0) translateZ(0);
-    opacity: 1;
-  }
-}
-
-.floating-banner.dismissed {
-  animation: slideOut 0.3s ease-out forwards;
-}
-
-@keyframes slideOut {
-  to {
-    transform: translateY(100px) translateZ(0);
-    opacity: 0;
-  }
-}
-
-.banner-padding {
-  padding: 10px 16px;
-}
-
-.banner-link-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.banner-logo {
-  display: flex;
-  align-items: center;
-  color: #2d2d2d;
-  flex-shrink: 0;
-}
-
-.banner-logo svg {
-  height: 28px;
-  width: auto;
-}
-
-.banner-text-container {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.banner-text {
-  margin: 0;
-  white-space: nowrap;
-}
-
-.banner-upper-text {
-  color: #151617;
-  font-size: 14px;
-}
-
-.banner-lower-text {
-  color: #878c9f;
-  font-size: 10px;
-}
-
-.banner-action-container {
-  border-left: 1px solid rgba(45, 47, 53, 0.08);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  align-self: stretch;
-}
-
-.action-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  color: #999;
-  cursor: pointer;
-  transition: color 0.2s;
-  flex-shrink: 0;
-}
-
-.action-btn:hover {
-  color: #2d2d2d;
-}
-
-/* Iframe container styles */
-.iframe-container {
-  flex: 1;
-  position: relative;
-  background: white;
-  overflow: hidden;
-  min-height: 0;
-}
-
-iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border: none;
-  display: block;
-}
-
-    </style>
-  </head>
-  <body data-ryu-obtrusive-scrollbars="false">
-    <svg style="display: none">
-      <symbol
-        id="icon-flag"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <path
-          d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528"
-        />
-      </symbol>
-      <symbol
-        id="icon-close"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <path d="M18 6 6 18" />
-        <path d="m6 6 12 12" />
-      </symbol>
-    </svg>
-
-    <div class="floating-banner" id="floating-banner">
-      <a
-        href="https://arena.ai/code"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="banner-link-wrapper banner-padding"
-        onclick="onCodePreviewBannerCTAClicked(event)"
-      >
-        <div class="banner-logo"><svg
-  width="167"
-  height="124"
-  viewBox="0 0 167 124"
-  fill="none"
-  xmlns="http://www.w3.org/2000/svg"
->
-  <path
-    d="M57.5364 53.3142C52.1508 53.3142 47.7887 57.6763 47.7887 63.0618V123.88H53.9963V63.0618C53.9963 61.0989 55.5902 59.505 57.5531 59.505C59.5161 59.505 61.11 61.0989 61.11 63.0618V123.88H67.3176V63.0618C67.3176 57.6763 62.9555 53.3142 57.5699 53.3142H57.5364Z"
-    fill="currentColor"
-  />
-  <path
-    d="M109.121 53.3142C103.735 53.3142 99.3734 57.6763 99.3734 63.0618V123.88H105.581V63.0618C105.581 61.0989 107.175 59.505 109.138 59.505C111.101 59.505 112.695 61.0989 112.695 63.0618V123.88H118.902V63.0618C118.902 57.6763 114.54 53.3142 109.155 53.3142H109.121Z"
-    fill="currentColor"
-  />
-  <path
-    d="M83.3286 53.3142C77.9431 53.3142 73.5809 57.6763 73.5809 63.0618V123.88H79.7886V63.0618C79.7886 61.0989 81.3824 59.505 83.3454 59.505C85.3083 59.505 86.9022 61.0989 86.9022 63.0618V123.88H93.1098V63.0618C93.1098 57.6763 88.7477 53.3142 83.3622 53.3142H83.3286Z"
-    fill="currentColor"
-  />
-  <path
-    d="M143.782 28.035L148.077 20.5691H158.06L166.667 0H0L8.60681 20.5691H18.5894L22.8676 28.035C14.5292 30.8872 7.66727 38.135 7.66727 49.0571C7.66727 59.9792 15.5526 69.2235 27.3639 69.2235C29.9477 69.2235 32.3468 68.6867 34.4776 67.7471V123.901H40.6684V62.7978C42.6146 60.1637 43.7555 56.8754 43.8393 53.1508C43.8393 53.1005 43.8561 53.0333 43.8561 52.9662C43.8561 52.9159 43.8393 52.8823 43.8393 52.832C43.8393 52.7985 43.8561 52.7649 43.8561 52.7314C43.8561 52.681 43.8393 52.6307 43.8393 52.5636C43.7722 50.047 43.1011 47.6981 41.9267 45.7016H124.74C123.566 47.6981 122.894 50.047 122.827 52.5636C122.827 52.6307 122.811 52.681 122.811 52.7314V52.9662C122.811 52.9662 122.827 53.1005 122.827 53.1508C122.911 56.8754 124.052 60.1637 125.998 62.7978V123.901H132.189V67.7471C134.32 68.6867 136.702 69.2235 139.303 69.2235C151.097 69.2235 158.999 59.5765 158.999 49.0571C158.999 38.5377 152.121 30.8872 143.782 28.035ZM12.734 14.3615L9.31146 6.20764H157.355L153.933 14.3615H12.734ZM140.93 20.5691L137.491 26.5586H29.1759L25.7365 20.5691H140.93ZM139.303 63.0159C133.246 63.0159 129.085 58.9222 129.018 52.8991C129.052 48.6377 131.803 45.7855 135.796 45.7352H135.914C138.414 45.7352 140.46 47.7988 140.46 49.9631V50.0637C140.41 51.3221 139.403 52.2951 138.145 52.2951C136.434 52.2951 135.041 53.6877 135.041 55.399C135.041 57.1103 136.434 58.5028 138.145 58.5028C142.843 58.5028 146.685 54.6943 146.685 49.9631C146.685 49.8121 146.651 49.6611 146.634 49.5269C146.383 43.9736 141.836 39.5443 135.83 39.5443H83.3166L82.9139 39.5275H82.4945L30.8369 39.5443C24.8305 39.5443 20.2839 43.9736 20.0322 49.5269C20.0154 49.6611 19.9819 49.8121 19.9819 49.9631C19.9819 54.6943 23.8239 58.5028 28.5216 58.5028C30.2329 58.5028 31.6254 57.1103 31.6254 55.399C31.6254 53.6877 30.2329 52.2951 28.5216 52.2951C27.2633 52.2951 26.2566 51.3221 26.1895 50.0637C26.1895 50.0302 26.2063 49.9966 26.2063 49.9631C26.2063 47.7988 28.2364 45.7352 30.753 45.7352H30.8536C34.8634 45.7855 37.6149 48.6377 37.6485 52.8991C37.5814 58.9222 33.4038 63.0159 27.3639 63.0159C19.4114 63.0159 13.8749 56.5902 13.8749 49.0571C13.8749 38.89 21.8442 32.7495 31.6925 32.7495H134.974C144.822 32.7495 152.792 38.89 152.792 49.0571C152.792 56.5902 147.255 63.0159 139.303 63.0159Z"
-    fill="currentColor"
-  />
-</svg>
-</div>
-        <div class="banner-text-container">
-          <p class="banner-text banner-upper-text">Built with Arena</p>
-          <p class="banner-text banner-lower-text">Content is user-generated and unverified</p>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Design Your Life — Transition OS</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --slate-900: #0f172a; --slate-800: #1e293b; --slate-700: #334155; --slate-600: #475569;
+      --slate-500: #64748b; --slate-400: #94a3b8; --slate-300: #cbd5e1; --slate-200: #e2e8f0;
+      --violet-600: #7c3aed; --violet-500: #8b5cf6; --violet-400: #a78bfa; --violet-300: #c4b5fd;
+      --emerald-500: #10b981; --emerald-400: #34d399; --sky-500: #0ea5e9; --sky-400: #38bdf8;
+      --amber-500: #f59e0b; --amber-400: #fbbf24; --rose-500: #f43f5e; --rose-400: #fb7185;
+      --fuchsia-500: #d946ef; --fuchsia-400: #e879f9; --cyan-500: #06b6d4; --indigo-500: #6366f1;
+      --orange-500: #f97316; --teal-500: #14b8a6;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--slate-900); color: var(--slate-200); min-height: 100vh; }
+    .app { display: flex; min-height: 100vh; }
+    
+    /* Sidebar */
+    .sidebar { width: 280px; background: rgba(15,23,42,0.95); border-right: 1px solid var(--slate-800); display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 40; transform: translateX(-100%); transition: transform 0.3s; }
+    .sidebar.open { transform: translateX(0); }
+    @media (min-width: 1024px) { .sidebar { transform: translateX(0); position: static; } }
+    .sidebar-header { padding: 24px; border-bottom: 1px solid var(--slate-800); }
+    .sidebar-logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--violet-500), var(--indigo-500)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .logo-text h1 { font-size: 14px; font-weight: 700; color: white; }
+    .logo-text p { font-size: 10px; color: var(--slate-500); text-transform: uppercase; letter-spacing: 1px; }
+    .nav { flex: 1; overflow-y: auto; padding: 12px; }
+    .nav-item { width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; border: 1px solid transparent; background: none; color: var(--slate-400); font-size: 14px; cursor: pointer; text-align: left; margin-bottom: 4px; transition: all 0.2s; }
+    .nav-item:hover { background: rgba(51,65,85,0.5); color: var(--slate-200); }
+    .nav-item.active { background: rgba(124,58,237,0.2); color: var(--violet-300); border-color: rgba(139,92,246,0.3); }
+    .nav-item .num { margin-left: auto; font-size: 10px; font-family: monospace; color: var(--slate-600); }
+    .nav-item.active .num { color: var(--violet-400); }
+    .sidebar-footer { padding: 16px; border-top: 1px solid var(--slate-800); }
+    .mindsets { display: flex; flex-wrap: wrap; gap: 6px; }
+    .mindset-tag { font-size: 10px; padding: 4px 8px; background: var(--slate-800); border: 1px solid var(--slate-700); border-radius: 99px; color: var(--slate-400); }
+    
+    /* Mobile menu */
+    .menu-btn { position: fixed; top: 16px; left: 16px; z-index: 50; background: var(--slate-800); border: 1px solid var(--slate-700); border-radius: 12px; padding: 10px; color: var(--slate-300); cursor: pointer; display: block; }
+    @media (min-width: 1024px) { .menu-btn { display: none; } }
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 30; display: none; }
+    .overlay.show { display: block; }
+    
+    /* Main content */
+    .main { flex: 1; min-height: 100vh; }
+    @media (min-width: 1024px) { .main { margin-left: 0; } }
+    .topbar { position: sticky; top: 0; z-index: 20; background: rgba(15,23,42,0.8); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(51,65,85,0.5); padding: 12px 24px; }
+    .topbar-content { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+    .topbar-mindset { font-size: 12px; }
+    .topbar-mindset span { color: var(--violet-400); font-weight: 500; }
+    .topbar-mindset em { color: var(--slate-500); font-style: italic; }
+    .topbar-status { font-size: 10px; color: var(--slate-600); display: flex; align-items: center; gap: 6px; }
+    .status-dot { width: 6px; height: 6px; background: var(--emerald-500); border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .content { padding: 24px; max-width: 1000px; margin: 0 auto; }
+    @media (min-width: 768px) { .content { padding: 48px; } }
+    
+    /* Cards */
+    .card { background: rgba(30,41,59,0.4); border: 1px solid rgba(51,65,85,0.5); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+    .card-header { margin-bottom: 16px; }
+    .card-title { font-size: 14px; font-weight: 600; color: white; display: flex; align-items: center; gap: 8px; }
+    .card-desc { font-size: 12px; color: var(--slate-500); margin-top: 4px; }
+    
+    /* Hero */
+    .hero { background: linear-gradient(135deg, rgba(91,33,182,0.3), var(--slate-900), rgba(67,56,202,0.3)); border: 1px solid rgba(139,92,246,0.2); border-radius: 24px; padding: 32px; margin-bottom: 32px; position: relative; overflow: hidden; }
+    .hero-blur { position: absolute; width: 300px; height: 300px; background: rgba(139,92,246,0.1); border-radius: 50%; filter: blur(60px); }
+    .hero-blur.top { top: -100px; right: -100px; }
+    .hero-blur.bottom { bottom: -100px; left: -100px; }
+    .hero-content { position: relative; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.3); border-radius: 99px; font-size: 11px; color: var(--violet-300); margin-bottom: 24px; }
+    .hero h1 { font-size: 28px; font-weight: 700; color: white; line-height: 1.3; margin-bottom: 16px; }
+    @media (min-width: 768px) { .hero h1 { font-size: 40px; } }
+    .hero h1 span { background: linear-gradient(90deg, var(--violet-400), var(--indigo-500)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero p { color: var(--slate-400); font-size: 16px; margin-bottom: 8px; }
+    .hero .sub { color: var(--slate-500); font-size: 13px; margin-bottom: 24px; }
+    .btn-group { display: flex; flex-wrap: wrap; gap: 12px; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 500; cursor: pointer; border: none; transition: all 0.2s; }
+    .btn-primary { background: var(--violet-600); color: white; }
+    .btn-primary:hover { background: var(--violet-500); }
+    .btn-secondary { background: var(--slate-800); color: var(--slate-300); border: 1px solid var(--slate-700); }
+    .btn-secondary:hover { background: var(--slate-700); }
+    
+    /* Stats */
+    .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px; }
+    @media (min-width: 768px) { .stats { grid-template-columns: repeat(4, 1fr); } }
+    .stat { padding: 16px; background: rgba(30,41,59,0.4); border: 1px solid rgba(51,65,85,0.5); border-radius: 16px; }
+    .stat-value { font-size: 28px; font-weight: 700; }
+    .stat-value.emerald { color: var(--emerald-400); }
+    .stat-value.sky { color: var(--sky-400); }
+    .stat-value.violet { color: var(--violet-400); }
+    .stat-value.amber { color: var(--amber-400); }
+    .stat-label { font-size: 11px; color: var(--slate-500); margin-top: 4px; }
+    
+    /* Quick actions */
+    .actions { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 32px; }
+    @media (min-width: 768px) { .actions { grid-template-columns: repeat(2, 1fr); } }
+    .action { display: flex; align-items: center; gap: 16px; padding: 20px; border-radius: 16px; border: 1px solid; cursor: pointer; text-align: left; background: transparent; transition: transform 0.2s; }
+    .action:hover { transform: scale(1.02); }
+    .action.emerald { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.2); color: var(--emerald-400); }
+    .action.sky { background: rgba(14,165,233,0.1); border-color: rgba(14,165,233,0.2); color: var(--sky-400); }
+    .action.violet { background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.2); color: var(--violet-400); }
+    .action.amber { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.2); color: var(--amber-400); }
+    .action-icon { width: 48px; height: 48px; background: rgba(30,41,59,0.8); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .action-text h3 { font-size: 14px; font-weight: 600; color: white; }
+    .action-text p { font-size: 12px; color: var(--slate-500); }
+    
+    /* Flow */
+    .flow { padding: 24px; background: rgba(30,41,59,0.4); border: 1px solid rgba(51,65,85,0.5); border-radius: 16px; margin-bottom: 32px; }
+    .flow-items { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; font-size: 11px; font-family: monospace; }
+    .flow-item { padding: 6px 12px; background: rgba(51,65,85,0.5); border: 1px solid rgba(71,85,105,0.5); border-radius: 8px; color: var(--slate-300); }
+    .flow-arrow { color: var(--violet-500); }
+    .flow-note { text-align: center; font-size: 12px; color: var(--slate-500); margin-top: 16px; }
+    
+    /* Module pages */
+    .module-title { font-size: 24px; font-weight: 700; color: white; display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .module-desc { font-size: 14px; color: var(--slate-400); margin-bottom: 24px; }
+    
+    /* Form elements */
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 12px; color: var(--slate-500); margin-bottom: 6px; }
+    .form-input, .form-textarea { width: 100%; background: rgba(15,23,42,0.6); border: 1px solid var(--slate-700); border-radius: 12px; padding: 12px; color: var(--slate-300); font-size: 14px; transition: border-color 0.2s, box-shadow 0.2s; }
+    .form-input:focus, .form-textarea:focus { outline: none; border-color: var(--violet-500); box-shadow: 0 0 0 3px rgba(139,92,246,0.15); }
+    .form-textarea { min-height: 80px; resize: vertical; font-family: inherit; }
+    
+    /* Sliders */
+    .slider-container { margin-bottom: 16px; }
+    .slider-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+    .slider-label { font-size: 12px; color: var(--slate-500); }
+    .slider-value { font-size: 14px; font-weight: 600; }
+    input[type="range"] { width: 100%; height: 6px; border-radius: 99px; appearance: none; cursor: pointer; }
+    input[type="range"]::-webkit-slider-thumb { appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--violet-500); border: 2px solid white; cursor: pointer; }
+    
+    /* Dashboard cards */
+    .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 24px; }
+    @media (min-width: 768px) { .dashboard-grid { grid-template-columns: repeat(2, 1fr); } }
+    .dashboard-card { padding: 20px; border-radius: 16px; border: 1px solid; }
+    .dashboard-card.health { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.2); }
+    .dashboard-card.work { background: rgba(14,165,233,0.1); border-color: rgba(14,165,233,0.2); }
+    .dashboard-card.play { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.2); }
+    .dashboard-card.love { background: rgba(244,63,94,0.1); border-color: rgba(244,63,94,0.2); }
+    .dashboard-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+    .dashboard-card-title { font-size: 14px; font-weight: 600; color: white; display: flex; align-items: center; gap: 8px; }
+    .dashboard-card-desc { font-size: 11px; color: var(--slate-500); margin-bottom: 12px; }
+    .slider-ends { display: flex; justify-content: space-between; margin-top: 4px; font-size: 10px; color: var(--slate-600); }
+    
+    /* Status */
+    .status-card { display: flex; align-items: center; justify-content: space-between; padding: 16px; background: rgba(30,41,59,0.4); border: 1px solid rgba(51,65,85,0.5); border-radius: 16px; margin-bottom: 24px; }
+    .status-info { display: flex; align-items: center; gap: 12px; }
+    .status-emoji { font-size: 24px; }
+    .status-label { font-weight: 600; }
+    .status-label.green { color: var(--emerald-400); }
+    .status-label.yellow { color: var(--amber-400); }
+    .status-label.red { color: var(--rose-400); }
+    .status-sub { font-size: 12px; color: var(--slate-500); }
+    
+    /* Prompt box */
+    .prompt-box { padding: 20px; background: rgba(91,33,182,0.15); border: 1px solid rgba(139,92,246,0.2); border-radius: 16px; margin-bottom: 24px; }
+    .prompt-label { font-size: 11px; color: var(--violet-400); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .prompt-text { font-size: 14px; color: white; font-weight: 500; margin-bottom: 12px; }
+    
+    /* Entries list */
+    .entries-list { margin-top: 24px; }
+    .entries-title { font-size: 14px; font-weight: 600; color: white; margin-bottom: 12px; }
+    .entry-item { display: flex; align-items: flex-start; gap: 12px; padding: 16px; background: rgba(30,41,59,0.3); border: 1px solid rgba(51,65,85,0.5); border-radius: 12px; margin-bottom: 8px; }
+    .entry-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+    .entry-badge.green { background: rgba(16,185,129,0.2); color: var(--emerald-400); }
+    .entry-badge.yellow { background: rgba(245,158,11,0.2); color: var(--amber-400); }
+    .entry-badge.red { background: rgba(244,63,94,0.2); color: var(--rose-400); }
+    .entry-content { flex: 1; }
+    .entry-text { font-size: 14px; color: var(--slate-300); }
+    .entry-meta { font-size: 11px; color: var(--slate-600); margin-top: 4px; }
+    .entry-delete { background: none; border: none; color: var(--slate-600); cursor: pointer; padding: 4px; opacity: 0; transition: opacity 0.2s; }
+    .entry-item:hover .entry-delete { opacity: 1; }
+    .entry-delete:hover { color: var(--rose-400); }
+    
+    /* Gravity */
+    .gravity-flow { text-align: center; padding: 32px; }
+    .gravity-question { font-size: 18px; font-weight: 600; color: white; margin-bottom: 24px; }
+    .gravity-buttons { display: flex; justify-content: center; gap: 16px; }
+    .gravity-btn { display: flex; align-items: center; gap: 8px; padding: 12px 32px; border-radius: 12px; font-size: 14px; font-weight: 500; cursor: pointer; border: 1px solid; }
+    .gravity-btn.yes { background: rgba(16,185,129,0.2); border-color: rgba(16,185,129,0.3); color: var(--emerald-400); }
+    .gravity-btn.no { background: rgba(244,63,94,0.2); border-color: rgba(244,63,94,0.3); color: var(--rose-400); }
+    .gravity-btn:hover { filter: brightness(1.1); }
+    .gravity-result { text-align: center; padding: 24px; }
+    .gravity-result-badge { display: inline-flex; align-items: center; gap: 12px; padding: 12px 24px; border-radius: 16px; font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+    .gravity-result-badge.actionable { background: rgba(16,185,129,0.2); border: 1px solid rgba(16,185,129,0.3); color: var(--emerald-400); }
+    .gravity-result-badge.gravity { background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.3); color: var(--amber-400); }
+    .gravity-reframe { padding: 16px; border-radius: 12px; margin-top: 16px; }
+    .gravity-reframe.actionable { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); }
+    .gravity-reframe.gravity { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); }
+    .gravity-reframe p { font-size: 14px; font-weight: 500; }
+    .gravity-reframe.actionable p { color: var(--emerald-300); }
+    .gravity-reframe.gravity p { color: var(--amber-300); }
+    .progress-bar { display: flex; gap: 8px; margin-bottom: 24px; }
+    .progress-step { flex: 1; height: 6px; border-radius: 99px; background: var(--slate-700); }
+    .progress-step.active { background: var(--violet-500); }
+    
+    /* Tags */
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .tag { font-size: 12px; padding: 6px 12px; border-radius: 99px; background: rgba(30,41,59,0.6); border: 1px solid var(--slate-700); color: var(--slate-400); }
+    
+    /* Compass */
+    .compass-section { padding: 24px; border-radius: 16px; margin-bottom: 24px; }
+    .compass-section.work { background: rgba(14,165,233,0.1); border: 1px solid rgba(14,165,233,0.2); }
+    .compass-section.life { background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.2); }
+    .compass-title { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+    .compass-section.work .compass-title { color: var(--sky-400); }
+    .compass-section.life .compass-title { color: var(--violet-400); }
+    .compass-subtitle { font-size: 12px; color: var(--slate-500); margin-bottom: 16px; }
+    .thesis-box { padding: 16px; background: rgba(15,23,42,0.4); border-radius: 12px; margin-top: 16px; }
+    .thesis-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .compass-section.work .thesis-label { color: var(--sky-400); }
+    .compass-section.life .thesis-label { color: var(--violet-400); }
+    
+    /* Alignment */
+    .alignment-card { padding: 24px; background: rgba(30,41,59,0.4); border: 1px solid rgba(51,65,85,0.5); border-radius: 16px; margin-bottom: 24px; }
+    .alignment-title { font-size: 18px; font-weight: 600; color: white; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .alignment-desc { font-size: 12px; color: var(--slate-500); margin-bottom: 16px; }
+    .alignment-value { font-size: 24px; font-weight: 700; text-align: right; margin-top: 8px; }
+    .alignment-bar { height: 8px; background: var(--slate-700); border-radius: 99px; overflow: hidden; margin-top: 12px; }
+    .alignment-fill { height: 100%; border-radius: 99px; transition: width 0.3s; }
+    
+    /* Odyssey */
+    .odyssey-plans { display: flex; flex-direction: column; gap: 16px; }
+    .odyssey-card { padding: 24px; border-radius: 16px; border: 1px solid; }
+    .odyssey-card.plan-a { background: rgba(14,165,233,0.1); border-color: rgba(14,165,233,0.2); }
+    .odyssey-card.plan-b { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.2); }
+    .odyssey-card.plan-c { background: rgba(217,70,239,0.1); border-color: rgba(217,70,239,0.2); }
+    .odyssey-card.empty { border-style: dashed; cursor: pointer; text-align: center; padding: 32px; }
+    .odyssey-card.empty:hover { border-color: rgba(139,92,246,0.5); }
+    .odyssey-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .odyssey-type { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+    .plan-a .odyssey-type { color: var(--sky-400); }
+    .plan-b .odyssey-type { color: var(--amber-400); }
+    .plan-c .odyssey-type { color: var(--fuchsia-400); }
+    .odyssey-title { font-size: 18px; font-weight: 700; color: white; margin-top: 4px; }
+    .odyssey-actions { display: flex; gap: 8px; }
+    .odyssey-btn { background: none; border: none; color: var(--slate-500); cursor: pointer; padding: 4px; }
+    .odyssey-btn:hover { color: white; }
+    .odyssey-timeline { display: flex; gap: 4px; margin-bottom: 12px; }
+    .timeline-year { flex: 1; }
+    .timeline-bar { height: 4px; border-radius: 99px; margin-bottom: 4px; }
+    .plan-a .timeline-bar { background: var(--sky-400); }
+    .plan-b .timeline-bar { background: var(--amber-400); }
+    .plan-c .timeline-bar { background: var(--fuchsia-400); }
+    .timeline-label { font-size: 9px; color: var(--slate-600); }
+    .timeline-text { font-size: 11px; color: var(--slate-400); margin-top: 2px; }
+    .odyssey-gauges { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .gauge { }
+    .gauge-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .gauge-label { font-size: 10px; color: var(--slate-600); }
+    .gauge-value { font-size: 10px; font-weight: 700; }
+    .plan-a .gauge-value { color: var(--sky-400); }
+    .plan-b .gauge-value { color: var(--amber-400); }
+    .plan-c .gauge-value { color: var(--fuchsia-400); }
+    .gauge-bar { height: 6px; background: var(--slate-700); border-radius: 99px; overflow: hidden; }
+    .gauge-fill { height: 100%; border-radius: 99px; }
+    .plan-a .gauge-fill { background: var(--sky-400); }
+    .plan-b .gauge-fill { background: var(--amber-400); }
+    .plan-c .gauge-fill { background: var(--fuchsia-400); }
+    
+    /* Form modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; display: none; align-items: center; justify-content: center; padding: 16px; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: var(--slate-900); border: 1px solid var(--slate-700); border-radius: 16px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
+    .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--slate-800); display: flex; justify-content: space-between; align-items: center; }
+    .modal-title { font-size: 16px; font-weight: 600; color: white; }
+    .modal-close { background: none; border: none; color: var(--slate-500); cursor: pointer; font-size: 20px; }
+    .modal-body { padding: 24px; }
+    .modal-footer { padding: 16px 24px; border-top: 1px solid var(--slate-800); display: flex; gap: 12px; justify-content: flex-end; }
+    
+    /* Prototypes */
+    .proto-board { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 768px) { .proto-board { grid-template-columns: repeat(3, 1fr); } }
+    .proto-column { }
+    .proto-column-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .proto-column-title { font-size: 12px; font-weight: 600; color: var(--slate-400); text-transform: uppercase; letter-spacing: 1px; }
+    .proto-column-count { font-size: 10px; padding: 2px 8px; background: var(--slate-800); border-radius: 99px; color: var(--slate-600); }
+    .proto-item { padding: 12px; background: rgba(30,41,59,0.4); border: 1px solid rgba(51,65,85,0.5); border-radius: 12px; margin-bottom: 8px; }
+    .proto-item-header { display: flex; align-items: flex-start; gap: 8px; }
+    .proto-item-icon { font-size: 14px; }
+    .proto-item-text { flex: 1; font-size: 12px; color: white; font-weight: 500; }
+    .proto-item-meta { font-size: 10px; color: var(--slate-500); margin-top: 4px; }
+    
+    /* Categories */
+    .category-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }
+    @media (min-width: 768px) { .category-grid { grid-template-columns: repeat(4, 1fr); } }
+    .category-btn { padding: 12px; background: rgba(15,23,42,0.4); border: 1px solid var(--slate-700); border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.2s; }
+    .category-btn:hover { border-color: var(--slate-600); }
+    .category-btn.active { background: rgba(124,58,237,0.2); border-color: rgba(139,92,246,0.3); }
+    .category-icon { font-size: 16px; margin-bottom: 4px; }
+    .category-label { font-size: 12px; color: white; font-weight: 500; }
+    .category-desc { font-size: 10px; color: var(--slate-500); }
+    
+    /* Status select */
+    .status-select { display: flex; gap: 8px; }
+    .status-option { flex: 1; padding: 8px; text-align: center; border-radius: 8px; font-size: 12px; cursor: pointer; border: 1px solid var(--slate-700); background: var(--slate-800); color: var(--slate-500); text-transform: capitalize; }
+    .status-option.active.planned { background: rgba(100,116,139,0.2); border-color: rgba(100,116,139,0.3); color: var(--slate-400); }
+    .status-option.active.in-progress { background: rgba(245,158,11,0.2); border-color: rgba(245,158,11,0.3); color: var(--amber-400); }
+    .status-option.active.completed { background: rgba(16,185,129,0.2); border-color: rgba(16,185,129,0.3); color: var(--emerald-400); }
+    
+    /* Interview & Team */
+    .team-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+    @media (min-width: 768px) { .team-grid { grid-template-columns: repeat(2, 1fr); } }
+    .team-member { display: flex; align-items: flex-start; gap: 12px; padding: 16px; border-radius: 12px; border: 1px solid; }
+    .team-member.friend { background: rgba(14,165,233,0.1); border-color: rgba(14,165,233,0.2); }
+    .team-member.coach { background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.2); }
+    .team-member.peer { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.2); }
+    .team-member.collaborator { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.2); }
+    .team-member.expert { background: rgba(217,70,239,0.1); border-color: rgba(217,70,239,0.2); }
+    .team-avatar { width: 40px; height: 40px; background: rgba(30,41,59,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .team-info { flex: 1; }
+    .team-name { font-size: 14px; font-weight: 600; color: white; }
+    .team-notes { font-size: 12px; color: var(--slate-400); margin-top: 2px; }
+    .team-date { font-size: 10px; color: var(--slate-600); margin-top: 4px; }
+    
+    /* Decision */
+    .decision-card { padding: 20px; background: rgba(30,41,59,0.3); border: 1px solid rgba(51,65,85,0.5); border-radius: 16px; margin-bottom: 12px; }
+    .decision-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .decision-title { font-size: 14px; font-weight: 600; color: white; }
+    .decision-date { font-size: 10px; color: var(--slate-600); }
+    .decision-status { display: flex; align-items: center; gap: 6px; font-size: 10px; padding: 4px 8px; border-radius: 99px; }
+    .decision-status.locked { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); color: var(--emerald-400); }
+    .decision-status.open { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); color: var(--amber-400); }
+    .decision-options { margin-bottom: 12px; }
+    .decision-option { display: flex; align-items: center; gap: 8px; padding: 10px; border-radius: 8px; margin-bottom: 6px; cursor: pointer; border: 1px solid var(--slate-700); background: rgba(15,23,42,0.3); transition: all 0.2s; }
+    .decision-option:hover:not(.chosen):not(.disabled) { border-color: rgba(139,92,246,0.3); }
+    .decision-option.chosen { background: rgba(124,58,237,0.2); border-color: rgba(139,92,246,0.3); }
+    .decision-option.disabled { opacity: 0.5; text-decoration: line-through; cursor: default; }
+    .decision-radio { width: 16px; height: 16px; border: 2px solid var(--slate-600); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .decision-option.chosen .decision-radio { border-color: var(--violet-400); background: var(--violet-500); }
+    .decision-radio-inner { width: 6px; height: 6px; background: white; border-radius: 50%; display: none; }
+    .decision-option.chosen .decision-radio-inner { display: block; }
+    .decision-option-text { font-size: 14px; color: var(--slate-300); }
+    .decision-option.chosen .decision-option-text { color: var(--violet-300); }
+    
+    /* Failure */
+    .failure-principle { padding: 24px; background: linear-gradient(135deg, rgba(234,88,12,0.2), rgba(245,158,11,0.1)); border: 1px solid rgba(234,88,12,0.2); border-radius: 16px; text-align: center; margin-bottom: 24px; }
+    .failure-emoji { font-size: 32px; margin-bottom: 8px; }
+    .failure-title { font-size: 18px; font-weight: 600; color: white; }
+    .failure-subtitle { font-size: 14px; color: var(--orange-500); margin-top: 4px; }
+    .failure-note { font-size: 12px; color: var(--slate-500); margin-top: 8px; }
+    
+    /* Belief */
+    .belief-example { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; margin-bottom: 8px; }
+    .belief-old { color: var(--rose-400); text-decoration: line-through; white-space: nowrap; }
+    .belief-arrow { color: var(--slate-600); margin-top: 2px; }
+    .belief-new { color: var(--emerald-300); }
+    .reframe-box { padding: 16px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.15); border-radius: 12px; }
+    .reframe-label { font-size: 11px; color: var(--emerald-400); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    
+    /* Empty state */
+    .empty-state { text-align: center; padding: 48px 24px; background: rgba(30,41,59,0.2); border: 1px dashed rgba(51,65,85,0.5); border-radius: 16px; }
+    .empty-icon { font-size: 32px; color: var(--slate-600); margin-bottom: 12px; }
+    .empty-text { font-size: 14px; color: var(--slate-500); }
+    .empty-sub { font-size: 12px; color: var(--slate-600); margin-top: 4px; }
+    
+    /* Add button */
+    .add-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border-radius: 12px; background: rgba(124,58,237,0.2); border: 1px solid rgba(139,92,246,0.3); color: var(--violet-300); font-size: 14px; font-weight: 500; cursor: pointer; margin-bottom: 24px; transition: background 0.2s; }
+    .add-btn:hover { background: rgba(124,58,237,0.3); }
+    
+    /* Journal energy */
+    .energy-display { text-align: center; margin: 8px 0; }
+    .energy-value { font-size: 14px; font-weight: 700; }
+    .energy-value.positive { color: var(--emerald-400); }
+    .energy-value.negative { color: var(--rose-400); }
+    .energy-value.neutral { color: var(--slate-400); }
+    .energy-icons { display: flex; align-items: center; gap: 8px; }
+    .energy-icon { font-size: 18px; }
+    .engagement-btns { display: flex; gap: 8px; }
+    .engagement-btn { flex: 1; padding: 8px; text-align: center; border-radius: 8px; font-size: 14px; cursor: pointer; border: 1px solid var(--slate-700); background: var(--slate-800); color: var(--slate-500); font-weight: 500; }
+    .engagement-btn.active { background: var(--violet-600); border-color: var(--violet-500); color: white; }
+    .engagement-labels { display: flex; justify-content: space-between; margin-top: 4px; }
+    .engagement-labels span { font-size: 10px; color: var(--slate-600); }
+    
+    /* Role select */
+    .role-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 16px; }
+    .role-btn { padding: 12px 8px; background: rgba(15,23,42,0.4); border: 1px solid var(--slate-700); border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.2s; }
+    .role-btn:hover { border-color: var(--slate-600); }
+    .role-btn.active { background: rgba(124,58,237,0.2); border-color: rgba(139,92,246,0.3); }
+    .role-emoji { font-size: 20px; }
+    .role-label { font-size: 11px; color: white; margin-top: 4px; }
+    
+    /* Transition box */
+    .transition-box { padding: 24px; background: linear-gradient(90deg, rgba(180,83,9,0.2), rgba(234,88,12,0.2)); border: 1px solid rgba(245,158,11,0.2); border-radius: 16px; margin-bottom: 32px; }
+    .transition-title { font-size: 14px; font-weight: 600; color: var(--amber-300); margin-bottom: 12px; }
+    .transition-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .transition-label { font-size: 11px; color: var(--slate-500); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .transition-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .transition-tag { font-size: 11px; padding: 4px 10px; border-radius: 99px; }
+    .transition-tag.old { background: rgba(30,41,59,0.6); border: 1px solid var(--slate-700); color: var(--slate-400); text-decoration: line-through; }
+    .transition-tag.new { background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.3); color: var(--violet-300); }
+    .transition-quote { margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(245,158,11,0.1); }
+    .transition-quote p { font-size: 14px; color: var(--slate-400); font-style: italic; }
+    .transition-quote span { color: white; font-weight: 500; font-style: normal; }
+    
+    /* Hidden */
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Mobile menu button -->
+    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+    
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="logo-icon">✨</div>
+          <div class="logo-text">
+            <h1>Design Your Life</h1>
+            <p>Transition OS</p>
+          </div>
         </div>
-      </a>
-      <div class="banner-action-container banner-padding">
-        <button
-          class="action-btn report-content-btn"
-          style="display: none"
-          onclick="reportContent(event)"
-          aria-label="Report content"
-        >
-          <svg class="report-icon" width="20" height="20"><use href="#icon-flag" /></svg>
-        </button>
-        <button class="action-btn" onclick="dismissBanner(event)" aria-label="Close banner">
-          <svg width="20" height="20"><use href="#icon-close" /></svg>
-        </button>
       </div>
+      <nav class="nav" id="nav"></nav>
+      <div class="sidebar-footer">
+        <p style="font-size:10px;color:var(--slate-600);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Core Mindsets</p>
+        <div class="mindsets">
+          <span class="mindset-tag">Curiosity</span>
+          <span class="mindset-tag">Action</span>
+          <span class="mindset-tag">Reframe</span>
+          <span class="mindset-tag">Awareness</span>
+          <span class="mindset-tag">Collaborate</span>
+        </div>
+      </div>
+    </aside>
+    
+    <!-- Main -->
+    <main class="main">
+      <div class="topbar">
+        <div class="topbar-content">
+          <div class="topbar-mindset">
+            <span id="mindset-label">Curiosity:</span>
+            <em id="mindset-question">What else could be true?</em>
+          </div>
+          <div class="topbar-status">
+            <span class="status-dot"></span>
+            Data saved locally
+          </div>
+        </div>
+      </div>
+      <div class="content" id="content"></div>
+    </main>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-title">Modal</div>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer" id="modal-footer"></div>
     </div>
+  </div>
 
-    <div class="iframe-container">
-      <iframe
-        id="preview-iframe"
-        src="https://019eb917-6c87-76ce-889c-06ef64e2b04c.arena.site/?embed=true"
-        sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-presentation allow-popups allow-popups-to-escape-sandbox allow-downloads allow-top-navigation-by-user-activation"
-        allow="
-          accelerometer;
-          autoplay;
-          camera;
-          encrypted-media;
-          fullscreen;
-          geolocation;
-          gyroscope;
-          microphone;
-          midi;
-          clipboard-read;
-          clipboard-write;
-          usb;
-          vr;
-          xr-spatial-tracking;
-          screen-wake-lock;
-          magnetometer;
-          ambient-light-sensor;
-          battery;
-          gamepad;
-          picture-in-picture;
-          display-capture;
-          bluetooth;
-        "
-        referrerpolicy="origin-when-cross-origin"
-      ></iframe>
-    </div>
+  <script>
+    // State
+    const STORAGE_KEY = 'dyl-data';
+    let state = loadState();
+    let currentModule = 0;
 
-    <script>
-      const iframe = document.getElementById("preview-iframe");
-      iframe.addEventListener("load", () => iframe.focus());
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) return JSON.parse(raw);
+      } catch(e) {}
+      return {
+        dashboardHistory: [],
+        gravityEntries: [],
+        compass: { workView: '', workThesis: '', lifeView: '', lifeThesis: '', alignmentScore: 50 },
+        journalEntries: [],
+        beliefEntries: [],
+        odysseyPlans: [],
+        prototypes: [],
+        interviews: [],
+        decisions: [],
+        failures: [],
+        team: []
+      };
+    }
 
-      document.addEventListener("DOMContentLoaded", () => {
-        if (!hasStorageKey("code_reported") || !hasStorageKey("survey_completed")) {
-          document.querySelector(".report-content-btn").style.display = "block";
-        }
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function generateId() {
+      return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+    }
+
+    // Navigation
+    const modules = [
+      { icon: '✨', label: 'Home' },
+      { icon: '📊', label: 'Life Dashboard' },
+      { icon: '⛰️', label: 'Gravity Detector' },
+      { icon: '🧭', label: 'Build the Compass' },
+      { icon: '📓', label: 'Good Time Journal' },
+      { icon: '🔄', label: 'Belief Reframer' },
+      { icon: '🗺️', label: 'Odyssey Planner' },
+      { icon: '🧪', label: 'Prototype Lab' },
+      { icon: '💬', label: 'Design Interviews' },
+      { icon: '⚖️', label: 'Decision Engine' },
+      { icon: '🛡️', label: 'Failure Immunity' },
+      { icon: '👥', label: 'Design Team' }
+    ];
+
+    const mindsets = [
+      { label: 'Curiosity', question: 'What else could be true?' },
+      { label: 'Bias to Action', question: 'What small experiment can I run?' },
+      { label: 'Reframing', question: "What's a different question?" },
+      { label: 'Awareness', question: 'What patterns am I noticing?' },
+      { label: 'Radical Collaboration', question: 'Who can I co-create with?' }
+    ];
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('overlay').classList.toggle('show');
+    }
+
+    function renderNav() {
+      const nav = document.getElementById('nav');
+      nav.innerHTML = modules.map((m, i) => `
+        <button class="nav-item ${currentModule === i ? 'active' : ''}" onclick="navigate(${i})">
+          <span>${m.icon}</span>
+          <span>${m.label}</span>
+          ${i > 0 ? `<span class="num">${String(i).padStart(2, '0')}</span>` : ''}
+        </button>
+      `).join('');
+    }
+
+    function navigate(idx) {
+      currentModule = idx;
+      renderNav();
+      renderContent();
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('overlay').classList.remove('show');
+      window.scrollTo(0, 0);
+    }
+
+    function setRandomMindset() {
+      const m = mindsets[Math.floor(Math.random() * mindsets.length)];
+      document.getElementById('mindset-label').textContent = m.label + ':';
+      document.getElementById('mindset-question').textContent = m.question;
+    }
+
+    // Modal
+    function openModal(title, bodyHtml, footerHtml) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-body').innerHTML = bodyHtml;
+      document.getElementById('modal-footer').innerHTML = footerHtml;
+      document.getElementById('modal').classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('show');
+    }
+
+    // Render content
+    function renderContent() {
+      const content = document.getElementById('content');
+      switch(currentModule) {
+        case 0: content.innerHTML = renderHome(); break;
+        case 1: content.innerHTML = renderDashboard(); break;
+        case 2: content.innerHTML = renderGravity(); break;
+        case 3: content.innerHTML = renderCompass(); break;
+        case 4: content.innerHTML = renderJournal(); break;
+        case 5: content.innerHTML = renderBeliefs(); break;
+        case 6: content.innerHTML = renderOdyssey(); break;
+        case 7: content.innerHTML = renderPrototypes(); break;
+        case 8: content.innerHTML = renderInterviews(); break;
+        case 9: content.innerHTML = renderDecisions(); break;
+        case 10: content.innerHTML = renderFailures(); break;
+        case 11: content.innerHTML = renderTeam(); break;
+        default: content.innerHTML = renderHome();
+      }
+    }
+
+    // HOME
+    function renderHome() {
+      return `
+        <div class="hero">
+          <div class="hero-blur top"></div>
+          <div class="hero-blur bottom"></div>
+          <div class="hero-content">
+            <div class="hero-badge">✨ Your Transition Operating System</div>
+            <h1>Stop thinking your way<br><span>into clarity.</span></h1>
+            <p>Build your way into clarity.</p>
+            <p class="sub">From proptech & fintech copy → Copy strategist for coaches, consultants, and course creators serving midlifers. This is your daily operating system for making that transition real.</p>
+            <div class="btn-group">
+              <button class="btn btn-primary" onclick="navigate(1)">Start Today's Check-In →</button>
+              <button class="btn btn-secondary" onclick="navigate(6)">View Odyssey Plans</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card" style="text-align:center;">
+          <p style="color:var(--slate-400);font-style:italic;font-size:14px;">
+            "People don't design lives. They inherit scripts. Then wake up halfway through and wonder:
+          </p>
+          <p style="color:white;font-weight:600;font-size:18px;margin-top:8px;">Whose life am I living?"</p>
+        </div>
+        
+        <div class="stats">
+          <div class="stat"><div class="stat-value emerald">${state.dashboardHistory.length}</div><div class="stat-label">Dashboard Entries</div></div>
+          <div class="stat"><div class="stat-value sky">${state.journalEntries.length}</div><div class="stat-label">Journal Entries</div></div>
+          <div class="stat"><div class="stat-value violet">${state.prototypes.length}</div><div class="stat-label">Prototypes</div></div>
+          <div class="stat"><div class="stat-value amber">${state.beliefEntries.length}</div><div class="stat-label">Beliefs Reframed</div></div>
+        </div>
+        
+        <h2 style="font-size:18px;font-weight:600;color:white;margin-bottom:16px;">Quick Actions</h2>
+        <div class="actions">
+          <button class="action emerald" onclick="navigate(1)">
+            <div class="action-icon">🎯</div>
+            <div class="action-text"><h3>Check In</h3><p>Rate your life areas</p></div>
+            <span style="margin-left:auto;color:var(--slate-600);">→</span>
+          </button>
+          <button class="action sky" onclick="navigate(3)">
+            <div class="action-icon">🧭</div>
+            <div class="action-text"><h3>Find Direction</h3><p>Build your compass</p></div>
+            <span style="margin-left:auto;color:var(--slate-600);">→</span>
+          </button>
+          <button class="action violet" onclick="navigate(6)">
+            <div class="action-icon">🗺️</div>
+            <div class="action-text"><h3>Plan Futures</h3><p>Create odyssey plans</p></div>
+            <span style="margin-left:auto;color:var(--slate-600);">→</span>
+          </button>
+          <button class="action amber" onclick="navigate(7)">
+            <div class="action-icon">🧪</div>
+            <div class="action-text"><h3>Test Ideas</h3><p>Launch a prototype</p></div>
+            <span style="margin-left:auto;color:var(--slate-600);">→</span>
+          </button>
+        </div>
+        
+        <h2 style="font-size:18px;font-weight:600;color:white;margin-bottom:16px;">The Design Loop</h2>
+        <div class="flow">
+          <div class="flow-items">
+            <span class="flow-item">Dashboard</span><span class="flow-arrow">→</span>
+            <span class="flow-item">Compass</span><span class="flow-arrow">→</span>
+            <span class="flow-item">Wayfinding</span><span class="flow-arrow">→</span>
+            <span class="flow-item">Reframing</span><span class="flow-arrow">→</span>
+            <span class="flow-item">Odyssey Plans</span><span class="flow-arrow">→</span>
+            <span class="flow-item">Prototypes</span><span class="flow-arrow">→</span>
+            <span class="flow-item">Decisions</span><span class="flow-arrow">→</span>
+            <span class="flow-item">Next Iteration</span>
+          </div>
+          <p class="flow-note">Life isn't solved. Life loops.</p>
+        </div>
+        
+        <div class="transition-box">
+          <div class="transition-title">Your Messaging Shift</div>
+          <div class="transition-grid">
+            <div>
+              <div class="transition-label">Moving from</div>
+              <div class="transition-tags">
+                <span class="transition-tag old">Performance</span>
+                <span class="transition-tag old">Proof</span>
+                <span class="transition-tag old">Efficiency</span>
+              </div>
+            </div>
+            <div>
+              <div class="transition-label">Moving to</div>
+              <div class="transition-tags">
+                <span class="transition-tag new">Identity</span>
+                <span class="transition-tag new">Reinvention</span>
+                <span class="transition-tag new">Possibility</span>
+                <span class="transition-tag new">Meaning</span>
+                <span class="transition-tag new">Experimentation</span>
+              </div>
+            </div>
+          </div>
+          <div class="transition-quote">
+            <p>Not "Scale your business" — but <span>"Build the version of your work that still feels alive five years from now."</span></p>
+          </div>
+        </div>
+      `;
+    }
+
+    // DASHBOARD
+    let dashboardValues = { health: 50, work: 50, play: 50, love: 50 };
+    let dashboardNotes = '';
+    const prompts = [
+      "What's draining you the most right now?",
+      "What gave you unexpected energy this week?",
+      "Where are you lying to yourself?",
+      "What would you do differently if no one was watching?",
+      "What's one small experiment you could run this week?"
+    ];
+
+    function getStatus(val) {
+      if (val >= 70) return { emoji: '🟢', label: 'Alive', cls: 'green' };
+      if (val >= 40) return { emoji: '🟡', label: 'Stable', cls: 'yellow' };
+      return { emoji: '🔴', label: 'Running Empty', cls: 'red' };
+    }
+
+    function renderDashboard() {
+      const avg = Math.round((dashboardValues.health + dashboardValues.work + dashboardValues.play + dashboardValues.love) / 4);
+      const overall = getStatus(avg);
+      const prompt = prompts[Math.floor(Math.random() * prompts.length)];
+      
+      return `
+        <h2 class="module-title">📊 Life Dashboard</h2>
+        <p class="module-desc">Start where you are. Diagnose reality. Problem finding matters more than problem solving.</p>
+        
+        <div class="status-card">
+          <div class="status-info">
+            <span class="status-emoji">${overall.emoji}</span>
+            <div>
+              <div class="status-label ${overall.cls}">${overall.label}</div>
+              <div class="status-sub">Overall: ${avg}/100</div>
+            </div>
+          </div>
+          <div style="text-align:right;font-size:12px;color:var(--slate-500);">${state.dashboardHistory.length} check-ins total</div>
+        </div>
+        
+        <div class="dashboard-grid">
+          <div class="dashboard-card health">
+            <div class="dashboard-card-header">
+              <div class="dashboard-card-title">❤️ Health</div>
+              <span>${getStatus(dashboardValues.health).emoji}</span>
+            </div>
+            <div class="dashboard-card-desc">Energy · Sleep · Body · Stress</div>
+            <input type="range" min="0" max="100" value="${dashboardValues.health}" 
+              style="background:linear-gradient(to right, var(--emerald-500) ${dashboardValues.health}%, var(--slate-700) ${dashboardValues.health}%)"
+              oninput="updateDashboard('health', this.value)">
+            <div class="slider-ends"><span>Empty</span><span style="color:var(--emerald-400);font-weight:600;">${dashboardValues.health}</span><span>Full</span></div>
+          </div>
+          <div class="dashboard-card work">
+            <div class="dashboard-card-header">
+              <div class="dashboard-card-title">💼 Work</div>
+              <span>${getStatus(dashboardValues.work).emoji}</span>
+            </div>
+            <div class="dashboard-card-desc">Meaning · Excitement · Contribution</div>
+            <input type="range" min="0" max="100" value="${dashboardValues.work}"
+              style="background:linear-gradient(to right, var(--sky-500) ${dashboardValues.work}%, var(--slate-700) ${dashboardValues.work}%)"
+              oninput="updateDashboard('work', this.value)">
+            <div class="slider-ends"><span>Empty</span><span style="color:var(--sky-400);font-weight:600;">${dashboardValues.work}</span><span>Full</span></div>
+          </div>
+          <div class="dashboard-card play">
+            <div class="dashboard-card-header">
+              <div class="dashboard-card-title">🎨 Play</div>
+              <span>${getStatus(dashboardValues.play).emoji}</span>
+            </div>
+            <div class="dashboard-card-desc">Curiosity · Joy · Exploration</div>
+            <input type="range" min="0" max="100" value="${dashboardValues.play}"
+              style="background:linear-gradient(to right, var(--amber-500) ${dashboardValues.play}%, var(--slate-700) ${dashboardValues.play}%)"
+              oninput="updateDashboard('play', this.value)">
+            <div class="slider-ends"><span>Empty</span><span style="color:var(--amber-400);font-weight:600;">${dashboardValues.play}</span><span>Full</span></div>
+          </div>
+          <div class="dashboard-card love">
+            <div class="dashboard-card-header">
+              <div class="dashboard-card-title">💕 Love</div>
+              <span>${getStatus(dashboardValues.love).emoji}</span>
+            </div>
+            <div class="dashboard-card-desc">Relationships · Connection</div>
+            <input type="range" min="0" max="100" value="${dashboardValues.love}"
+              style="background:linear-gradient(to right, var(--rose-500) ${dashboardValues.love}%, var(--slate-700) ${dashboardValues.love}%)"
+              oninput="updateDashboard('love', this.value)">
+            <div class="slider-ends"><span>Empty</span><span style="color:var(--rose-400);font-weight:600;">${dashboardValues.love}</span><span>Full</span></div>
+          </div>
+        </div>
+        
+        <div class="prompt-box">
+          <div class="prompt-label">Reflection Prompt</div>
+          <div class="prompt-text">${prompt}</div>
+          <textarea class="form-textarea" placeholder="Write your reflections..." onchange="dashboardNotes = this.value">${dashboardNotes}</textarea>
+        </div>
+        
+        <button class="btn btn-primary" style="width:100%;" onclick="saveDashboard()">+ Save Check-In</button>
+        
+        ${state.dashboardHistory.length > 0 ? `
+          <div class="entries-list">
+            <div class="entries-title">Recent Check-Ins</div>
+            ${state.dashboardHistory.slice().reverse().slice(0, 5).map(e => {
+              const a = Math.round((e.health + e.work + e.play + e.love) / 4);
+              const s = getStatus(a);
+              return `
+                <div class="entry-item">
+                  <span class="entry-badge ${s.cls}">${s.emoji} ${a}</span>
+                  <div class="entry-content">
+                    <div class="entry-text">H:${e.health} W:${e.work} P:${e.play} L:${e.love}</div>
+                    <div class="entry-meta">${new Date(e.timestamp).toLocaleDateString()}</div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        ` : ''}
+      `;
+    }
+
+    function updateDashboard(key, val) {
+      dashboardValues[key] = parseInt(val);
+      renderContent();
+    }
+
+    function saveDashboard() {
+      state.dashboardHistory.push({
+        ...dashboardValues,
+        notes: dashboardNotes,
+        timestamp: new Date().toISOString()
       });
+      saveState();
+      dashboardNotes = '';
+      alert('Check-in saved!');
+      renderContent();
+    }
 
-      function onCodePreviewBannerCTAClicked(event) {
-        posthog?.capture?.("code_preview_banner_cta_clicked");
+    // GRAVITY
+    let gravityState = { problem: '', step: 0, answers: [] };
+    const gravityReframes = {
+      gravity: [
+        "This is a condition, not a problem. Accept it and redirect your energy.",
+        "Fighting gravity wastes the energy you need for things you can actually change.",
+        "Name it. Accept it. Then design around it."
+      ],
+      actionable: [
+        "This is real. Break it into the smallest possible first step.",
+        "You have agency here. What's the 30-day experiment?",
+        "Good. Actionable problems are fuel. Now move."
+      ]
+    };
+
+    function renderGravity() {
+      const questions = ['Can you directly influence this?', 'Within 30 days?', 'Through specific behavior or action?'];
+      
+      if (gravityState.step === 0) {
+        return `
+          <h2 class="module-title">⛰️ Gravity Detector</h2>
+          <p class="module-desc">If it isn't actionable, it isn't a problem. It's a condition. Stop fighting reality.</p>
+          
+          <div class="card">
+            <div class="form-group">
+              <label class="form-label">What's the problem you're wrestling with?</label>
+              <textarea class="form-textarea" placeholder="My problem is..." onchange="gravityState.problem = this.value">${gravityState.problem}</textarea>
+            </div>
+            <button class="btn btn-primary" onclick="startGravity()" ${!gravityState.problem ? 'disabled' : ''}>Analyze →</button>
+          </div>
+          
+          <div class="card" style="background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.15);">
+            <div style="font-size:12px;color:var(--amber-400);margin-bottom:8px;">⚠️ Common Gravity Problems</div>
+            <div class="tags">
+              <span class="tag">"I started too late."</span>
+              <span class="tag">"My industry doesn't respect writers."</span>
+              <span class="tag">"People my age don't switch careers."</span>
+            </div>
+          </div>
+          
+          ${renderGravityHistory()}
+        `;
+      } else if (gravityState.step <= 3) {
+        return `
+          <h2 class="module-title">⛰️ Gravity Detector</h2>
+          <p class="module-desc">If it isn't actionable, it isn't a problem. It's a condition.</p>
+          
+          <div class="card">
+            <div style="padding:12px;background:rgba(15,23,42,0.6);border-radius:12px;margin-bottom:16px;">
+              <div style="font-size:11px;color:var(--slate-500);">Your problem:</div>
+              <div style="font-size:14px;color:white;">${gravityState.problem}</div>
+            </div>
+            
+            <div class="progress-bar">
+              ${[1,2,3].map(i => `<div class="progress-step ${i <= gravityState.step ? 'active' : ''}"></div>`).join('')}
+            </div>
+            
+            <div class="gravity-flow">
+              <div class="gravity-question">${questions[gravityState.step - 1]}</div>
+              <div class="gravity-buttons">
+                <button class="gravity-btn yes" onclick="answerGravity(true)">✓ Yes</button>
+                <button class="gravity-btn no" onclick="answerGravity(false)">✗ No</button>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        const isActionable = gravityState.answers.every(a => a);
+        const reframes = isActionable ? gravityReframes.actionable : gravityReframes.gravity;
+        const reframe = reframes[Math.floor(Math.random() * reframes.length)];
+        
+        return `
+          <h2 class="module-title">⛰️ Gravity Detector</h2>
+          <p class="module-desc">If it isn't actionable, it isn't a problem. It's a condition.</p>
+          
+          <div class="card">
+            <div class="gravity-result">
+              <div class="gravity-result-badge ${isActionable ? 'actionable' : 'gravity'}">
+                ${isActionable ? '✓ ACTIONABLE' : '⚡ GRAVITY'}
+              </div>
+              
+              <div style="padding:12px;background:rgba(15,23,42,0.6);border-radius:12px;margin:16px 0;">
+                <div style="font-size:11px;color:var(--slate-500);">Your problem:</div>
+                <div style="font-size:14px;color:white;">${gravityState.problem}</div>
+              </div>
+              
+              <div class="gravity-reframe ${isActionable ? 'actionable' : 'gravity'}">
+                <p>${reframe}</p>
+              </div>
+              
+              <button class="btn btn-secondary" style="margin-top:24px;" onclick="resetGravity()">Test Another Problem</button>
+            </div>
+          </div>
+          
+          ${renderGravityHistory()}
+        `;
       }
+    }
 
-      function reportContent(event) {
-        event.preventDefault();
-        event.stopPropagation();
-        if (!posthog || !posthog.capture || !posthog.setPersonProperties || !posthog.displaySurvey) return;
-
-        if (!hasStorageKey("survey_completed")) {
-          posthog.setPersonProperties?.({
-            last_reported_message_id: MESSAGE_ID,
-            last_report_timestamp: Date.now(),
-          });
-          posthog.displaySurvey?.(REPORT_SURVEY_ID, {
-            ignoreConditions: true,
-            ignoreDelay: true,
-          });
-        }
+    function startGravity() {
+      if (gravityState.problem.trim()) {
+        gravityState.step = 1;
+        gravityState.answers = [];
+        renderContent();
       }
+    }
 
-      function dismissBanner(event) {
-        event.preventDefault();
-        event.stopPropagation();
-        posthog?.capture?.("code_preview_banner_dismiss");
-
-        const banner = document.getElementById("floating-banner");
-        banner.classList.add("dismissed");
-        setTimeout(() => banner.remove(), 300);
+    function answerGravity(yes) {
+      gravityState.answers.push(yes);
+      if (!yes || gravityState.step === 3) {
+        // Save entry
+        state.gravityEntries.push({
+          id: generateId(),
+          problem: gravityState.problem,
+          result: gravityState.answers.every(a => a) ? 'actionable' : 'gravity',
+          timestamp: new Date().toISOString()
+        });
+        saveState();
+        gravityState.step = 4;
+      } else {
+        gravityState.step++;
       }
-    </script>
-  <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"cfb6543e268d4ceb92c8170675caa481","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+      renderContent();
+    }
+
+    function resetGravity() {
+      gravityState = { problem: '', step: 0, answers: [] };
+      renderContent();
+    }
+
+    function renderGravityHistory() {
+      if (state.gravityEntries.length === 0) return '';
+      return `
+        <div class="entries-list">
+          <div class="entries-title">History</div>
+          ${state.gravityEntries.slice().reverse().map(e => `
+            <div class="entry-item">
+              <span class="entry-badge ${e.result === 'actionable' ? 'green' : 'yellow'}">${e.result === 'actionable' ? '✓ ACT' : '⚡ GRV'}</span>
+              <div class="entry-content">
+                <div class="entry-text">${e.problem}</div>
+                <div class="entry-meta">${new Date(e.timestamp).toLocaleDateString()}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // COMPASS
+    function renderCompass() {
+      const c = state.compass;
+      const alignColor = c.alignmentScore >= 70 ? 'var(--emerald-400)' : c.alignmentScore >= 40 ? 'var(--amber-400)' : 'var(--rose-400)';
+      
+      return `
+        <h2 class="module-title">🧭 Build the Compass</h2>
+        <p class="module-desc">Your Workview + Lifeview = Your Compass. When these align, you know you're heading the right direction.</p>
+        
+        <div class="compass-section work">
+          <div class="compass-title">Workview</div>
+          <div class="compass-subtitle">What is work for? Why do you do it?</div>
+          <div class="tags" style="margin-bottom:16px;">
+            <span class="tag">Why do I work?</span>
+            <span class="tag">What makes work meaningful?</span>
+            <span class="tag">What role should money play?</span>
+          </div>
+          <textarea class="form-textarea" placeholder="Explore your relationship with work..." onchange="updateCompass('workView', this.value)">${c.workView}</textarea>
+          <div class="thesis-box">
+            <div class="thesis-label">Work Thesis</div>
+            <textarea class="form-textarea" style="min-height:40px;" placeholder="e.g. I create transformation by helping experts express ideas clearly." onchange="updateCompass('workThesis', this.value)">${c.workThesis}</textarea>
+          </div>
+        </div>
+        
+        <div class="compass-section life">
+          <div class="compass-title">Lifeview</div>
+          <div class="compass-subtitle">What makes life meaningful? What matters beyond achievement?</div>
+          <div class="tags" style="margin-bottom:16px;">
+            <span class="tag">What makes life meaningful?</span>
+            <span class="tag">What matters more than achievement?</span>
+            <span class="tag">What is success to me?</span>
+          </div>
+          <textarea class="form-textarea" placeholder="Explore what gives your life meaning..." onchange="updateCompass('lifeView', this.value)">${c.lifeView}</textarea>
+          <div class="thesis-box">
+            <div class="thesis-label">Life Thesis</div>
+            <textarea class="form-textarea" style="min-height:40px;" placeholder="e.g. Life is about building deep connections while doing work that matters." onchange="updateCompass('lifeThesis', this.value)">${c.lifeThesis}</textarea>
+          </div>
+        </div>
+        
+        <div class="alignment-card">
+          <div class="alignment-title">⚠️ Alignment Score</div>
+          <div class="alignment-desc">Does your work support your life? How aligned are your Workview and Lifeview?</div>
+          <input type="range" min="0" max="100" value="${c.alignmentScore}" 
+            style="background:linear-gradient(to right, ${alignColor} ${c.alignmentScore}%, var(--slate-700) ${c.alignmentScore}%)"
+            oninput="updateCompass('alignmentScore', parseInt(this.value)); renderContent();">
+          <div class="slider-ends"><span>Misaligned</span><span>Fully Aligned</span></div>
+          <div class="alignment-value" style="color:${alignColor}">${c.alignmentScore}</div>
+        </div>
+        
+        <button class="btn btn-primary" style="width:100%;" onclick="alert('Compass saved!')">💾 Save Compass</button>
+      `;
+    }
+
+    function updateCompass(key, value) {
+      state.compass[key] = value;
+      saveState();
+    }
+
+    // JOURNAL
+    let journalForm = { activity: '', time: '', energy: 0, engagement: 3, notes: '' };
+
+    function renderJournal() {
+      const energyLabel = journalForm.energy > 0 ? `+${journalForm.energy} Energizing` : journalForm.energy < 0 ? `${journalForm.energy} Draining` : '0 Neutral';
+      const energyClass = journalForm.energy > 0 ? 'positive' : journalForm.energy < 0 ? 'negative' : 'neutral';
+      
+      return `
+        <h2 class="module-title">📓 Good Time Journal</h2>
+        <p class="module-desc">Wayfinding. Track what energizes and drains you. Find your flow states and recurring themes.</p>
+        
+        <div class="card">
+          <div class="card-header"><div class="card-title">+ Log Activity</div></div>
+          <div class="form-group">
+            <label class="form-label">Activity</label>
+            <input type="text" class="form-input" placeholder="What were you doing?" value="${journalForm.activity}" onchange="journalForm.activity = this.value">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Time / Duration</label>
+            <input type="text" class="form-input" placeholder="e.g. 2pm, 45min" value="${journalForm.time}" onchange="journalForm.time = this.value">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Energy Level</label>
+            <div class="energy-icons">
+              <span class="energy-icon">🪫</span>
+              <input type="range" min="-3" max="3" value="${journalForm.energy}" style="flex:1;background:linear-gradient(to right, var(--rose-500), var(--amber-500), var(--emerald-500));" oninput="journalForm.energy = parseInt(this.value); renderContent();">
+              <span class="energy-icon">🔋</span>
+            </div>
+            <div class="energy-display"><span class="energy-value ${energyClass}">${energyLabel}</span></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Engagement (Were you absorbed?)</label>
+            <div class="engagement-btns">
+              ${[1,2,3,4,5].map(n => `<button class="engagement-btn ${journalForm.engagement === n ? 'active' : ''}" onclick="journalForm.engagement = ${n}; renderContent();">${n}</button>`).join('')}
+            </div>
+            <div class="engagement-labels"><span>Bored</span><span>Deep Flow</span></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Notes</label>
+            <textarea class="form-textarea" placeholder="Context, people, environment..." onchange="journalForm.notes = this.value">${journalForm.notes}</textarea>
+          </div>
+          <button class="btn btn-primary" style="width:100%;" onclick="saveJournal()">+ Log Entry</button>
+        </div>
+        
+        ${state.journalEntries.length > 0 ? `
+          <div class="entries-list">
+            <div class="entries-title">Journal Entries (${state.journalEntries.length})</div>
+            ${state.journalEntries.slice().reverse().map(e => `
+              <div class="entry-item">
+                <span class="entry-badge ${e.energy > 0 ? 'green' : e.energy < 0 ? 'red' : 'yellow'}">${e.energy > 0 ? '+' : ''}${e.energy}</span>
+                <div class="entry-content">
+                  <div class="entry-text" style="font-weight:500;">${e.activity}</div>
+                  <div class="entry-meta">${e.time ? e.time + ' · ' : ''}Engagement: ${e.engagement}/5${e.notes ? ' · ' + e.notes : ''}</div>
+                  <div class="entry-meta">${new Date(e.timestamp).toLocaleDateString()}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+      `;
+    }
+
+    function saveJournal() {
+      if (!journalForm.activity.trim()) return alert('Please enter an activity');
+      state.journalEntries.push({
+        id: generateId(),
+        ...journalForm,
+        timestamp: new Date().toISOString()
+      });
+      saveState();
+      journalForm = { activity: '', time: '', energy: 0, engagement: 3, notes: '' };
+      alert('Entry logged!');
+      renderContent();
+    }
+
+    // BELIEFS
+    let beliefForm = { belief: '', evidence: '', alternative: '', action: '' };
+    const beliefExamples = [
+      { old: 'My degree determines my future', new: "Most people don't work in their major." },
+      { old: "If I'm successful I'll be happy", new: 'Design happiness intentionally.' },
+      { old: "It's too late", new: 'Multiple futures still exist.' },
+      { old: 'I need to find my passion first', new: 'Passion is developed through action.' }
+    ];
+
+    function renderBeliefs() {
+      return `
+        <h2 class="module-title">🔄 Dysfunctional Belief Reframer</h2>
+        <p class="module-desc">Your beliefs shape your reality. Identify dysfunctional ones, find evidence, reframe, and act.</p>
+        
+        <div class="card" style="background:rgba(217,70,239,0.1);border-color:rgba(217,70,239,0.15);">
+          <div style="font-size:12px;color:var(--fuchsia-400);margin-bottom:12px;">💡 Common Dysfunctional Beliefs</div>
+          ${beliefExamples.map(ex => `
+            <div class="belief-example">
+              <span class="belief-old">${ex.old}</span>
+              <span class="belief-arrow">→</span>
+              <span class="belief-new">${ex.new}</span>
+            </div>
+          `).join('')}
+        </div>
+        
+        <div class="card">
+          <div class="card-header"><div class="card-title">+ Reframe a Belief</div></div>
+          <div class="form-group">
+            <label class="form-label">My dysfunctional belief:</label>
+            <textarea class="form-textarea" placeholder="The belief that's holding you back..." onchange="beliefForm.belief = this.value">${beliefForm.belief}</textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Evidence that challenges this belief:</label>
+            <textarea class="form-textarea" placeholder="What proves this belief isn't fully true?" onchange="beliefForm.evidence = this.value">${beliefForm.evidence}</textarea>
+          </div>
+          <div class="reframe-box" style="margin-bottom:16px;">
+            <div class="reframe-label">Alternative interpretation:</div>
+            <textarea class="form-textarea" style="background:transparent;border:none;color:var(--emerald-300);padding:0;" placeholder="What's a more accurate, empowering way to see this?" onchange="beliefForm.alternative = this.value">${beliefForm.alternative}</textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Action I can take based on the reframe:</label>
+            <input type="text" class="form-input" placeholder="One concrete step..." value="${beliefForm.action}" onchange="beliefForm.action = this.value">
+          </div>
+          <button class="btn btn-primary" style="width:100%;" onclick="saveBelief()">↻ Save Reframe</button>
+        </div>
+        
+        ${state.beliefEntries.length > 0 ? `
+          <div class="entries-list">
+            <div class="entries-title">Your Reframes (${state.beliefEntries.length})</div>
+            ${state.beliefEntries.slice().reverse().map(e => `
+              <div class="card" style="padding:20px;">
+                <div style="font-size:11px;color:var(--rose-400);margin-bottom:4px;">BELIEF</div>
+                <div style="font-size:14px;color:var(--slate-300);text-decoration:line-through;margin-bottom:12px;">${e.belief}</div>
+                ${e.evidence ? `<div style="font-size:11px;color:var(--slate-500);margin-bottom:4px;">Evidence: ${e.evidence}</div>` : ''}
+                <div class="reframe-box">
+                  <div class="reframe-label">Reframe</div>
+                  <div style="font-size:14px;color:var(--emerald-300);font-weight:500;">${e.alternative}</div>
+                </div>
+                ${e.action ? `<div style="font-size:12px;color:var(--violet-400);margin-top:8px;">Action: ${e.action}</div>` : ''}
+                <div style="font-size:10px;color:var(--slate-600);margin-top:8px;">${new Date(e.timestamp).toLocaleDateString()}</div>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+      `;
+    }
+
+    function saveBelief() {
+      if (!beliefForm.belief.trim()) return alert('Please enter a belief');
+      state.beliefEntries.push({
+        id: generateId(),
+        ...beliefForm,
+        timestamp: new Date().toISOString()
+      });
+      saveState();
+      beliefForm = { belief: '', evidence: '', alternative: '', action: '' };
+      alert('Reframe saved!');
+      renderContent();
+    }
+
+    // ODYSSEY
+    function renderOdyssey() {
+      const plans = ['A', 'B', 'C'];
+      const planMeta = {
+        A: { emoji: '🛤️', label: 'Plan A', desc: 'Continue current path', cls: 'plan-a' },
+        B: { emoji: '🔀', label: 'Plan B', desc: 'Pivot. New direction.', cls: 'plan-b' },
+        C: { emoji: '🚀', label: 'Plan C', desc: 'Wild version. If failure impossible.', cls: 'plan-c' }
+      };
+      
+      return `
+        <h2 class="module-title">🗺️ Odyssey Planner</h2>
+        <p class="module-desc">The crown jewel. Create THREE versions of your next 5 years. Not one. Three. Then compare.</p>
+        
+        <div class="odyssey-plans">
+          ${plans.map(type => {
+            const plan = state.odysseyPlans.find(p => p.type === type);
+            const meta = planMeta[type];
+            
+            if (!plan) {
+              return `
+                <div class="odyssey-card ${meta.cls} empty" onclick="openOdysseyModal('${type}')">
+                  <div style="font-size:24px;margin-bottom:8px;">${meta.emoji}</div>
+                  <div style="font-weight:600;color:white;">${meta.label}</div>
+                  <div style="font-size:12px;color:var(--slate-500);">${meta.desc}</div>
+                  <div style="font-size:12px;color:var(--violet-400);margin-top:8px;">+ Click to create</div>
+                </div>
+              `;
+            }
+            
+            return `
+              <div class="odyssey-card ${meta.cls}">
+                <div class="odyssey-header">
+                  <div>
+                    <div class="odyssey-type">${meta.emoji} ${meta.label}</div>
+                    <div class="odyssey-title">"${plan.title}"</div>
+                  </div>
+                  <div class="odyssey-actions">
+                    <button class="odyssey-btn" onclick="openOdysseyModal('${type}')">✏️</button>
+                    <button class="odyssey-btn" onclick="deleteOdyssey('${type}')">🗑️</button>
+                  </div>
+                </div>
+                <div class="odyssey-timeline">
+                  ${plan.years.map((y, i) => `
+                    <div class="timeline-year">
+                      <div class="timeline-bar" style="opacity:${0.4 + i * 0.15}"></div>
+                      <div class="timeline-label">Yr ${i + 1}</div>
+                      <div class="timeline-text">${y || '—'}</div>
+                    </div>
+                  `).join('')}
+                </div>
+                <div class="odyssey-gauges">
+                  ${['resources', 'confidence', 'likability', 'coherence'].map(g => `
+                    <div class="gauge">
+                      <div class="gauge-header">
+                        <span class="gauge-label">${g.charAt(0).toUpperCase() + g.slice(1)}</span>
+                        <span class="gauge-value">${plan[g]}%</span>
+                      </div>
+                      <div class="gauge-bar"><div class="gauge-fill" style="width:${plan[g]}%"></div></div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function openOdysseyModal(type) {
+      const existing = state.odysseyPlans.find(p => p.type === type);
+      const meta = { A: 'Plan A - Continue', B: 'Plan B - Pivot', C: 'Plan C - Wild' };
+      
+      openModal(meta[type], `
+        <div class="form-group">
+          <label class="form-label">Six-word title</label>
+          <input type="text" class="form-input" id="odyssey-title" placeholder="e.g. Copy strategist becomes transformation architect" value="${existing?.title || ''}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">5-Year Timeline</label>
+          ${[1,2,3,4,5].map(i => `
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+              <span style="font-size:12px;color:var(--slate-600);width:50px;">Year ${i}</span>
+              <input type="text" class="form-input" id="odyssey-year-${i}" placeholder="What happens?" value="${existing?.years[i-1] || ''}">
+            </div>
+          `).join('')}
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
+          ${['resources', 'confidence', 'likability', 'coherence'].map(g => `
+            <div class="slider-container">
+              <div class="slider-header">
+                <span class="slider-label">${g.charAt(0).toUpperCase() + g.slice(1)}</span>
+                <span class="slider-value" id="odyssey-${g}-val">${existing?.[g] || 50}%</span>
+              </div>
+              <input type="range" min="0" max="100" id="odyssey-${g}" value="${existing?.[g] || 50}" oninput="document.getElementById('odyssey-${g}-val').textContent = this.value + '%'">
+            </div>
+          `).join('')}
+        </div>
+      `, `
+        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveOdyssey('${type}')">Save Plan</button>
+      `);
+    }
+
+    function saveOdyssey(type) {
+      const plan = {
+        id: generateId(),
+        type,
+        title: document.getElementById('odyssey-title').value,
+        years: [1,2,3,4,5].map(i => document.getElementById(`odyssey-year-${i}`).value),
+        resources: parseInt(document.getElementById('odyssey-resources').value),
+        confidence: parseInt(document.getElementById('odyssey-confidence').value),
+        likability: parseInt(document.getElementById('odyssey-likability').value),
+        coherence: parseInt(document.getElementById('odyssey-coherence').value),
+        timestamp: new Date().toISOString()
+      };
+      
+      const idx = state.odysseyPlans.findIndex(p => p.type === type);
+      if (idx >= 0) state.odysseyPlans[idx] = plan;
+      else state.odysseyPlans.push(plan);
+      
+      saveState();
+      closeModal();
+      renderContent();
+    }
+
+    function deleteOdyssey(type) {
+      if (confirm('Delete this plan?')) {
+        state.odysseyPlans = state.odysseyPlans.filter(p => p.type !== type);
+        saveState();
+        renderContent();
+      }
+    }
+
+    // PROTOTYPES
+    let protoForm = { category: 'conversation', hypothesis: '', action: '', date: '', expectedInsight: '', actualInsight: '', nextMove: '', status: 'planned' };
+    const protoCategories = [
+      { key: 'conversation', label: 'Conversation', desc: 'Talk to someone', icon: '💬' },
+      { key: 'experience', label: 'Experience', desc: 'Try the thing', icon: '💼' },
+      { key: 'shadow', label: 'Shadow', desc: 'Observe', icon: '👁️' },
+      { key: 'side-project', label: 'Side Project', desc: 'Build tiny', icon: '🔧' }
+    ];
+
+    function renderPrototypes() {
+      const planned = state.prototypes.filter(p => p.status === 'planned');
+      const inProgress = state.prototypes.filter(p => p.status === 'in-progress');
+      const completed = state.prototypes.filter(p => p.status === 'completed');
+      
+      return `
+        <h2 class="module-title">🧪 Prototype Lab</h2>
+        <p class="module-desc">Don't decide. Test. Small experiments beat big plans.</p>
+        
+        <div class="card" style="background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.15);">
+          <div style="font-size:12px;color:var(--emerald-400);margin-bottom:8px;">Your transition example</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:12px;">
+            <div><span style="color:var(--slate-500);">Hypothesis:</span><p style="color:var(--slate-300);margin-top:2px;">Midlife coaches buy strategic messaging.</p></div>
+            <div><span style="color:var(--slate-500);">Prototype:</span><p style="color:var(--slate-300);margin-top:2px;">Interview 10 coaches.</p></div>
+            <div><span style="color:var(--slate-500);">Insight:</span><p style="color:var(--slate-300);margin-top:2px;">Identity language matters more than conversion jargon.</p></div>
+            <div><span style="color:var(--slate-500);">Next move:</span><p style="color:var(--slate-300);margin-top:2px;">Create offer around identity-driven copy.</p></div>
+          </div>
+        </div>
+        
+        <button class="add-btn" onclick="openProtoModal()">+ New Prototype</button>
+        
+        <div class="proto-board">
+          ${[{title: 'Planned', items: planned, status: 'planned'}, {title: 'In Progress', items: inProgress, status: 'in-progress'}, {title: 'Completed', items: completed, status: 'completed'}].map(col => `
+            <div class="proto-column">
+              <div class="proto-column-header">
+                <span class="proto-column-title">${col.title}</span>
+                <span class="proto-column-count">${col.items.length}</span>
+              </div>
+              ${col.items.map(p => {
+                const cat = protoCategories.find(c => c.key === p.category);
+                return `
+                  <div class="proto-item">
+                    <div class="proto-item-header">
+                      <span class="proto-item-icon">${cat?.icon || '🧪'}</span>
+                      <span class="proto-item-text">${p.hypothesis}</span>
+                    </div>
+                    ${p.action ? `<div class="proto-item-meta">${p.action}</div>` : ''}
+                  </div>
+                `;
+              }).join('') || '<div style="font-size:12px;color:var(--slate-600);text-align:center;padding:16px;">No items</div>'}
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function openProtoModal() {
+      openModal('New Prototype', `
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <div class="category-grid">
+            ${protoCategories.map(c => `
+              <div class="category-btn ${protoForm.category === c.key ? 'active' : ''}" onclick="protoForm.category = '${c.key}'; document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active')); this.classList.add('active');">
+                <div class="category-icon">${c.icon}</div>
+                <div class="category-label">${c.label}</div>
+                <div class="category-desc">${c.desc}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Hypothesis</label>
+          <textarea class="form-textarea" id="proto-hypothesis" placeholder="What do you believe is true?">${protoForm.hypothesis}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Action / Experiment</label>
+          <input type="text" class="form-input" id="proto-action" placeholder="What will you do to test it?" value="${protoForm.action}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Expected Insight</label>
+          <input type="text" class="form-input" id="proto-expected" placeholder="What do you expect to learn?" value="${protoForm.expectedInsight}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <div class="status-select">
+            ${['planned', 'in-progress', 'completed'].map(s => `
+              <div class="status-option ${protoForm.status === s ? 'active ' + s : ''}" onclick="protoForm.status = '${s}'; document.querySelectorAll('.status-option').forEach(o => o.className = 'status-option'); this.classList.add('active', '${s}');">${s.replace('-', ' ')}</div>
+            `).join('')}
+          </div>
+        </div>
+      `, `
+        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveProto()">Save</button>
+      `);
+    }
+
+    function saveProto() {
+      const hypothesis = document.getElementById('proto-hypothesis').value;
+      if (!hypothesis.trim()) return alert('Please enter a hypothesis');
+      
+      state.prototypes.push({
+        id: generateId(),
+        category: protoForm.category,
+        hypothesis,
+        action: document.getElementById('proto-action').value,
+        expectedInsight: document.getElementById('proto-expected').value,
+        actualInsight: '',
+        nextMove: '',
+        status: protoForm.status,
+        timestamp: new Date().toISOString()
+      });
+      saveState();
+      protoForm = { category: 'conversation', hypothesis: '', action: '', date: '', expectedInsight: '', actualInsight: '', nextMove: '', status: 'planned' };
+      closeModal();
+      renderContent();
+    }
+
+    // INTERVIEWS
+    function renderInterviews() {
+      return `
+        <h2 class="module-title">💬 Design Interviews</h2>
+        <p class="module-desc">A hidden superpower. No pitching. Only learning. Store patterns from real conversations.</p>
+        
+        <div class="card" style="background:rgba(6,182,212,0.1);border-color:rgba(6,182,212,0.15);">
+          <div style="font-size:12px;color:var(--cyan-500);margin-bottom:8px;">Interview Rules</div>
+          <div class="tags">
+            <span class="tag">No pitching</span>
+            <span class="tag">Only learning</span>
+            <span class="tag">Ask stories</span>
+            <span class="tag">Store patterns</span>
+          </div>
+        </div>
+        
+        <button class="add-btn" onclick="openInterviewModal()">+ Log Interview</button>
+        
+        ${state.interviews.length > 0 ? `
+          <div class="entries-title">Interviews (${state.interviews.length})</div>
+          ${state.interviews.slice().reverse().map(e => `
+            <div class="card" style="padding:20px;">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                <div style="width:40px;height:40px;background:rgba(6,182,212,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;">👤</div>
+                <div>
+                  <div style="font-size:14px;font-weight:600;color:white;">${e.personName}</div>
+                  ${e.role ? `<div style="font-size:11px;color:var(--slate-500);">${e.role}</div>` : ''}
+                </div>
+                <div style="margin-left:auto;font-size:10px;color:var(--slate-600);">${new Date(e.timestamp).toLocaleDateString()}</div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:12px;">
+                ${e.howDidYouGetHere ? `<div><span style="color:var(--cyan-500);">How they got here</span><p style="color:var(--slate-400);margin-top:2px;">${e.howDidYouGetHere}</p></div>` : ''}
+                ${e.whatSurprisedYou ? `<div><span style="color:var(--cyan-500);">What surprised them</span><p style="color:var(--slate-400);margin-top:2px;">${e.whatSurprisedYou}</p></div>` : ''}
+              </div>
+              ${e.patterns ? `<div style="margin-top:12px;padding:12px;background:rgba(139,92,246,0.1);border-radius:8px;"><div style="font-size:10px;color:var(--violet-400);margin-bottom:4px;">PATTERNS</div><div style="font-size:12px;color:var(--violet-300);">${e.patterns}</div></div>` : ''}
+            </div>
+          `).join('')}
+        ` : `
+          <div class="empty-state">
+            <div class="empty-icon">💬</div>
+            <div class="empty-text">No interviews logged yet.</div>
+            <div class="empty-sub">Start conversations to learn.</div>
+          </div>
+        `}
+      `;
+    }
+
+    function openInterviewModal() {
+      openModal('Log Interview', `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group">
+            <label class="form-label">Person's Name</label>
+            <input type="text" class="form-input" id="int-name" placeholder="Who did you talk to?">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Their Role</label>
+            <input type="text" class="form-input" id="int-role" placeholder="e.g. Executive coach">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="color:var(--cyan-500);">How did you get here?</label>
+          <textarea class="form-textarea" id="int-q1" placeholder="Their story..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="color:var(--cyan-500);">What surprised you?</label>
+          <textarea class="form-textarea" id="int-q2" placeholder="Unexpected insights..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="color:var(--violet-400);">Patterns Noticed</label>
+          <textarea class="form-textarea" id="int-patterns" placeholder="Themes, recurring ideas..."></textarea>
+        </div>
+      `, `
+        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveInterview()">Save</button>
+      `);
+    }
+
+    function saveInterview() {
+      const name = document.getElementById('int-name').value;
+      if (!name.trim()) return alert('Please enter a name');
+      
+      state.interviews.push({
+        id: generateId(),
+        personName: name,
+        role: document.getElementById('int-role').value,
+        howDidYouGetHere: document.getElementById('int-q1').value,
+        whatSurprisedYou: document.getElementById('int-q2').value,
+        whatBelievedWrongly: '',
+        adviceToIgnore: '',
+        patterns: document.getElementById('int-patterns').value,
+        timestamp: new Date().toISOString()
+      });
+      saveState();
+      closeModal();
+      renderContent();
+    }
+
+    // DECISIONS
+    function renderDecisions() {
+      return `
+        <h2 class="module-title">⚖️ Decision Engine</h2>
+        <p class="module-desc">Gather options → Narrow → Choose → Let go. Not: choose → obsess → regret.</p>
+        
+        <div class="flow" style="margin-bottom:24px;">
+          <div class="flow-items">
+            <span class="flow-item">Gather Options</span><span class="flow-arrow">→</span>
+            <span class="flow-item">Narrow</span><span class="flow-arrow">→</span>
+            <span class="flow-item">Choose</span><span class="flow-arrow">→</span>
+            <span class="flow-item">Let Go</span>
+          </div>
+        </div>
+        
+        <button class="add-btn" onclick="openDecisionModal()">+ New Decision</button>
+        
+        ${state.decisions.length > 0 ? state.decisions.slice().reverse().map(d => {
+          const days = d.lockedDate ? Math.floor((Date.now() - new Date(d.lockedDate).getTime()) / (1000 * 60 * 60 * 24)) : 0;
+          return `
+            <div class="decision-card">
+              <div class="decision-header">
+                <div>
+                  <div class="decision-title">${d.title}</div>
+                  <div class="decision-date">${new Date(d.timestamp).toLocaleDateString()}</div>
+                </div>
+                <div class="decision-status ${d.locked ? 'locked' : 'open'}">
+                  ${d.locked ? `🔒 Locked ${days}d ago` : '🔓 Open'}
+                </div>
+              </div>
+              <div class="decision-options">
+                ${d.options.map(opt => `
+                  <div class="decision-option ${d.chosen === opt ? 'chosen' : d.locked ? 'disabled' : ''}" onclick="${!d.locked ? `lockDecision('${d.id}', '${opt.replace(/'/g, "\\'")}')` : ''}">
+                    <div class="decision-radio"><div class="decision-radio-inner"></div></div>
+                    <span class="decision-option-text">${opt}</span>
+                  </div>
+                `).join('')}
+              </div>
+              ${!d.locked ? '<div style="font-size:11px;color:var(--slate-500);font-style:italic;">Click an option to choose and lock.</div>' : ''}
+            </div>
+          `;
+        }).join('') : `
+          <div class="empty-state">
+            <div class="empty-icon">⚖️</div>
+            <div class="empty-text">No decisions yet.</div>
+          </div>
+        `}
+      `;
+    }
+
+    function openDecisionModal() {
+      openModal('New Decision', `
+        <div class="form-group">
+          <label class="form-label">Decision Title</label>
+          <input type="text" class="form-input" id="dec-title" placeholder="What are you deciding?">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Options</label>
+          <div id="dec-options">
+            <input type="text" class="form-input" style="margin-bottom:8px;" placeholder="Option 1">
+            <input type="text" class="form-input" style="margin-bottom:8px;" placeholder="Option 2">
+          </div>
+          <button type="button" style="font-size:12px;color:var(--violet-400);background:none;border:none;cursor:pointer;" onclick="document.getElementById('dec-options').innerHTML += '<input type=\\'text\\' class=\\'form-input\\' style=\\'margin-bottom:8px;\\' placeholder=\\'Option\\'>'">+ Add option</button>
+        </div>
+      `, `
+        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveDecision()">Save</button>
+      `);
+    }
+
+    function saveDecision() {
+      const title = document.getElementById('dec-title').value;
+      if (!title.trim()) return alert('Please enter a title');
+      
+      const options = Array.from(document.querySelectorAll('#dec-options input')).map(i => i.value).filter(v => v.trim());
+      if (options.length < 2) return alert('Please enter at least 2 options');
+      
+      state.decisions.push({
+        id: generateId(),
+        title,
+        options,
+        chosen: '',
+        locked: false,
+        lockedDate: '',
+        reflection: '',
+        timestamp: new Date().toISOString()
+      });
+      saveState();
+      closeModal();
+      renderContent();
+    }
+
+    function lockDecision(id, choice) {
+      const dec = state.decisions.find(d => d.id === id);
+      if (dec && !dec.locked) {
+        dec.chosen = choice;
+        dec.locked = true;
+        dec.lockedDate = new Date().toISOString();
+        saveState();
+        renderContent();
+      }
+    }
+
+    // FAILURES
+    function renderFailures() {
+      return `
+        <h2 class="module-title">🛡️ Failure Immunity</h2>
+        <p class="module-desc">Failure ≠ identity. Failure = information. Life is process, not outcome.</p>
+        
+        <div class="failure-principle">
+          <div class="failure-emoji">🛡️</div>
+          <div class="failure-title">Failure ≠ Identity</div>
+          <div class="failure-subtitle">Failure = Information</div>
+          <div class="failure-note">Every failure is a data point. Every setback is a prototype result.</div>
+        </div>
+        
+        <button class="add-btn" onclick="openFailureModal()">+ Process a Failure</button>
+        
+        ${state.failures.length > 0 ? `
+          <div class="entries-title">Failure Reviews (${state.failures.length})</div>
+          ${state.failures.slice().reverse().map(e => `
+            <div class="card" style="padding:20px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                <span style="font-size:20px;">🛡️</span>
+                <span style="font-size:10px;color:var(--slate-600);">${new Date(e.timestamp).toLocaleDateString()}</span>
+              </div>
+              <div style="font-size:11px;color:var(--orange-500);margin-bottom:4px;">What happened</div>
+              <div style="font-size:14px;color:var(--slate-300);margin-bottom:12px;">${e.whatHappened}</div>
+              ${e.assumptionFailed ? `<div style="font-size:11px;color:var(--rose-400);margin-bottom:4px;">Assumption that failed</div><div style="font-size:12px;color:var(--slate-400);margin-bottom:12px;">${e.assumptionFailed}</div>` : ''}
+              ${e.realityTaught ? `<div style="padding:12px;background:rgba(16,185,129,0.1);border-radius:8px;margin-bottom:12px;"><div style="font-size:11px;color:var(--emerald-400);margin-bottom:4px;">Reality's lesson</div><div style="font-size:14px;color:var(--emerald-300);">${e.realityTaught}</div></div>` : ''}
+              ${e.whatChanges ? `<div style="font-size:11px;color:var(--violet-400);margin-bottom:4px;">What changes</div><div style="font-size:12px;color:var(--slate-300);">${e.whatChanges}</div>` : ''}
+            </div>
+          `).join('')}
+        ` : ''}
+      `;
+    }
+
+    function openFailureModal() {
+      openModal('Process a Failure', `
+        <div class="form-group">
+          <label class="form-label" style="color:var(--orange-500);">What happened?</label>
+          <textarea class="form-textarea" id="fail-what" placeholder="Describe the failure or setback..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="color:var(--orange-500);">What assumption failed?</label>
+          <textarea class="form-textarea" id="fail-assumption" placeholder="What did you believe that wasn't true?"></textarea>
+        </div>
+        <div class="reframe-box" style="margin-bottom:16px;">
+          <div class="reframe-label">What did reality teach you?</div>
+          <textarea class="form-textarea" id="fail-reality" style="background:transparent;border:none;color:var(--emerald-300);padding:0;" placeholder="The actual lesson..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="color:var(--violet-400);">What changes now?</label>
+          <textarea class="form-textarea" id="fail-changes" placeholder="Next iteration..."></textarea>
+        </div>
+      `, `
+        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveFailure()">Save</button>
+      `);
+    }
+
+    function saveFailure() {
+      const what = document.getElementById('fail-what').value;
+      if (!what.trim()) return alert('Please describe what happened');
+      
+      state.failures.push({
+        id: generateId(),
+        whatHappened: what,
+        assumptionFailed: document.getElementById('fail-assumption').value,
+        realityTaught: document.getElementById('fail-reality').value,
+        whatChanges: document.getElementById('fail-changes').value,
+        timestamp: new Date().toISOString()
+      });
+      saveState();
+      closeModal();
+      renderContent();
+    }
+
+    // TEAM
+    const teamRoles = [
+      { key: 'friend', label: 'Friend', emoji: '🤝' },
+      { key: 'coach', label: 'Coach', emoji: '🎯' },
+      { key: 'peer', label: 'Peer', emoji: '👥' },
+      { key: 'collaborator', label: 'Collaborator', emoji: '🔗' },
+      { key: 'expert', label: 'Expert', emoji: '🧠' }
+    ];
+    let teamForm = { name: '', role: 'friend', notes: '' };
+
+    function renderTeam() {
+      return `
+        <h2 class="module-title">👥 Design Team</h2>
+        <p class="module-desc">People don't redesign life alone. Co-create. Build your Board of Advisors.</p>
+        
+        <div class="card" style="background:rgba(20,184,166,0.1);border-color:rgba(20,184,166,0.15);">
+          <div style="font-size:12px;color:var(--teal-500);margin-bottom:8px;">Team Rules</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-size:12px;color:var(--slate-400);">
+            <div>🚫 No fixing</div>
+            <div>🤐 No critique</div>
+            <div>❓ Ask questions</div>
+            <div>📢 Amplify</div>
+          </div>
+        </div>
+        
+        <button class="add-btn" onclick="openTeamModal()">+ Add Team Member</button>
+        
+        ${state.team.length > 0 ? `
+          ${teamRoles.map(role => {
+            const members = state.team.filter(m => m.role === role.key);
+            if (members.length === 0) return '';
+            return `
+              <div style="margin-bottom:16px;">
+                <div style="font-size:12px;color:var(--slate-500);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">${role.emoji} ${role.label}s</div>
+                <div class="team-grid">
+                  ${members.map(m => `
+                    <div class="team-member ${m.role}">
+                      <div class="team-avatar">${role.emoji}</div>
+                      <div class="team-info">
+                        <div class="team-name">${m.name}</div>
+                        ${m.notes ? `<div class="team-notes">${m.notes}</div>` : ''}
+                        <div class="team-date">${new Date(m.timestamp).toLocaleDateString()}</div>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        ` : `
+          <div class="empty-state">
+            <div class="empty-icon">👥</div>
+            <div class="empty-text">Your design team is empty.</div>
+            <div class="empty-sub">Radical collaboration: Don't do this alone.</div>
+          </div>
+        `}
+      `;
+    }
+
+    function openTeamModal() {
+      openModal('Add Team Member', `
+        <div class="form-group">
+          <label class="form-label">Name</label>
+          <input type="text" class="form-input" id="team-name" placeholder="Who's on your team?">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role</label>
+          <div class="role-grid">
+            ${teamRoles.map(r => `
+              <div class="role-btn ${teamForm.role === r.key ? 'active' : ''}" onclick="teamForm.role = '${r.key}'; document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active')); this.classList.add('active');">
+                <div class="role-emoji">${r.emoji}</div>
+                <div class="role-label">${r.label}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <textarea class="form-textarea" id="team-notes" placeholder="How can they help?"></textarea>
+        </div>
+      `, `
+        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveTeamMember()">Add</button>
+      `);
+    }
+
+    function saveTeamMember() {
+      const name = document.getElementById('team-name').value;
+      if (!name.trim()) return alert('Please enter a name');
+      
+      state.team.push({
+        id: generateId(),
+        name,
+        role: teamForm.role,
+        notes: document.getElementById('team-notes').value,
+        timestamp: new Date().toISOString()
+      });
+      saveState();
+      teamForm = { name: '', role: 'friend', notes: '' };
+      closeModal();
+      renderContent();
+    }
+
+    // Init
+    setRandomMindset();
+    renderNav();
+    renderContent();
+  </script>
 </body>
 </html>
