@@ -1,0 +1,2231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Your Life — Operating System</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #12151f;
+    --surface: #1a1f2e;
+    --surface2: #222840;
+    --surface3: #2a3050;
+    --border: #2e3550;
+    --text: #f0ece2;
+    --text-muted: #8890a8;
+    --text-dim: #555e7a;
+    --amber: #c8672a;
+    --amber-light: #e07d40;
+    --amber-dim: rgba(200,103,42,0.15);
+    --sage: #7a9e7e;
+    --sage-dim: rgba(122,158,126,0.15);
+    --lavender: #9b8ec4;
+    --lavender-dim: rgba(155,142,196,0.15);
+    --red: #c44b4b;
+    --red-dim: rgba(196,75,75,0.15);
+    --yellow: #c9a84c;
+    --yellow-dim: rgba(201,168,76,0.15);
+    --radius: 8px;
+    --radius-lg: 14px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+  }
+
+  .sidebar-brand {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-brand h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .sidebar-brand p {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .sidebar-mindsets {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mindsets-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 10px;
+  }
+
+  .mindset-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .mindset-pill {
+    font-size: 10px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    cursor: default;
+    transition: all 0.2s;
+  }
+
+  .mindset-pill:hover {
+    border-color: var(--amber);
+    color: var(--amber);
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    padding: 16px 0;
+  }
+
+  .nav-section-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+    padding: 8px 24px 6px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 24px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .nav-item:hover {
+    background: var(--surface2);
+    color: var(--text);
+  }
+
+  .nav-item.active {
+    background: var(--amber-dim);
+    border-left-color: var(--amber);
+    color: var(--amber-light);
+  }
+
+  .nav-icon {
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  /* ── MAIN ── */
+  #main {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 100vh;
+  }
+
+  .module {
+    display: none;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 48px 80px;
+  }
+
+  .module.active {
+    display: block;
+  }
+
+  /* Module header */
+  .module-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--amber);
+    margin-bottom: 10px;
+  }
+
+  .module-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  .module-subtitle {
+    font-size: 16px;
+    color: var(--text-muted);
+    max-width: 560px;
+    line-height: 1.6;
+    margin-bottom: 40px;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+
+  .card-title small {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-dim);
+    margin-left: 8px;
+    font-style: normal;
+  }
+
+  /* Sliders */
+  .slider-group {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .slider-label {
+    font-size: 13px;
+    width: 100px;
+    flex-shrink: 0;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .slider-track {
+    flex: 1;
+    position: relative;
+  }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--amber);
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+    box-shadow: 0 0 0 3px rgba(200,103,42,0.2);
+  }
+
+  input[type=range]::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    background: var(--amber-light);
+  }
+
+  .slider-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--amber);
+    width: 28px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* Compass Canvas */
+  #compass-canvas-wrap {
+    display: flex;
+    justify-content: center;
+    margin: 28px 0;
+  }
+
+  /* Text areas / inputs */
+  textarea, input[type=text] {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    padding: 14px 16px;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.6;
+  }
+
+  textarea:focus, input[type=text]:focus {
+    border-color: var(--amber);
+  }
+
+  textarea::placeholder, input[type=text]::placeholder {
+    color: var(--text-dim);
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.18s;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.01em;
+  }
+
+  .btn-primary {
+    background: var(--amber);
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    background: var(--amber-light);
+    transform: translateY(-1px);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  .btn-ghost:hover {
+    border-color: var(--amber);
+    color: var(--amber);
+  }
+
+  .btn-danger {
+    background: var(--red-dim);
+    color: var(--red);
+    border: 1px solid var(--red);
+  }
+
+  /* Status pills */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .status-alive { background: var(--sage-dim); color: var(--sage); border: 1px solid var(--sage); }
+  .status-stable { background: var(--yellow-dim); color: var(--yellow); border: 1px solid var(--yellow); }
+  .status-empty { background: var(--red-dim); color: var(--red); border: 1px solid var(--red); }
+  .status-actionable { background: var(--sage-dim); color: var(--sage); border: 1px solid var(--sage); }
+  .status-gravity { background: var(--lavender-dim); color: var(--lavender); border: 1px solid var(--lavender); }
+
+  /* Two-col grid */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  /* Divider */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 28px 0;
+  }
+
+  /* Reframe result */
+  .reframe-result {
+    background: var(--lavender-dim);
+    border: 1px solid var(--lavender);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-top: 16px;
+  }
+
+  .reframe-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--lavender);
+    margin-bottom: 6px;
+  }
+
+  .reframe-text {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* Energy journal */
+  .journal-entry {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .energy-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .energy-pos { background: var(--sage-dim); color: var(--sage); border: 1px solid var(--sage); }
+  .energy-neg { background: var(--red-dim); color: var(--red); border: 1px solid var(--red); }
+  .energy-neutral { background: var(--border); color: var(--text-muted); }
+
+  /* Odyssey plan */
+  .odyssey-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+
+  .odyssey-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+  }
+
+  .odyssey-card.plan-a { border-top: 3px solid var(--amber); }
+  .odyssey-card.plan-b { border-top: 3px solid var(--sage); }
+  .odyssey-card.plan-c { border-top: 3px solid var(--lavender); }
+
+  .odyssey-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin-bottom: 12px;
+  }
+
+  .plan-a .odyssey-label { color: var(--amber); }
+  .plan-b .odyssey-label { color: var(--sage); }
+  .plan-c .odyssey-label { color: var(--lavender); }
+
+  .odyssey-card textarea {
+    margin-bottom: 12px;
+  }
+
+  /* Prototype */
+  .prototype-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 12px;
+  }
+
+  .prototype-type {
+    display: inline-flex;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+    background: var(--amber-dim);
+    color: var(--amber);
+  }
+
+  /* Decision engine */
+  .decision-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .decision-locked {
+    opacity: 0.5;
+    text-decoration: line-through;
+  }
+
+  /* Advisor board */
+  .advisor-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .advisor-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    text-align: center;
+  }
+
+  .advisor-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--surface3);
+    margin: 0 auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+
+  .advisor-role {
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+
+  .advisor-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+
+  .tab {
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    margin-bottom: -1px;
+  }
+
+  .tab.active {
+    color: var(--amber);
+    border-bottom-color: var(--amber);
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Gauge row */
+  .gauge-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .gauge-item {
+    flex: 1;
+    background: var(--surface3);
+    border-radius: var(--radius);
+    padding: 12px;
+    text-align: center;
+  }
+
+  .gauge-label {
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+
+  .gauge-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 20px;
+    color: var(--amber);
+  }
+
+  /* Belief check boxes */
+  .belief-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .belief-row {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  .belief-row:hover {
+    border-color: var(--lavender);
+  }
+
+  .belief-row.expanded {
+    border-color: var(--lavender);
+    background: var(--lavender-dim);
+  }
+
+  .belief-title {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .belief-reframe-text {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    display: none;
+  }
+
+  .belief-row.expanded .belief-reframe-text {
+    display: block;
+  }
+
+  .belief-arrow {
+    font-size: 12px;
+    color: var(--text-dim);
+    transition: transform 0.2s;
+    float: right;
+  }
+
+  .belief-row.expanded .belief-arrow {
+    transform: rotate(90deg);
+  }
+
+  /* Align score */
+  .align-score-wrap {
+    text-align: center;
+    padding: 24px;
+  }
+
+  .align-score-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 72px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--amber);
+  }
+
+  .align-score-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+
+  /* Failure review */
+  .failure-card {
+    background: var(--surface2);
+    border: 1px solid var(--red);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 12px;
+  }
+
+  /* Notification toast */
+  #toast {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    background: var(--sage);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s;
+    z-index: 999;
+    pointer-events: none;
+  }
+
+  #toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+  /* Responsive */
+  @media (max-width: 800px) {
+    #sidebar { display: none; }
+    .module { padding: 24px 20px 60px; }
+    .odyssey-grid { grid-template-columns: 1fr; }
+    .advisor-grid { grid-template-columns: 1fr 1fr; }
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  /* Separator label */
+  .sep-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--text-dim);
+    margin: 24px 0;
+  }
+
+  .sep-label::before, .sep-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Checklist */
+  .checklist-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .checklist-item:last-child { border-bottom: none; }
+
+  .check-input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--amber);
+    cursor: pointer;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  .check-label {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* Homepage welcome */
+  .home-hero {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 40px;
+    margin-bottom: 40px;
+  }
+
+  .home-hero .big-q {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px;
+    font-weight: 700;
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.25;
+    margin-bottom: 16px;
+  }
+
+  .home-hero .big-q span {
+    color: var(--amber);
+    font-style: italic;
+  }
+
+  .flow-strip {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    margin: 24px 0;
+  }
+
+  .flow-node {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 14px;
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .flow-node:hover, .flow-node.active-node {
+    background: var(--amber-dim);
+    border-color: var(--amber);
+    color: var(--amber);
+  }
+
+  .flow-arrow {
+    color: var(--text-dim);
+    padding: 0 4px;
+    font-size: 12px;
+  }
+
+  /* Label */
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    font-family: 'DM Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  /* Gravity output */
+  .gravity-output {
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: var(--radius);
+    display: none;
+  }
+
+  .gravity-output.show { display: block; }
+  .gravity-output.actionable { background: var(--sage-dim); border: 1px solid var(--sage); }
+  .gravity-output.gravity { background: var(--lavender-dim); border: 1px solid var(--lavender); }
+
+  .gravity-output-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 10px;
+  }
+
+  .actionable .gravity-output-title { color: var(--sage); }
+  .gravity .gravity-output-title { color: var(--lavender); }
+
+  /* Dashboard status */
+  .dashboard-status {
+    text-align: center;
+    margin: 20px 0;
+  }
+
+  /* inline icon */
+  .icon-amber { color: var(--amber); }
+  .icon-sage { color: var(--sage); }
+  .icon-lavender { color: var(--lavender); }
+
+  /* Select */
+  select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    padding: 10px 14px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  select:focus { border-color: var(--amber); }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sidebar-brand">
+    <h1>Design Your Life</h1>
+    <p>Personal Operating System</p>
+  </div>
+
+  <div class="sidebar-mindsets">
+    <div class="mindsets-label">Core Mindsets</div>
+    <div class="mindset-pills">
+      <span class="mindset-pill">Curiosity</span>
+      <span class="mindset-pill">Action</span>
+      <span class="mindset-pill">Reframe</span>
+      <span class="mindset-pill">Awareness</span>
+      <span class="mindset-pill">Collaborate</span>
+    </div>
+  </div>
+
+  <div class="sidebar-nav">
+    <div class="nav-section-label">Start Here</div>
+    <div class="nav-item active" onclick="showModule('home')">
+      <span class="nav-icon">🏠</span> Overview
+    </div>
+    <div class="nav-section-label">Diagnose</div>
+    <div class="nav-item" onclick="showModule('dashboard')">
+      <span class="nav-icon">📊</span> Life Dashboard
+    </div>
+    <div class="nav-item" onclick="showModule('gravity')">
+      <span class="nav-icon">⚖️</span> Gravity Detector
+    </div>
+    <div class="nav-section-label">Clarify</div>
+    <div class="nav-item" onclick="showModule('compass')">
+      <span class="nav-icon">🧭</span> Build the Compass
+    </div>
+    <div class="nav-item" onclick="showModule('journal')">
+      <span class="nav-icon">⚡</span> Good Time Journal
+    </div>
+    <div class="nav-item" onclick="showModule('beliefs')">
+      <span class="nav-icon">🔄</span> Belief Reframer
+    </div>
+    <div class="nav-section-label">Create</div>
+    <div class="nav-item" onclick="showModule('odyssey')">
+      <span class="nav-icon">🗺️</span> Odyssey Plans
+    </div>
+    <div class="nav-item" onclick="showModule('prototypes')">
+      <span class="nav-icon">🧪</span> Prototype Lab
+    </div>
+    <div class="nav-section-label">Commit</div>
+    <div class="nav-item" onclick="showModule('decisions')">
+      <span class="nav-icon">🎯</span> Decision Engine
+    </div>
+    <div class="nav-item" onclick="showModule('failure')">
+      <span class="nav-icon">🔥</span> Failure Immunity
+    </div>
+    <div class="nav-item" onclick="showModule('team')">
+      <span class="nav-icon">🤝</span> Design Team
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main id="main">
+
+  <!-- HOME -->
+  <section id="mod-home" class="module active">
+    <div class="home-hero">
+      <div class="big-q">"Stop thinking your way<br>into clarity. <span>Build</span> your way into it."</div>
+      <p style="color:var(--text-muted); font-size:15px; max-width:540px; line-height:1.7;">
+        You inherited a script. This is where you rewrite it — one small experiment at a time. Life isn't solved. Life loops.
+      </p>
+    </div>
+
+    <div style="margin-bottom:32px;">
+      <div style="font-size:13px; color:var(--text-dim); font-family:'DM Mono',monospace; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:14px;">Your Journey</div>
+      <div class="flow-strip">
+        <div class="flow-node active-node" onclick="showModule('dashboard')">Dashboard</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node" onclick="showModule('compass')">Compass</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node" onclick="showModule('journal')">Wayfinding</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node" onclick="showModule('beliefs')">Reframe</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node" onclick="showModule('odyssey')">Odyssey</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node" onclick="showModule('prototypes')">Prototype</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node" onclick="showModule('decisions')">Decide</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Iterate ↺</div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:24px;">
+      <div class="card" style="border-left:3px solid var(--amber);">
+        <div class="card-title" style="font-size:15px;">Today's Prompt</div>
+        <p style="color:var(--text-muted); font-size:14px; line-height:1.7;" id="daily-prompt">
+          "What's one thing you're tolerating that you could prototype your way out of instead?"
+        </p>
+        <button class="btn btn-ghost" style="margin-top:16px; font-size:12px;" onclick="newPrompt()">↻ New Prompt</button>
+      </div>
+      <div class="card" style="border-left:3px solid var(--sage);">
+        <div class="card-title" style="font-size:15px;">Transition Context</div>
+        <p style="color:var(--text-muted); font-size:14px; line-height:1.7;">
+          Proptech/Fintech → <strong style="color:var(--text);">Copy Strategist</strong> for coaches, consultants & course creators serving midlifers.
+        </p>
+        <p style="color:var(--text-dim); font-size:12px; margin-top:10px; font-family:'DM Mono',monospace;">Shift your language: performance → identity. Scale → meaning.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">The 5 Core Mindsets</div>
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <div style="display:flex; align-items:flex-start; gap:16px;">
+          <span style="font-size:20px;">🔍</span>
+          <div><strong style="color:var(--text);">Curiosity</strong> <span style="color:var(--text-dim);">—</span> <span style="color:var(--text-muted); font-size:14px;">What else could be true? Approach life as a designer, not a judge.</span></div>
+        </div>
+        <div style="display:flex; align-items:flex-start; gap:16px;">
+          <span style="font-size:20px;">⚡</span>
+          <div><strong style="color:var(--text);">Bias to Action</strong> <span style="color:var(--text-dim);">—</span> <span style="color:var(--text-muted); font-size:14px;">Small experiments beat endless introspection. Build first.</span></div>
+        </div>
+        <div style="display:flex; align-items:flex-start; gap:16px;">
+          <span style="font-size:20px;">🔄</span>
+          <div><strong style="color:var(--text);">Reframing</strong> <span style="color:var(--text-dim);">—</span> <span style="color:var(--text-muted); font-size:14px;">A different question opens a different door. Try another angle.</span></div>
+        </div>
+        <div style="display:flex; align-items:flex-start; gap:16px;">
+          <span style="font-size:20px;">👁️</span>
+          <div><strong style="color:var(--text);">Awareness</strong> <span style="color:var(--text-dim);">—</span> <span style="color:var(--text-muted); font-size:14px;">Notice patterns. Your energy doesn't lie about what matters.</span></div>
+        </div>
+        <div style="display:flex; align-items:flex-start; gap:16px;">
+          <span style="font-size:20px;">🤝</span>
+          <div><strong style="color:var(--text);">Radical Collaboration</strong> <span style="color:var(--text-dim);">—</span> <span style="color:var(--text-muted); font-size:14px;">You cannot redesign your life alone. Build your team.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LIFE DASHBOARD -->
+  <section id="mod-dashboard" class="module">
+    <div class="module-eyebrow">Module 1 · Diagnose</div>
+    <h2 class="module-title">Life Dashboard</h2>
+    <p class="module-subtitle">Diagnose reality honestly. Not philosophically — operationally. Rate where you actually are right now.</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">🏃 Health <small>energy · sleep · body · stress</small></div>
+        <div class="slider-group">
+          <div class="slider-row">
+            <span class="slider-label">Energy</span>
+            <div class="slider-track"><input type="range" min="0" max="10" value="6" oninput="updateSlider(this,'energy-val'); updateCompass()"></div>
+            <span class="slider-value" id="energy-val">6</span>
+          </div>
+          <div class="slider-row">
+            <span class="slider-label">Sleep</span>
+            <div class="slider-track"><input type="range" min="0" max="10" value="5" oninput="updateSlider(this,'sleep-val'); updateCompass()"></div>
+            <span class="slider-value" id="sleep-val">5</span>
+          </div>
+          <div class="slider-row">
+            <span class="slider-label">Body</span>
+            <div class="slider-track"><input type="range" min="0" max="10" value="6" oninput="updateSlider(this,'body-val'); updateCompass()"></div>
+            <span class="slider-value" id="body-val">6</span>
+          </div>
+          <div class="slider-row">
+            <span class="slider-label">Stress (low)</span>
+            <div class="slider-track"><input type="range" min="0" max="10" value="4" oninput="updateSlider(this,'stress-val'); updateCompass()"></div>
+            <span class="slider-value" id="stress-val">4</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">💼 Work <small>meaning · excitement · contribution</small></div>
+        <div class="slider-group">
+          <div class="slider-row">
+            <span class="slider-label">Meaning</span>
+            <div class="slider-track"><input type="range" min="0" max="10" value="4" oninput="updateSlider(this,'meaning-val'); updateCompass()"></div>
+            <span class="slider-value" id="meaning-val">4</span>
+          </div>
+          <div class="slider-row">
+            <span class="slider-label">Excitement</span>
+            <div class="slider-track"><input type="range" min="0" max="10" value="5" oninput="updateSlider(this,'excite-val'); updateCompass()"></div>
+            <span class="slider-value" id="excite-val">5</span>
+          </div>
+          <div class="slider-row">
+            <span class="slider-label">Contribution</span>
+            <div class="slider-track"><input type="range" min="0" max="10" value="6" oninput="updateSlider(this,'contrib-val'); updateCompass()"></div>
+            <span class="slider-value" id="contrib-val">6</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🎨 Play <small>curiosity · joy · exploration</small></div>
+        <div class="slider-group">
+          <div class="slider-row">
+            <span class="slider-label">Curiosity</span>
+            <div class="slider-track"><input type="range" min="0" max="10" value="7" oninput="updateSlider(this,'curio-val'); updateCompass()"></div>
+            <span class="slider-value" id="curio-val">7</span>
+          </div>
+          <div class="slider-row">
+            <span class="slider-label">Joy</span>
+            <div class="slider-track"><input type="range" min="0" max="10" value="6" oninput="updateSlider(this,'joy-val'); updateCompass()"></div>
+            <span class="slider-value" id="joy-val">6</span>
+          </div>
+          <div class="slider-row">
+            <span class="slider-label">Exploration</span>
+            <div class="slider-track"><input type="range" min="0" max="10" value="7" oninput="updateSlider(this,'explore-val'); updateCompass()"></div>
+            <span class="slider-value" id="explore-val">7</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">❤️ Love <small>relationships · connection</small></div>
+        <div class="slider-group">
+          <div class="slider-row">
+            <span class="slider-label">Relationships</span>
+            <div class="slider-track"><input type="range" min="0" max="10" value="7" oninput="updateSlider(this,'relate-val'); updateCompass()"></div>
+            <span class="slider-value" id="relate-val">7</span>
+          </div>
+          <div class="slider-row">
+            <span class="slider-label">Connection</span>
+            <div class="slider-track"><input type="range" min="0" max="10" value="6" oninput="updateSlider(this,'connect-val'); updateCompass()"></div>
+            <span class="slider-value" id="connect-val">6</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="text-align:center; margin-top:4px;">
+      <div class="card-title">Life Wheel</div>
+      <div id="compass-canvas-wrap">
+        <canvas id="lifeWheel" width="320" height="320"></canvas>
+      </div>
+      <div class="dashboard-status">
+        <span id="life-status" class="status-badge status-stable">🟡 Stable</span>
+      </div>
+      <div id="life-reflection" style="color:var(--text-muted); font-size:13px; margin-top:12px; font-style:italic; max-width:420px; margin-left:auto; margin-right:auto;"></div>
+    </div>
+  </section>
+
+  <!-- GRAVITY DETECTOR -->
+  <section id="mod-gravity" class="module">
+    <div class="module-eyebrow">Module 2 · Diagnose</div>
+    <h2 class="module-title">Gravity Detector</h2>
+    <p class="module-subtitle">Not everything that feels like a problem is solvable. If it isn't actionable, it isn't a problem — it's a condition.</p>
+
+    <div class="card">
+      <div class="card-title">Test Your Problem</div>
+      <div class="form-group">
+        <label>My problem is</label>
+        <textarea id="gravity-input" rows="3" placeholder="e.g. I started too late. My industry doesn't value my skills. People my age don't switch careers."></textarea>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
+        <div class="checklist-item" style="padding:12px 0;">
+          <input type="checkbox" class="check-input" id="q1">
+          <label for="q1" class="check-label" style="font-size:14px;">Can you directly influence this through your own behavior?</label>
+        </div>
+        <div class="checklist-item" style="padding:12px 0;">
+          <input type="checkbox" class="check-input" id="q2">
+          <label for="q2" class="check-label" style="font-size:14px;">Could you take a meaningful action within the next 30 days?</label>
+        </div>
+        <div class="checklist-item" style="padding:12px 0; border-bottom:none;">
+          <input type="checkbox" class="check-input" id="q3">
+          <label for="q3" class="check-label" style="font-size:14px;">Would a specific behavior change move this forward?</label>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="runGravityTest()">Diagnose It →</button>
+
+      <div id="gravity-output" class="gravity-output">
+        <div class="gravity-output-title" id="gravity-verdict"></div>
+        <p id="gravity-message" style="font-size:14px; line-height:1.6;"></p>
+        <hr class="divider">
+        <div id="gravity-reframe"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Common Gravity Problems</div>
+      <p style="color:var(--text-muted); font-size:13px; margin-bottom:16px;">These are real — but they're conditions, not problems. Stop fighting them. Reframe around them.</p>
+      <div class="belief-grid">
+        <div class="belief-row" onclick="toggleBelief(this)">
+          <span class="belief-arrow">›</span>
+          <div class="belief-title">"I started too late."</div>
+          <div class="belief-reframe-text">⟶ Multiple futures still exist. You now have something most 25-year-olds don't: lived context. The transition <em>is</em> the credential.</div>
+        </div>
+        <div class="belief-row" onclick="toggleBelief(this)">
+          <span class="belief-arrow">›</span>
+          <div class="belief-title">"People my age don't switch careers."</div>
+          <div class="belief-reframe-text">⟶ That's a statistic, not a rule. The only career that matters is yours. One proof point invalidates the whole claim.</div>
+        </div>
+        <div class="belief-row" onclick="toggleBelief(this)">
+          <span class="belief-arrow">›</span>
+          <div class="belief-title">"My industry doesn't respect writers/strategists."</div>
+          <div class="belief-reframe-text">⟶ You're leaving that industry. The new one does — you just haven't shown them what you can do yet.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPASS -->
+  <section id="mod-compass" class="module">
+    <div class="module-eyebrow">Module 3 · Clarify</div>
+    <h2 class="module-title">Build the Compass</h2>
+    <p class="module-subtitle">Your compass is the intersection of how you see work and how you see life. When both point the same direction, you move with clarity.</p>
+
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab(this,'workview')">Workview</div>
+      <div class="tab" onclick="switchTab(this,'lifeview')">Lifeview</div>
+      <div class="tab" onclick="switchTab(this,'alignment')">Alignment</div>
+    </div>
+
+    <div id="tab-workview" class="tab-panel active">
+      <div class="card">
+        <div class="card-title">What is work for?</div>
+        <div class="form-group">
+          <label>Why do you work?</label>
+          <textarea rows="2" id="ww1" placeholder="Not for salary. At a deeper level. What would make work feel worth doing?" oninput="saveCompass()"></textarea>
+        </div>
+        <div class="form-group">
+          <label>What makes work meaningful to you?</label>
+          <textarea rows="2" id="ww2" placeholder="The feeling you're chasing when a project feels alive..." oninput="saveCompass()"></textarea>
+        </div>
+        <div class="form-group">
+          <label>What role should money play?</label>
+          <textarea rows="2" id="ww3" placeholder="Enabler? Measure? Security? Scoreboard?" oninput="saveCompass()"></textarea>
+        </div>
+        <div class="form-group">
+          <label>What kind of impact matters most?</label>
+          <textarea rows="2" id="ww4" placeholder="Who do you most want to affect? How?" oninput="saveCompass()"></textarea>
+        </div>
+        <hr class="divider">
+        <div class="form-group">
+          <label>Your Work Thesis (synthesize the above)</label>
+          <textarea rows="3" id="work-thesis" placeholder="e.g. I create transformation by helping experts express ideas so clearly that people finally believe change is possible." oninput="saveCompass()"></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="showToast('Work thesis saved ✓')">Save Workview →</button>
+      </div>
+    </div>
+
+    <div id="tab-lifeview" class="tab-panel">
+      <div class="card">
+        <div class="card-title">What makes life meaningful?</div>
+        <div class="form-group">
+          <label>What matters more than achievement?</label>
+          <textarea rows="2" id="lv1" placeholder="Relationships? Presence? Growth? Service?" oninput="saveCompass()"></textarea>
+        </div>
+        <div class="form-group">
+          <label>What do you owe other people?</label>
+          <textarea rows="2" id="lv2" placeholder="Think about your responsibilities — to family, to community, to your craft..." oninput="saveCompass()"></textarea>
+        </div>
+        <div class="form-group">
+          <label>What does success look like at the end of a life well lived?</label>
+          <textarea rows="2" id="lv3" placeholder="The version you'd want your future self to remember..." oninput="saveCompass()"></textarea>
+        </div>
+        <hr class="divider">
+        <div class="form-group">
+          <label>Your Life Thesis (synthesize the above)</label>
+          <textarea rows="3" id="life-thesis" placeholder="e.g. A meaningful life is built through honest relationships, work that grows me, and the courage to keep redesigning rather than settling." oninput="saveCompass()"></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="showToast('Life thesis saved ✓')">Save Lifeview →</button>
+      </div>
+    </div>
+
+    <div id="tab-alignment" class="tab-panel">
+      <div class="card">
+        <div class="card-title">Does your work support your life?</div>
+        <p style="color:var(--text-muted); font-size:14px; margin-bottom:20px; line-height:1.6;">
+          Read your Work Thesis and your Life Thesis side by side. Then score how aligned they are right now.
+        </p>
+        <div class="grid-2" style="margin-bottom:20px;">
+          <div style="background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:16px;">
+            <div style="font-family:'DM Mono',monospace; font-size:10px; color:var(--amber); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px;">Work Thesis</div>
+            <p id="show-work-thesis" style="font-size:13px; color:var(--text-muted); font-style:italic; line-height:1.6;">Fill in the Workview tab first.</p>
+          </div>
+          <div style="background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:16px;">
+            <div style="font-family:'DM Mono',monospace; font-size:10px; color:var(--lavender); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px;">Life Thesis</div>
+            <p id="show-life-thesis" style="font-size:13px; color:var(--text-muted); font-style:italic; line-height:1.6;">Fill in the Lifeview tab first.</p>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Alignment Score (0–100)</label>
+          <div style="display:flex; align-items:center; gap:16px;">
+            <input type="range" min="0" max="100" value="40" style="flex:1;" oninput="updateAlignScore(this.value)" id="align-slider">
+            <span class="slider-value" id="align-val" style="width:36px; font-size:20px; color:var(--amber);">40</span>
+          </div>
+        </div>
+        <div class="align-score-wrap">
+          <div class="align-score-num" id="align-score-display">40</div>
+          <div class="align-score-label" id="align-score-label">Room to redesign — the dissonance is the data.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GOOD TIME JOURNAL -->
+  <section id="mod-journal" class="module">
+    <div class="module-eyebrow">Module 4 · Wayfinding</div>
+    <h2 class="module-title">Good Time Journal</h2>
+    <p class="module-subtitle">Your energy doesn't lie. Track what absorbs you, what drains you, what makes you feel most alive — patterns emerge from data, not from thinking harder.</p>
+
+    <div class="card">
+      <div class="card-title">Log an Activity</div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Activity</label>
+          <input type="text" id="j-activity" placeholder="e.g. Rewrote a client's landing page headline">
+        </div>
+        <div class="form-group">
+          <label>Date / Time</label>
+          <input type="text" id="j-time" placeholder="Today, 2pm">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Energy Level (−3 drained → +3 electric)</label>
+        <div style="display:flex; align-items:center; gap:16px;">
+          <span style="font-family:'DM Mono',monospace; font-size:12px; color:var(--red);">−3</span>
+          <input type="range" min="-3" max="3" value="1" style="flex:1;" oninput="updateSlider(this,'j-energy-val')" id="j-energy">
+          <span style="font-family:'DM Mono',monospace; font-size:12px; color:var(--sage);">+3</span>
+          <span class="slider-value" id="j-energy-val" style="width:28px;">+1</span>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Were you absorbed? (Flow)</label>
+          <select id="j-flow">
+            <option value="high">Yes — lost track of time</option>
+            <option value="med" selected>Somewhat</option>
+            <option value="low">Not really</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Notes / Pattern</label>
+          <input type="text" id="j-notes" placeholder="What was different about this?">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="logEntry()">+ Log Entry</button>
+    </div>
+
+    <div class="card" style="margin-top:4px;">
+      <div class="card-title">Energy Map</div>
+      <div id="journal-entries" style="min-height:80px;">
+        <p style="color:var(--text-dim); font-size:13px; font-style:italic;">No entries yet. Log your first activity above.</p>
+      </div>
+      <hr class="divider">
+      <div style="display:flex; gap:20px;">
+        <div style="flex:1; text-align:center;">
+          <div style="font-size:10px; font-family:'DM Mono',monospace; color:var(--sage); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:6px;">Avg Energy</div>
+          <div id="avg-energy" style="font-family:'DM Mono',monospace; font-size:28px; color:var(--amber);">—</div>
+        </div>
+        <div style="flex:2;">
+          <div style="font-size:10px; font-family:'DM Mono',monospace; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px;">Top Patterns</div>
+          <div id="energy-patterns" style="font-size:13px; color:var(--text-muted); line-height:1.8;">Log more entries to reveal patterns.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BELIEF REFRAMER -->
+  <section id="mod-beliefs" class="module">
+    <div class="module-eyebrow">Module 5 · Reframe</div>
+    <h2 class="module-title">Dysfunctional Belief Reframer</h2>
+    <p class="module-subtitle">You can't design a new life while running the old belief system. Reframe the thought — then act on the reframe.</p>
+
+    <div class="card">
+      <div class="card-title">Reframe Your Own Belief</div>
+      <div class="form-group">
+        <label>My limiting belief</label>
+        <input type="text" id="my-belief" placeholder="e.g. If I'm good enough, success will find me.">
+      </div>
+      <div class="form-group">
+        <label>Evidence for this belief</label>
+        <textarea id="belief-evidence" rows="2" placeholder="Where did this come from? What reinforces it?"></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="reframeBelief()">Reframe It →</button>
+      <div id="my-reframe-result" class="reframe-result" style="display:none; margin-top:16px;">
+        <div class="reframe-label">Alternative Interpretation</div>
+        <p id="my-reframe-text" class="reframe-text"></p>
+        <hr class="divider">
+        <div class="reframe-label">One action this unlocks</div>
+        <input type="text" id="reframe-action" placeholder="What would you try if this belief weren't true?" style="margin-top:4px;">
+        <button class="btn btn-ghost" style="margin-top:12px; font-size:12px;" onclick="showToast('Reframe saved ✓')">Save Reframe ✓</button>
+      </div>
+    </div>
+
+    <div class="sep-label">Built-in Reframes</div>
+
+    <div class="card">
+      <div class="belief-grid">
+        <div class="belief-row" onclick="toggleBelief(this)">
+          <span class="belief-arrow">›</span>
+          <div class="belief-title">"My degree determines my future."</div>
+          <div class="belief-reframe-text">⟶ Most people don't work in their major. Your career is not a destination — it's a design problem. You have more agency than this belief allows.</div>
+        </div>
+        <div class="belief-row" onclick="toggleBelief(this)">
+          <span class="belief-arrow">›</span>
+          <div class="belief-title">"If I'm successful, I'll be happy."</div>
+          <div class="belief-reframe-text">⟶ Causality runs the other way just as often. Design your happiness intentionally rather than earning it as a reward for achievement.</div>
+        </div>
+        <div class="belief-row" onclick="toggleBelief(this)">
+          <span class="belief-arrow">›</span>
+          <div class="belief-title">"It's too late to change."</div>
+          <div class="belief-reframe-text">⟶ Multiple futures still exist. The question isn't "is there time?" — it's "which future do I want to start building today?"</div>
+        </div>
+        <div class="belief-row" onclick="toggleBelief(this)">
+          <span class="belief-arrow">›</span>
+          <div class="belief-title">"We judge life by outcomes."</div>
+          <div class="belief-reframe-text">⟶ Life is process. Outcomes are confirmation bias — you remember the outcomes that validate your current story. The process is what you actually live.</div>
+        </div>
+        <div class="belief-row" onclick="toggleBelief(this)">
+          <span class="belief-arrow">›</span>
+          <div class="belief-title">"I need clarity before I can act."</div>
+          <div class="belief-reframe-text">⟶ Clarity comes after action, not before it. You build your way into knowing — you don't think your way into it. The prototype is the answer.</div>
+        </div>
+        <div class="belief-row" onclick="toggleBelief(this)">
+          <span class="belief-arrow">›</span>
+          <div class="belief-title">"Midlife people don't reinvent themselves."</div>
+          <div class="belief-reframe-text">⟶ Midlife is precisely when reinvention becomes possible — because the cost of ignoring the call finally outweighs the cost of changing. Your audience knows this intimately.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ODYSSEY PLANS -->
+  <section id="mod-odyssey" class="module">
+    <div class="module-eyebrow">Module 6 · Create</div>
+    <h2 class="module-title">Odyssey Plans</h2>
+    <p class="module-subtitle">Don't plan one future. Design three. The constraint of a single plan creates false certainty. Three plans reveal what you actually value.</p>
+
+    <div class="odyssey-grid">
+      <div class="odyssey-card plan-a">
+        <div class="odyssey-label">Plan A · Continue</div>
+        <div class="form-group">
+          <label>Six-Word Title</label>
+          <input type="text" id="pa-title" placeholder="Copy strategist deepens niche, grows steadily">
+        </div>
+        <div class="form-group">
+          <label>Year 1</label>
+          <textarea id="pa-y1" rows="2" placeholder="What specifically happens..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Year 3</label>
+          <textarea id="pa-y3" rows="2" placeholder="Where does this path lead?"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Year 5</label>
+          <textarea id="pa-y5" rows="2" placeholder="What does success look like?"></textarea>
+        </div>
+        <div class="form-group">
+          <label>What excites you about this?</label>
+          <textarea id="pa-excite" rows="2" placeholder="Honest answer..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>What scares you about this?</label>
+          <textarea id="pa-fear" rows="2" placeholder="Honest answer..."></textarea>
+        </div>
+        <div class="gauge-row">
+          <div class="gauge-item">
+            <div class="gauge-label">Resources</div>
+            <input type="range" min="1" max="10" value="7" oninput="updateGauge(this,'pa-res')">
+            <div class="gauge-val" id="pa-res">7</div>
+          </div>
+          <div class="gauge-item">
+            <div class="gauge-label">Confidence</div>
+            <input type="range" min="1" max="10" value="6" oninput="updateGauge(this,'pa-conf')">
+            <div class="gauge-val" id="pa-conf">6</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="odyssey-card plan-b">
+        <div class="odyssey-label">Plan B · Pivot</div>
+        <div class="form-group">
+          <label>Six-Word Title</label>
+          <input type="text" id="pb-title" placeholder="Become the midlife transformation architect">
+        </div>
+        <div class="form-group">
+          <label>Year 1</label>
+          <textarea id="pb-y1" rows="2" placeholder="What specifically changes..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Year 3</label>
+          <textarea id="pb-y3" rows="2" placeholder="Where does this lead?"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Year 5</label>
+          <textarea id="pb-y5" rows="2" placeholder="The longer arc..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>What excites you?</label>
+          <textarea id="pb-excite" rows="2" placeholder="Honest answer..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>What scares you?</label>
+          <textarea id="pb-fear" rows="2" placeholder="Honest answer..."></textarea>
+        </div>
+        <div class="gauge-row">
+          <div class="gauge-item">
+            <div class="gauge-label">Resources</div>
+            <input type="range" min="1" max="10" value="4" oninput="updateGauge(this,'pb-res')">
+            <div class="gauge-val" id="pb-res">4</div>
+          </div>
+          <div class="gauge-item">
+            <div class="gauge-label">Confidence</div>
+            <input type="range" min="1" max="10" value="5" oninput="updateGauge(this,'pb-conf')">
+            <div class="gauge-val" id="pb-conf">5</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="odyssey-card plan-c">
+        <div class="odyssey-label">Plan C · Wild Card</div>
+        <div class="form-group">
+          <label>Six-Word Title</label>
+          <input type="text" id="pc-title" placeholder="If failure were impossible, I'd...">
+        </div>
+        <div class="form-group">
+          <label>Year 1</label>
+          <textarea id="pc-y1" rows="2" placeholder="If fear weren't in the equation..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Year 3</label>
+          <textarea id="pc-y3" rows="2" placeholder="What's the bold version?"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Year 5</label>
+          <textarea id="pc-y5" rows="2" placeholder="The wild-card outcome..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>What excites you?</label>
+          <textarea id="pc-excite" rows="2" placeholder="This is supposed to scare-excite you..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>What assumptions live here?</label>
+          <textarea id="pc-fear" rows="2" placeholder="What would have to be true?"></textarea>
+        </div>
+        <div class="gauge-row">
+          <div class="gauge-item">
+            <div class="gauge-label">Resources</div>
+            <input type="range" min="1" max="10" value="2" oninput="updateGauge(this,'pc-res')">
+            <div class="gauge-val" id="pc-res">2</div>
+          </div>
+          <div class="gauge-item">
+            <div class="gauge-label">Confidence</div>
+            <input type="range" min="1" max="10" value="3" oninput="updateGauge(this,'pc-conf')">
+            <div class="gauge-val" id="pc-conf">3</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center; margin-top:24px;">
+      <button class="btn btn-primary" onclick="showToast('Odyssey plans saved ✓')">Save All Plans →</button>
+    </div>
+  </section>
+
+  <!-- PROTOTYPE LAB -->
+  <section id="mod-prototypes" class="module">
+    <div class="module-eyebrow">Module 7 · Create</div>
+    <h2 class="module-title">Prototype Lab</h2>
+    <p class="module-subtitle">Don't decide. Test. A prototype is the smallest possible version of an action that generates real-world feedback.</p>
+
+    <div class="grid-2" style="margin-bottom:24px;">
+      <div class="card" style="background:var(--surface2); border-color:var(--amber);">
+        <div style="font-size:22px; margin-bottom:8px;">💬</div>
+        <div style="font-size:13px; font-weight:600; color:var(--amber); margin-bottom:6px;">Conversation Prototype</div>
+        <p style="font-size:13px; color:var(--text-muted);">Talk to someone who lives the life you're designing. No pitching. Only learning.</p>
+      </div>
+      <div class="card" style="background:var(--surface2); border-color:var(--sage);">
+        <div style="font-size:22px; margin-bottom:8px;">🧪</div>
+        <div style="font-size:13px; font-weight:600; color:var(--sage); margin-bottom:6px;">Experience Prototype</div>
+        <p style="font-size:13px; color:var(--text-muted);">Try the actual thing — even a tiny version. Insight from doing beats insight from imagining.</p>
+      </div>
+      <div class="card" style="background:var(--surface2); border-color:var(--lavender);">
+        <div style="font-size:22px; margin-bottom:8px;">👁️</div>
+        <div style="font-size:13px; font-weight:600; color:var(--lavender); margin-bottom:6px;">Shadow Prototype</div>
+        <p style="font-size:13px; color:var(--text-muted);">Observe someone doing the work. Sit in on their day. Map what the reality actually looks like.</p>
+      </div>
+      <div class="card" style="background:var(--surface2); border-color:var(--yellow);">
+        <div style="font-size:22px; margin-bottom:8px;">🛠️</div>
+        <div style="font-size:13px; font-weight:600; color:var(--yellow); margin-bottom:6px;">Side Project Prototype</div>
+        <p style="font-size:13px; color:var(--text-muted);">Build something tiny. A post, a tool, a free offer. Ship before you're ready.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Log a Prototype</div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Prototype Type</label>
+          <select id="proto-type">
+            <option>Conversation</option>
+            <option>Experience</option>
+            <option>Shadow</option>
+            <option>Side Project</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Target Date</label>
+          <input type="text" id="proto-date" placeholder="e.g. This Friday">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Hypothesis</label>
+        <textarea id="proto-hyp" rows="2" placeholder="e.g. Midlife coaches care more about identity language than conversion metrics."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Action (what specifically will you do?)</label>
+        <textarea id="proto-action" rows="2" placeholder="e.g. I will interview 3 coaches about how they describe their work to new clients."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Expected Insight</label>
+        <textarea id="proto-expected" rows="2" placeholder="What do you think you'll learn?"></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="addPrototype()">+ Add Prototype</button>
+    </div>
+
+    <div id="prototype-list" style="margin-top:16px;">
+      <div class="prototype-card">
+        <div class="prototype-type">Conversation</div>
+        <div style="font-size:14px; font-weight:600; color:var(--text); margin-bottom:8px;">Hypothesis: Midlife coaches buy on strategic messaging, not conversion jargon.</div>
+        <div style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">Action: Interview 10 coaches about what makes messaging feel right or wrong.</div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label style="color:var(--sage);">Actual Insight (after doing it)</label>
+          <textarea rows="2" placeholder="Identity language matters more than conversion frameworks. They want messaging that sounds like them at their best."></textarea>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DECISION ENGINE -->
+  <section id="mod-decisions" class="module">
+    <div class="module-eyebrow">Module 9 · Commit</div>
+    <h2 class="module-title">Decision Engine</h2>
+    <p class="module-subtitle">Gather → Narrow → Choose → Let go. The trap isn't indecision — it's choosing, then not letting go.</p>
+
+    <div class="card">
+      <div class="card-title">Add a Decision Card</div>
+      <div class="form-group">
+        <label>Decision to make</label>
+        <input type="text" id="dec-input" placeholder="e.g. Niche down to midlife career coaches only">
+      </div>
+      <div class="form-group">
+        <label>Stakes</label>
+        <select id="dec-stakes">
+          <option>Low — easily reversible</option>
+          <option selected>Medium — significant but recoverable</option>
+          <option>High — identity-level or hard to undo</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="addDecision()">+ Add Card</button>
+    </div>
+
+    <div id="decision-list" style="margin-top:16px;">
+      <div class="decision-card">
+        <div>
+          <div style="font-size:14px; font-weight:500; color:var(--text); margin-bottom:4px;">Stop writing for proptech/fintech clients</div>
+          <div style="font-size:12px; color:var(--text-dim); font-family:'DM Mono',monospace;">High stakes · Identity-level</div>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <span class="status-badge status-actionable">Chosen</span>
+          <button class="btn btn-ghost" style="font-size:11px; padding:6px 14px;" onclick="lockDecision(this)">Lock & Let Go 🔒</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px; background:var(--amber-dim); border-color:var(--amber);">
+      <div class="card-title" style="color:var(--amber-light);">The Letting Go Protocol</div>
+      <p style="color:var(--text-muted); font-size:14px; line-height:1.7;">
+        Once you lock a decision: write it down, date it, and stop revisiting it for 30 days. 
+        The obsessing after choosing is where energy goes to die. 
+        Commitment isn't certainty — it's forward motion despite uncertainty.
+      </p>
+    </div>
+  </section>
+
+  <!-- FAILURE IMMUNITY -->
+  <section id="mod-failure" class="module">
+    <div class="module-eyebrow">Module 10 · Commit</div>
+    <h2 class="module-title">Failure Immunity</h2>
+    <p class="module-subtitle">Failure ≠ identity. Failure = information. Every failed prototype teaches you something a successful one wouldn't.</p>
+
+    <div class="card">
+      <div class="card-title">Process a Failure or Setback</div>
+      <div class="form-group">
+        <label>What happened?</label>
+        <textarea id="fail-what" rows="3" placeholder="Describe the situation plainly. No narrative, just facts."></textarea>
+      </div>
+      <div class="form-group">
+        <label>What assumption failed?</label>
+        <textarea id="fail-assume" rows="2" placeholder="What did you believe that turned out to be wrong?"></textarea>
+      </div>
+      <div class="form-group">
+        <label>What did reality actually teach you?</label>
+        <textarea id="fail-teach" rows="2" placeholder="What's the honest learning — not the consolation prize version?"></textarea>
+      </div>
+      <div class="form-group">
+        <label>What changes in your next iteration?</label>
+        <textarea id="fail-next" rows="2" placeholder="One specific thing that shifts going forward..."></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="saveFailure()">Extract the Learning →</button>
+      <div id="failure-output" style="display:none; margin-top:16px;">
+        <div class="reframe-result" style="background:var(--amber-dim); border-color:var(--amber);">
+          <div class="reframe-label" style="color:var(--amber);">Life is process, not outcome.</div>
+          <p class="reframe-text" style="font-style:italic; color:var(--text-muted);">This review has been saved. The failure has been converted to information. What you do next is the design.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="sep-label">The Reframes</div>
+
+    <div class="grid-2">
+      <div class="card" style="border-left:3px solid var(--sage);">
+        <p style="font-family:'Playfair Display',serif; font-size:18px; font-style:italic; color:var(--text); line-height:1.5;">"Failure is just design data that arrived sooner than expected."</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--lavender);">
+        <p style="font-family:'Playfair Display',serif; font-size:18px; font-style:italic; color:var(--text); line-height:1.5;">"A good life isn't a life without failure. It's a life where failure informs forward motion."</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:4px;">
+      <div class="card-title">Failure Log</div>
+      <div id="failure-log">
+        <p style="color:var(--text-dim); font-size:13px; font-style:italic;">No failures logged yet. The most dangerous failure is the one you never examine.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- DESIGN TEAM -->
+  <section id="mod-team" class="module">
+    <div class="module-eyebrow">Module 11 · Collaborate</div>
+    <h2 class="module-title">Your Design Team</h2>
+    <p class="module-subtitle">You cannot redesign your life alone. Build a board of advisors — people who question without fixing, who reflect without judging.</p>
+
+    <div class="card" style="margin-bottom:24px;">
+      <div class="card-title">Board of Advisors</div>
+      <div class="advisor-grid" id="advisor-grid">
+        <div class="advisor-card">
+          <div class="advisor-avatar">👤</div>
+          <div class="advisor-role">Friend</div>
+          <input type="text" placeholder="Name" style="text-align:center; font-size:13px; padding:8px; margin-bottom:8px;">
+          <input type="text" placeholder="Why they're on your board" style="text-align:center; font-size:12px; padding:6px;">
+        </div>
+        <div class="advisor-card">
+          <div class="advisor-avatar">🧭</div>
+          <div class="advisor-role">Coach / Mentor</div>
+          <input type="text" placeholder="Name" style="text-align:center; font-size:13px; padding:8px; margin-bottom:8px;">
+          <input type="text" placeholder="What they help you see" style="text-align:center; font-size:12px; padding:6px;">
+        </div>
+        <div class="advisor-card">
+          <div class="advisor-avatar">🤝</div>
+          <div class="advisor-role">Peer</div>
+          <input type="text" placeholder="Name" style="text-align:center; font-size:13px; padding:8px; margin-bottom:8px;">
+          <input type="text" placeholder="What you challenge each other on" style="text-align:center; font-size:12px; padding:6px;">
+        </div>
+        <div class="advisor-card">
+          <div class="advisor-avatar">🔮</div>
+          <div class="advisor-role">Future Collaborator</div>
+          <input type="text" placeholder="Name" style="text-align:center; font-size:13px; padding:8px; margin-bottom:8px;">
+          <input type="text" placeholder="What you'd build together" style="text-align:center; font-size:12px; padding:6px;">
+        </div>
+        <div class="advisor-card">
+          <div class="advisor-avatar">📚</div>
+          <div class="advisor-role">Domain Expert</div>
+          <input type="text" placeholder="Name" style="text-align:center; font-size:13px; padding:8px; margin-bottom:8px;">
+          <input type="text" placeholder="Their expertise" style="text-align:center; font-size:12px; padding:6px;">
+        </div>
+        <div class="advisor-card" style="display:flex; align-items:center; justify-content:center; cursor:pointer; border-style:dashed;" onclick="showToast('Add a custom role →')">
+          <div>
+            <div style="font-size:28px; text-align:center; margin-bottom:8px;">+</div>
+            <div style="font-size:12px; color:var(--text-dim);">Add Custom Role</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="background:var(--surface2);">
+      <div class="card-title">Team Rules</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div style="display:flex; gap:12px; align-items:flex-start;">
+          <span style="color:var(--sage); font-size:18px;">✓</span>
+          <div>
+            <div style="font-size:13px; font-weight:600; color:var(--text); margin-bottom:2px;">Ask questions</div>
+            <div style="font-size:12px; color:var(--text-muted);">Good advisors open new doors with questions, not answers.</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:12px; align-items:flex-start;">
+          <span style="color:var(--sage); font-size:18px;">✓</span>
+          <div>
+            <div style="font-size:13px; font-weight:600; color:var(--text); margin-bottom:2px;">Amplify strengths</div>
+            <div style="font-size:12px; color:var(--text-muted);">Reflect back what they see you doing well.</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:12px; align-items:flex-start;">
+          <span style="color:var(--red); font-size:18px;">✗</span>
+          <div>
+            <div style="font-size:13px; font-weight:600; color:var(--text); margin-bottom:2px;">No fixing</div>
+            <div style="font-size:12px; color:var(--text-muted);">Fixing treats you as broken. You're not broken, you're designing.</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:12px; align-items:flex-start;">
+          <span style="color:var(--red); font-size:18px;">✗</span>
+          <div>
+            <div style="font-size:13px; font-weight:600; color:var(--text); margin-bottom:2px;">No unsolicited critique</div>
+            <div style="font-size:12px; color:var(--text-muted);">Feedback is a gift — it only works when it's wanted.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:4px; border-color:var(--lavender); background:var(--lavender-dim);">
+      <div class="card-title" style="color:var(--lavender);">Design Interviews — A Hidden Superpower</div>
+      <p style="color:var(--text-muted); font-size:14px; line-height:1.7; margin-bottom:16px;">
+        Have these conversations with people living a version of the life you're designing. No agenda. Just learning.
+      </p>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div style="font-size:13px; color:var(--text-muted);">💬 "How did you actually get here?"</div>
+        <div style="font-size:13px; color:var(--text-muted);">💬 "What surprised you most about this path?"</div>
+        <div style="font-size:13px; color:var(--text-muted);">💬 "What did you believe strongly that turned out to be wrong?"</div>
+        <div style="font-size:13px; color:var(--text-muted);">💬 "What advice from others would you tell me to ignore?"</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Toast -->
+<div id="toast">Saved ✓</div>
+
+<script>
+// ── NAV ──
+function showModule(id) {
+  document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const mod = document.getElementById('mod-' + id);
+  if (mod) mod.classList.add('active');
+  event.currentTarget.classList.add('active');
+  document.getElementById('main').scrollTo(0, 0);
+  if (id === 'compass') {
+    setTimeout(syncCompassTheses, 100);
+  }
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── SLIDERS ──
+function updateSlider(el, valId) {
+  const v = parseFloat(el.value);
+  const span = document.getElementById(valId);
+  if (!span) return;
+  if (valId === 'j-energy-val') {
+    span.textContent = (v >= 0 ? '+' : '') + v;
+    span.style.color = v > 0 ? 'var(--sage)' : v < 0 ? 'var(--red)' : 'var(--text-muted)';
+  } else {
+    span.textContent = v;
+  }
+}
+
+function updateGauge(el, id) {
+  document.getElementById(id).textContent = el.value;
+}
+
+// ── COMPASS / LIFE WHEEL ──
+const AXES = [
+  { id: 'energy', label: 'Energy' }, { id: 'sleep', label: 'Sleep' },
+  { id: 'body', label: 'Body' }, { id: 'stress', label: 'Stress' },
+  { id: 'meaning', label: 'Meaning' }, { id: 'excite', label: 'Excitement' },
+  { id: 'contrib', label: 'Contribution' },
+  { id: 'curio', label: 'Curiosity' }, { id: 'joy', label: 'Joy' },
+  { id: 'explore', label: 'Explore' },
+  { id: 'relate', label: 'Relations' }, { id: 'connect', label: 'Connection' }
+];
+
+function updateCompass() {
+  const canvas = document.getElementById('lifeWheel');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const cx = 160, cy = 160, R = 130;
+  const n = AXES.length;
+  ctx.clearRect(0, 0, 320, 320);
+
+  // BG rings
+  ctx.strokeStyle = 'rgba(46,53,80,0.7)';
+  ctx.lineWidth = 1;
+  for (let r = 1; r <= 5; r++) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, (R / 5) * r, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  // Axis lines
+  AXES.forEach((_, i) => {
+    const angle = (Math.PI * 2 * i / n) - Math.PI / 2;
+    ctx.strokeStyle = 'rgba(46,53,80,0.5)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(angle) * R, cy + Math.sin(angle) * R);
+    ctx.stroke();
+  });
+
+  // Compute values
+  const vals = AXES.map(a => {
+    const el = document.getElementById(a.id + '-val');
+    return el ? parseFloat(el.textContent) || 0 : 5;
+  });
+  const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+
+  // Filled polygon
+  ctx.beginPath();
+  AXES.forEach((_, i) => {
+    const angle = (Math.PI * 2 * i / n) - Math.PI / 2;
+    const r = (vals[i] / 10) * R;
+    const x = cx + Math.cos(angle) * r;
+    const y = cy + Math.sin(angle) * r;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(200,103,42,0.18)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(200,103,42,0.8)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Labels
+  ctx.fillStyle = 'rgba(136,144,168,0.9)';
+  ctx.font = '10px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  AXES.forEach((a, i) => {
+    const angle = (Math.PI * 2 * i / n) - Math.PI / 2;
+    const r = R + 16;
+    ctx.fillText(a.label, cx + Math.cos(angle) * r, cy + Math.sin(angle) * r);
+  });
+
+  // Center score
+  ctx.fillStyle = 'var(--amber, #c8672a)';
+  ctx.font = 'bold 22px "DM Mono", monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(avg.toFixed(1), cx, cy);
+
+  // Status
+  const statusEl = document.getElementById('life-status');
+  const refEl = document.getElementById('life-reflection');
+  if (avg >= 7) {
+    statusEl.className = 'status-badge status-alive';
+    statusEl.textContent = '🟢 Alive';
+    refEl.textContent = 'You\'re operating from a strong base. Use this energy to run experiments, not just maintain.';
+  } else if (avg >= 4.5) {
+    statusEl.className = 'status-badge status-stable';
+    statusEl.textContent = '🟡 Stable';
+    refEl.textContent = 'Functional but not fully alive. Notice which areas pull the average down — that\'s where the design work is.';
+  } else {
+    statusEl.className = 'status-badge status-empty';
+    statusEl.textContent = '🔴 Running Empty';
+    refEl.textContent = 'Your system is signaling clearly. Before designing forward, what single area most needs your attention this week?';
+  }
+}
+
+// ── DAILY PROMPTS ──
+const prompts = [
+  '"What\'s one thing you\'re tolerating that you could prototype your way out of instead?"',
+  '"If your next move had to be an experiment rather than a commitment, what would you try?"',
+  '"What activity in the past week made you lose track of time? What does that tell you?"',
+  '"Which of your current beliefs about your future feels most like gravity right now?"',
+  '"Who is living a version of the life you\'re designing? When will you talk to them?"',
+  '"What would you do this week if you knew it would fail — and that was okay?"',
+  '"In your transition, what are you trying to optimize: safety, meaning, or growth? Are these aligned?"',
+  '"What\'s the six-word title of the life you\'re building right now?"',
+  '"Where is your curiosity pulling you that your logic is resisting?"',
+  '"What would your future self tell you to stop worrying about?"',
+];
+
+let promptIdx = 0;
+function newPrompt() {
+  promptIdx = (promptIdx + 1) % prompts.length;
+  document.getElementById('daily-prompt').textContent = prompts[promptIdx];
+}
+
+// ── GRAVITY TEST ──
+function runGravityTest() {
+  const input = document.getElementById('gravity-input').value.trim();
+  if (!input) { showToast('Enter your problem first'); return; }
+  const q1 = document.getElementById('q1').checked;
+  const q2 = document.getElementById('q2').checked;
+  const q3 = document.getElementById('q3').checked;
+  const score = (q1 ? 1 : 0) + (q2 ? 1 : 0) + (q3 ? 1 : 0);
+  const out = document.getElementById('gravity-output');
+  const verdict = document.getElementById('gravity-verdict');
+  const msg = document.getElementById('gravity-message');
+  const reframe = document.getElementById('gravity-reframe');
+
+  out.className = 'gravity-output show';
+  if (score >= 2) {
+    out.classList.add('actionable');
+    out.classList.remove('gravity');
+    verdict.textContent = '✅ Actionable';
+    msg.textContent = 'This is a real problem you can work on. It\'s within your influence. Now: what\'s the smallest experiment you could run in the next 7 days?';
+    reframe.innerHTML = '<strong style="font-size:12px;font-family:DM Mono,monospace;color:var(--sage);text-transform:uppercase;letter-spacing:0.1em;">Next step:</strong><br><input type="text" placeholder="My first action will be..." style="margin-top:8px;width:100%;">';
+  } else {
+    out.classList.add('gravity');
+    out.classList.remove('actionable');
+    verdict.textContent = '🪐 Gravity Problem';
+    msg.textContent = 'This is a condition, not a problem. Fighting it directly depletes energy without progress. The question shifts from "how do I solve this?" to "how do I design around this constraint?"';
+    reframe.innerHTML = '<strong style="font-size:12px;font-family:DM Mono,monospace;color:var(--lavender);text-transform:uppercase;letter-spacing:0.1em;">Reframe:</strong> <span style="font-size:14px;color:var(--text-muted);">Given this constraint is real, what becomes possible <em>within</em> it?</span><br><textarea placeholder="If I accept this as a condition rather than a problem, I could..." rows="2" style="margin-top:10px;width:100%;"></textarea>';
+  }
+}
+
+// ── TABS ──
+function switchTab(tabEl, panelId) {
+  const container = tabEl.closest('.module') || document;
+  container.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  container.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  tabEl.classList.add('active');
+  const panel = document.getElementById('tab-' + panelId);
+  if (panel) panel.classList.add('active');
+  if (panelId === 'alignment') syncCompassTheses();
+}
+
+// ── COMPASS SYNC ──
+function saveCompass() {}
+function syncCompassTheses() {
+  const wt = document.getElementById('work-thesis');
+  const lt = document.getElementById('life-thesis');
+  const sw = document.getElementById('show-work-thesis');
+  const sl = document.getElementById('show-life-thesis');
+  if (wt && sw) sw.textContent = wt.value || 'Fill in the Workview tab first.';
+  if (lt && sl) sl.textContent = lt.value || 'Fill in the Lifeview tab first.';
+}
+
+function updateAlignScore(v) {
+  document.getElementById('align-val').textContent = v;
+  document.getElementById('align-score-display').textContent = v;
+  const n = parseInt(v);
+  const lbl = document.getElementById('align-score-label');
+  if (n >= 75) lbl.textContent = 'Strong alignment. Your work and life are pulling in the same direction.';
+  else if (n >= 50) lbl.textContent = 'Partial alignment. There\'s drift worth investigating.';
+  else if (n >= 25) lbl.textContent = 'Room to redesign — the dissonance is the data.';
+  else lbl.textContent = 'Significant misalignment. The compass is pointing opposite directions. This is urgent design work.';
+}
+
+// ── BELIEF TOGGLE ──
+function toggleBelief(el) {
+  el.classList.toggle('expanded');
+}
+
+// ── JOURNAL ──
+const journalEntries = [];
+function logEntry() {
+  const act = document.getElementById('j-activity').value.trim();
+  if (!act) { showToast('Enter an activity first'); return; }
+  const energy = parseInt(document.getElementById('j-energy').value);
+  const flow = document.getElementById('j-flow').value;
+  const time = document.getElementById('j-time').value || 'Now';
+  const notes = document.getElementById('j-notes').value;
+  journalEntries.push({ act, energy, flow, time, notes });
+  renderJournal();
+  document.getElementById('j-activity').value = '';
+  document.getElementById('j-notes').value = '';
+  showToast('Entry logged ✓');
+}
+
+function renderJournal() {
+  const container = document.getElementById('journal-entries');
+  if (!journalEntries.length) {
+    container.innerHTML = '<p style="color:var(--text-dim);font-size:13px;font-style:italic;">No entries yet.</p>';
+    return;
+  }
+  container.innerHTML = journalEntries.map(e => {
+    const cls = e.energy > 0 ? 'energy-pos' : e.energy < 0 ? 'energy-neg' : 'energy-neutral';
+    const sign = e.energy >= 0 ? '+' : '';
+    return `<div class="journal-entry">
+      <div class="energy-badge ${cls}">${sign}${e.energy}</div>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:500;color:var(--text);">${e.act}</div>
+        <div style="font-size:12px;color:var(--text-dim);font-family:'DM Mono',monospace;">${e.time} · Flow: ${e.flow}${e.notes ? ' · ' + e.notes : ''}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const avg = journalEntries.reduce((s, e) => s + e.energy, 0) / journalEntries.length;
+  document.getElementById('avg-energy').textContent = (avg >= 0 ? '+' : '') + avg.toFixed(1);
+  const highs = journalEntries.filter(e => e.energy > 1).map(e => e.act);
+  document.getElementById('energy-patterns').innerHTML = highs.length
+    ? `<strong style="color:var(--sage);">High energy:</strong> ${highs.join(', ')}`
+    : 'Keep logging — patterns need more data.';
+}
+
+// ── REFRAME ──
+const reframes = [
+  (b) => `What if the opposite of "${b}" gave someone else a successful life? That suggests it's a context, not a universal law.`,
+  (b) => `This belief protected you once. What problem was it solving back then? Does that problem still exist today?`,
+  (b) => `If a trusted friend held this belief, what would you tell them? Apply your own answer.`,
+  (b) => `What's the 1% chance this belief is completely wrong? Design your next move from that possibility.`,
+];
+let reframeIdx = 0;
+function reframeBelief() {
+  const b = document.getElementById('my-belief').value.trim();
+  if (!b) { showToast('Enter a belief first'); return; }
+  const text = reframes[reframeIdx % reframes.length](b);
+  reframeIdx++;
+  document.getElementById('my-reframe-text').textContent = text;
+  document.getElementById('my-reframe-result').style.display = 'block';
+}
+
+// ── PROTOTYPE ──
+function addPrototype() {
+  const type = document.getElementById('proto-type').value;
+  const hyp = document.getElementById('proto-hyp').value.trim();
+  const action = document.getElementById('proto-action').value.trim();
+  const date = document.getElementById('proto-date').value;
+  if (!hyp || !action) { showToast('Fill in hypothesis and action'); return; }
+  const div = document.createElement('div');
+  div.className = 'prototype-card';
+  div.innerHTML = `<div class="prototype-type">${type}</div>
+    <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:8px;">Hypothesis: ${hyp}</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:4px;">Action: ${action}</div>
+    <div style="font-size:12px;color:var(--text-dim);font-family:'DM Mono',monospace;margin-bottom:12px;">Target: ${date || 'TBD'}</div>
+    <div class="form-group" style="margin-bottom:0;">
+      <label style="color:var(--sage);">Actual Insight (after doing it)</label>
+      <textarea rows="2" placeholder="What did you actually learn?"></textarea>
+    </div>`;
+  document.getElementById('prototype-list').appendChild(div);
+  document.getElementById('proto-hyp').value = '';
+  document.getElementById('proto-action').value = '';
+  document.getElementById('proto-date').value = '';
+  document.getElementById('proto-expected').value = '';
+  showToast('Prototype added ✓');
+}
+
+// ── DECISIONS ──
+function addDecision() {
+  const text = document.getElementById('dec-input').value.trim();
+  if (!text) { showToast('Enter a decision first'); return; }
+  const stakes = document.getElementById('dec-stakes').value;
+  const div = document.createElement('div');
+  div.className = 'decision-card';
+  div.innerHTML = `<div>
+    <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px;">${text}</div>
+    <div style="font-size:12px;color:var(--text-dim);font-family:'DM Mono',monospace;">${stakes}</div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <button class="btn btn-primary" style="font-size:11px;padding:6px 14px;" onclick="chooseDecision(this)">Choose It →</button>
+    <button class="btn btn-ghost" style="font-size:11px;padding:6px 14px;" onclick="lockDecision(this)">Lock & Let Go 🔒</button>
+  </div>`;
+  document.getElementById('decision-list').appendChild(div);
+  document.getElementById('dec-input').value = '';
+  showToast('Decision card added ✓');
+}
+
+function chooseDecision(btn) {
+  btn.textContent = 'Chosen ✓';
+  btn.className = 'status-badge status-actionable';
+}
+
+function lockDecision(btn) {
+  const card = btn.closest('.decision-card');
+  const textEl = card.querySelector('div div:first-child');
+  textEl.style.opacity = '0.5';
+  textEl.style.textDecoration = 'line-through';
+  btn.textContent = '🔒 Locked';
+  btn.disabled = true;
+  showToast('Decision locked. Now let it go.');
+}
+
+// ── FAILURE ──
+const failureLog = [];
+function saveFailure() {
+  const what = document.getElementById('fail-what').value.trim();
+  if (!what) { showToast('Describe what happened first'); return; }
+  const assume = document.getElementById('fail-assume').value;
+  const teach = document.getElementById('fail-teach').value;
+  const next = document.getElementById('fail-next').value;
+  failureLog.push({ what, assume, teach, next, date: new Date().toLocaleDateString() });
+  document.getElementById('failure-output').style.display = 'block';
+  renderFailureLog();
+  showToast('Failure processed ✓');
+}
+
+function renderFailureLog() {
+  const container = document.getElementById('failure-log');
+  if (!failureLog.length) return;
+  container.innerHTML = failureLog.map(f => `
+    <div class="failure-card">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--red);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">${f.date}</div>
+      <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:8px;">${f.what}</div>
+      ${f.teach ? `<div style="font-size:13px;color:var(--text-muted);font-style:italic;">Learning: ${f.teach}</div>` : ''}
+      ${f.next ? `<div style="font-size:13px;color:var(--sage);margin-top:6px;">→ ${f.next}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  updateCompass();
+  document.getElementById('j-energy').addEventListener('input', function() {
+    const v = parseInt(this.value);
+    document.getElementById('j-energy-val').textContent = (v >= 0 ? '+' : '') + v;
+  });
+});
+
+window.addEventListener('load', updateCompass);
+</script>
+</body>
+</html>
