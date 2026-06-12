@@ -1847,6 +1847,19 @@
 <div id="toast">Saved ✓</div>
 
 <script>
+// ══════════════════════════════════════════════
+// STORAGE HELPERS
+// ══════════════════════════════════════════════
+function save(key, value) {
+  try { localStorage.setItem('dyl_' + key, JSON.stringify(value)); } catch(e) {}
+}
+function load(key, fallback) {
+  try {
+    const v = localStorage.getItem('dyl_' + key);
+    return v !== null ? JSON.parse(v) : fallback;
+  } catch(e) { return fallback; }
+}
+
 // ── NAV ──
 function showModule(id) {
   document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
@@ -1855,9 +1868,7 @@ function showModule(id) {
   if (mod) mod.classList.add('active');
   event.currentTarget.classList.add('active');
   document.getElementById('main').scrollTo(0, 0);
-  if (id === 'compass') {
-    setTimeout(syncCompassTheses, 100);
-  }
+  if (id === 'compass') setTimeout(syncCompassTheses, 100);
 }
 
 // ── TOAST ──
@@ -1868,7 +1879,7 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2200);
 }
 
-// ── SLIDERS ──
+// ── SLIDERS (dashboard) ──
 function updateSlider(el, valId) {
   const v = parseFloat(el.value);
   const span = document.getElementById(valId);
@@ -1879,13 +1890,15 @@ function updateSlider(el, valId) {
   } else {
     span.textContent = v;
   }
+  saveDashboard();
 }
 
 function updateGauge(el, id) {
   document.getElementById(id).textContent = el.value;
+  saveOdyssey();
 }
 
-// ── COMPASS / LIFE WHEEL ──
+// ── LIFE WHEEL ──
 const AXES = [
   { id: 'energy', label: 'Energy' }, { id: 'sleep', label: 'Sleep' },
   { id: 'body', label: 'Body' }, { id: 'stress', label: 'Stress' },
@@ -1904,7 +1917,6 @@ function updateCompass() {
   const n = AXES.length;
   ctx.clearRect(0, 0, 320, 320);
 
-  // BG rings
   ctx.strokeStyle = 'rgba(46,53,80,0.7)';
   ctx.lineWidth = 1;
   for (let r = 1; r <= 5; r++) {
@@ -1913,7 +1925,6 @@ function updateCompass() {
     ctx.stroke();
   }
 
-  // Axis lines
   AXES.forEach((_, i) => {
     const angle = (Math.PI * 2 * i / n) - Math.PI / 2;
     ctx.strokeStyle = 'rgba(46,53,80,0.5)';
@@ -1924,14 +1935,12 @@ function updateCompass() {
     ctx.stroke();
   });
 
-  // Compute values
   const vals = AXES.map(a => {
     const el = document.getElementById(a.id + '-val');
     return el ? parseFloat(el.textContent) || 0 : 5;
   });
   const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
 
-  // Filled polygon
   ctx.beginPath();
   AXES.forEach((_, i) => {
     const angle = (Math.PI * 2 * i / n) - Math.PI / 2;
@@ -1947,7 +1956,6 @@ function updateCompass() {
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  // Labels
   ctx.fillStyle = 'rgba(136,144,168,0.9)';
   ctx.font = '10px Inter, sans-serif';
   ctx.textAlign = 'center';
@@ -1958,14 +1966,12 @@ function updateCompass() {
     ctx.fillText(a.label, cx + Math.cos(angle) * r, cy + Math.sin(angle) * r);
   });
 
-  // Center score
-  ctx.fillStyle = 'var(--amber, #c8672a)';
+  ctx.fillStyle = '#c8672a';
   ctx.font = 'bold 22px "DM Mono", monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(avg.toFixed(1), cx, cy);
 
-  // Status
   const statusEl = document.getElementById('life-status');
   const refEl = document.getElementById('life-reflection');
   if (avg >= 7) {
@@ -1983,6 +1989,37 @@ function updateCompass() {
   }
 }
 
+// ── DASHBOARD PERSISTENCE ──
+const DASHBOARD_SLIDERS = [
+  ['energy','energy-val'], ['sleep','sleep-val'], ['body','body-val'], ['stress','stress-val'],
+  ['meaning','meaning-val'], ['excite','excite-val'], ['contrib','contrib-val'],
+  ['curio','curio-val'], ['joy','joy-val'], ['explore','explore-val'],
+  ['relate','relate-val'], ['connect','connect-val']
+];
+
+function saveDashboard() {
+  const data = {};
+  DASHBOARD_SLIDERS.forEach(([rangeId]) => {
+    const el = document.querySelector(`input[oninput*="${rangeId}-val"]`);
+    if (el) data[rangeId] = el.value;
+  });
+  save('dashboard', data);
+}
+
+function loadDashboard() {
+  const data = load('dashboard', {});
+  DASHBOARD_SLIDERS.forEach(([rangeId, valId]) => {
+    if (data[rangeId] !== undefined) {
+      const el = document.querySelector(`input[oninput*="${valId}"]`);
+      if (el) {
+        el.value = data[rangeId];
+        const span = document.getElementById(valId);
+        if (span) span.textContent = data[rangeId];
+      }
+    }
+  });
+}
+
 // ── DAILY PROMPTS ──
 const prompts = [
   '"What\'s one thing you\'re tolerating that you could prototype your way out of instead?"',
@@ -1997,9 +2034,10 @@ const prompts = [
   '"What would your future self tell you to stop worrying about?"',
 ];
 
-let promptIdx = 0;
+let promptIdx = load('promptIdx', 0);
 function newPrompt() {
   promptIdx = (promptIdx + 1) % prompts.length;
+  save('promptIdx', promptIdx);
   document.getElementById('daily-prompt').textContent = prompts[promptIdx];
 }
 
@@ -2043,8 +2081,32 @@ function switchTab(tabEl, panelId) {
   if (panelId === 'alignment') syncCompassTheses();
 }
 
-// ── COMPASS SYNC ──
-function saveCompass() {}
+// ── COMPASS PERSISTENCE ──
+const COMPASS_FIELDS = ['ww1','ww2','ww3','ww4','work-thesis','lv1','lv2','lv3','life-thesis'];
+
+function saveCompass() {
+  const data = {};
+  COMPASS_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) data[id] = el.value;
+  });
+  const alignSlider = document.getElementById('align-slider');
+  if (alignSlider) data['align'] = alignSlider.value;
+  save('compass', data);
+}
+
+function loadCompass() {
+  const data = load('compass', {});
+  COMPASS_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && data[id] !== undefined) el.value = data[id];
+  });
+  if (data['align'] !== undefined) {
+    const s = document.getElementById('align-slider');
+    if (s) { s.value = data['align']; updateAlignScore(data['align']); }
+  }
+}
+
 function syncCompassTheses() {
   const wt = document.getElementById('work-thesis');
   const lt = document.getElementById('life-thesis');
@@ -2063,6 +2125,7 @@ function updateAlignScore(v) {
   else if (n >= 50) lbl.textContent = 'Partial alignment. There\'s drift worth investigating.';
   else if (n >= 25) lbl.textContent = 'Room to redesign — the dissonance is the data.';
   else lbl.textContent = 'Significant misalignment. The compass is pointing opposite directions. This is urgent design work.';
+  saveCompass();
 }
 
 // ── BELIEF TOGGLE ──
@@ -2070,29 +2133,40 @@ function toggleBelief(el) {
   el.classList.toggle('expanded');
 }
 
-// ── JOURNAL ──
-const journalEntries = [];
+// ── JOURNAL PERSISTENCE ──
+let journalEntries = load('journal', []);
+
 function logEntry() {
   const act = document.getElementById('j-activity').value.trim();
   if (!act) { showToast('Enter an activity first'); return; }
   const energy = parseInt(document.getElementById('j-energy').value);
   const flow = document.getElementById('j-flow').value;
-  const time = document.getElementById('j-time').value || 'Now';
+  const time = document.getElementById('j-time').value || new Date().toLocaleDateString('en-GB', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
   const notes = document.getElementById('j-notes').value;
-  journalEntries.push({ act, energy, flow, time, notes });
+  journalEntries.unshift({ act, energy, flow, time, notes });
+  save('journal', journalEntries);
   renderJournal();
   document.getElementById('j-activity').value = '';
   document.getElementById('j-notes').value = '';
+  document.getElementById('j-time').value = '';
   showToast('Entry logged ✓');
+}
+
+function deleteJournalEntry(idx) {
+  journalEntries.splice(idx, 1);
+  save('journal', journalEntries);
+  renderJournal();
 }
 
 function renderJournal() {
   const container = document.getElementById('journal-entries');
   if (!journalEntries.length) {
-    container.innerHTML = '<p style="color:var(--text-dim);font-size:13px;font-style:italic;">No entries yet.</p>';
+    container.innerHTML = '<p style="color:var(--text-dim);font-size:13px;font-style:italic;">No entries yet. Log your first activity above.</p>';
+    document.getElementById('avg-energy').textContent = '—';
+    document.getElementById('energy-patterns').textContent = 'Log more entries to reveal patterns.';
     return;
   }
-  container.innerHTML = journalEntries.map(e => {
+  container.innerHTML = journalEntries.map((e, i) => {
     const cls = e.energy > 0 ? 'energy-pos' : e.energy < 0 ? 'energy-neg' : 'energy-neutral';
     const sign = e.energy >= 0 ? '+' : '';
     return `<div class="journal-entry">
@@ -2101,6 +2175,7 @@ function renderJournal() {
         <div style="font-size:14px;font-weight:500;color:var(--text);">${e.act}</div>
         <div style="font-size:12px;color:var(--text-dim);font-family:'DM Mono',monospace;">${e.time} · Flow: ${e.flow}${e.notes ? ' · ' + e.notes : ''}</div>
       </div>
+      <button onclick="deleteJournalEntry(${i})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:16px;padding:4px 8px;line-height:1;" title="Delete">×</button>
     </div>`;
   }).join('');
 
@@ -2129,24 +2204,59 @@ function reframeBelief() {
   document.getElementById('my-reframe-result').style.display = 'block';
 }
 
-// ── PROTOTYPE ──
+// ── ODYSSEY PERSISTENCE ──
+const ODYSSEY_FIELDS = [
+  'pa-title','pa-y1','pa-y3','pa-y5','pa-excite','pa-fear',
+  'pb-title','pb-y1','pb-y3','pb-y5','pb-excite','pb-fear',
+  'pc-title','pc-y1','pc-y3','pc-y5','pc-excite','pc-fear'
+];
+const ODYSSEY_GAUGES = ['pa-res','pa-conf','pb-res','pb-conf','pc-res','pc-conf'];
+
+function saveOdyssey() {
+  const data = {};
+  ODYSSEY_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) data[id] = el.value;
+  });
+  ODYSSEY_GAUGES.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) data[id + '_val'] = el.textContent;
+    // also save the slider
+    const slider = document.querySelector(`input[oninput*="'${id}'"]`);
+    if (slider) data[id + '_slider'] = slider.value;
+  });
+  save('odyssey', data);
+}
+
+function loadOdyssey() {
+  const data = load('odyssey', {});
+  ODYSSEY_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && data[id] !== undefined) el.value = data[id];
+  });
+  ODYSSEY_GAUGES.forEach(id => {
+    if (data[id + '_slider'] !== undefined) {
+      const slider = document.querySelector(`input[oninput*="'${id}'"]`);
+      if (slider) slider.value = data[id + '_slider'];
+    }
+    const valEl = document.getElementById(id);
+    if (valEl && data[id + '_val'] !== undefined) valEl.textContent = data[id + '_val'];
+  });
+}
+
+// ── PROTOTYPE PERSISTENCE ──
+let prototypes = load('prototypes', []);
+
 function addPrototype() {
   const type = document.getElementById('proto-type').value;
   const hyp = document.getElementById('proto-hyp').value.trim();
   const action = document.getElementById('proto-action').value.trim();
   const date = document.getElementById('proto-date').value;
+  const expected = document.getElementById('proto-expected').value;
   if (!hyp || !action) { showToast('Fill in hypothesis and action'); return; }
-  const div = document.createElement('div');
-  div.className = 'prototype-card';
-  div.innerHTML = `<div class="prototype-type">${type}</div>
-    <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:8px;">Hypothesis: ${hyp}</div>
-    <div style="font-size:13px;color:var(--text-muted);margin-bottom:4px;">Action: ${action}</div>
-    <div style="font-size:12px;color:var(--text-dim);font-family:'DM Mono',monospace;margin-bottom:12px;">Target: ${date || 'TBD'}</div>
-    <div class="form-group" style="margin-bottom:0;">
-      <label style="color:var(--sage);">Actual Insight (after doing it)</label>
-      <textarea rows="2" placeholder="What did you actually learn?"></textarea>
-    </div>`;
-  document.getElementById('prototype-list').appendChild(div);
+  prototypes.push({ type, hyp, action, date: date || 'TBD', expected, insight: '' });
+  save('prototypes', prototypes);
+  renderPrototypes();
   document.getElementById('proto-hyp').value = '';
   document.getElementById('proto-action').value = '';
   document.getElementById('proto-date').value = '';
@@ -2154,43 +2264,92 @@ function addPrototype() {
   showToast('Prototype added ✓');
 }
 
-// ── DECISIONS ──
+function saveProtoInsight(idx, val) {
+  prototypes[idx].insight = val;
+  save('prototypes', prototypes);
+}
+
+function deletePrototype(idx) {
+  prototypes.splice(idx, 1);
+  save('prototypes', prototypes);
+  renderPrototypes();
+}
+
+function renderPrototypes() {
+  const list = document.getElementById('prototype-list');
+  if (!prototypes.length) {
+    list.innerHTML = '<p style="color:var(--text-dim);font-size:13px;font-style:italic;padding:8px 0;">No prototypes yet. Add your first one above.</p>';
+    return;
+  }
+  list.innerHTML = prototypes.map((p, i) => `
+    <div class="prototype-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="prototype-type">${p.type}</div>
+        <button onclick="deletePrototype(${i})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:16px;padding:0 4px;" title="Delete">×</button>
+      </div>
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:8px;">Hypothesis: ${p.hyp}</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:4px;">Action: ${p.action}</div>
+      <div style="font-size:12px;color:var(--text-dim);font-family:'DM Mono',monospace;margin-bottom:12px;">Target: ${p.date}</div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label style="color:var(--sage);">Actual Insight (after doing it)</label>
+        <textarea rows="2" placeholder="What did you actually learn?" oninput="saveProtoInsight(${i},this.value)">${p.insight}</textarea>
+      </div>
+    </div>`).join('');
+}
+
+// ── DECISION PERSISTENCE ──
+let decisions = load('decisions', [
+  { text: 'Stop writing for proptech/fintech clients', stakes: 'High — identity-level or hard to undo', chosen: true, locked: false }
+]);
+
 function addDecision() {
   const text = document.getElementById('dec-input').value.trim();
   if (!text) { showToast('Enter a decision first'); return; }
   const stakes = document.getElementById('dec-stakes').value;
-  const div = document.createElement('div');
-  div.className = 'decision-card';
-  div.innerHTML = `<div>
-    <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px;">${text}</div>
-    <div style="font-size:12px;color:var(--text-dim);font-family:'DM Mono',monospace;">${stakes}</div>
-  </div>
-  <div style="display:flex;gap:8px;align-items:center;">
-    <button class="btn btn-primary" style="font-size:11px;padding:6px 14px;" onclick="chooseDecision(this)">Choose It →</button>
-    <button class="btn btn-ghost" style="font-size:11px;padding:6px 14px;" onclick="lockDecision(this)">Lock & Let Go 🔒</button>
-  </div>`;
-  document.getElementById('decision-list').appendChild(div);
+  decisions.push({ text, stakes, chosen: false, locked: false });
+  save('decisions', decisions);
+  renderDecisions();
   document.getElementById('dec-input').value = '';
   showToast('Decision card added ✓');
 }
 
-function chooseDecision(btn) {
-  btn.textContent = 'Chosen ✓';
-  btn.className = 'status-badge status-actionable';
+function chooseDecision(idx) {
+  decisions[idx].chosen = true;
+  save('decisions', decisions);
+  renderDecisions();
 }
 
-function lockDecision(btn) {
-  const card = btn.closest('.decision-card');
-  const textEl = card.querySelector('div div:first-child');
-  textEl.style.opacity = '0.5';
-  textEl.style.textDecoration = 'line-through';
-  btn.textContent = '🔒 Locked';
-  btn.disabled = true;
+function lockDecision(idx) {
+  decisions[idx].locked = true;
+  save('decisions', decisions);
+  renderDecisions();
   showToast('Decision locked. Now let it go.');
 }
 
-// ── FAILURE ──
-const failureLog = [];
+function renderDecisions() {
+  const list = document.getElementById('decision-list');
+  list.innerHTML = decisions.map((d, i) => `
+    <div class="decision-card" style="${d.locked ? 'opacity:0.6;' : ''}">
+      <div>
+        <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px;${d.locked ? 'text-decoration:line-through;' : ''}">${d.text}</div>
+        <div style="font-size:12px;color:var(--text-dim);font-family:'DM Mono',monospace;">${d.stakes}</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;">
+        ${d.locked
+          ? '<span class="status-badge" style="background:var(--surface3);color:var(--text-dim);border:1px solid var(--border);">🔒 Locked</span>'
+          : d.chosen
+            ? `<span class="status-badge status-actionable">Chosen</span>
+               <button class="btn btn-ghost" style="font-size:11px;padding:6px 14px;" onclick="lockDecision(${i})">Lock & Let Go 🔒</button>`
+            : `<button class="btn btn-primary" style="font-size:11px;padding:6px 14px;" onclick="chooseDecision(${i})">Choose It →</button>
+               <button class="btn btn-ghost" style="font-size:11px;padding:6px 14px;" onclick="lockDecision(${i})">Lock & Let Go 🔒</button>`
+        }
+      </div>
+    </div>`).join('');
+}
+
+// ── FAILURE PERSISTENCE ──
+let failureLog = load('failures', []);
+
 function saveFailure() {
   const what = document.getElementById('fail-what').value.trim();
   if (!what) { showToast('Describe what happened first'); return; }
@@ -2198,31 +2357,79 @@ function saveFailure() {
   const teach = document.getElementById('fail-teach').value;
   const next = document.getElementById('fail-next').value;
   failureLog.push({ what, assume, teach, next, date: new Date().toLocaleDateString() });
+  save('failures', failureLog);
   document.getElementById('failure-output').style.display = 'block';
+  document.getElementById('fail-what').value = '';
+  document.getElementById('fail-assume').value = '';
+  document.getElementById('fail-teach').value = '';
+  document.getElementById('fail-next').value = '';
   renderFailureLog();
   showToast('Failure processed ✓');
 }
 
+function deleteFailure(idx) {
+  failureLog.splice(idx, 1);
+  save('failures', failureLog);
+  renderFailureLog();
+}
+
 function renderFailureLog() {
   const container = document.getElementById('failure-log');
-  if (!failureLog.length) return;
-  container.innerHTML = failureLog.map(f => `
+  if (!failureLog.length) {
+    container.innerHTML = '<p style="color:var(--text-dim);font-size:13px;font-style:italic;">No failures logged yet. The most dangerous failure is the one you never examine.</p>';
+    return;
+  }
+  container.innerHTML = failureLog.map((f, i) => `
     <div class="failure-card">
-      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--red);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">${f.date}</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--red);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">${f.date}</div>
+        <button onclick="deleteFailure(${i})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:16px;padding:0 4px;" title="Delete">×</button>
+      </div>
       <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:8px;">${f.what}</div>
       ${f.teach ? `<div style="font-size:13px;color:var(--text-muted);font-style:italic;">Learning: ${f.teach}</div>` : ''}
       ${f.next ? `<div style="font-size:13px;color:var(--sage);margin-top:6px;">→ ${f.next}</div>` : ''}
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
 // ── INIT ──
 document.addEventListener('DOMContentLoaded', () => {
-  updateCompass();
+  // Restore all persisted state
+  loadDashboard();
+  loadCompass();
+  loadOdyssey();
+  renderJournal();
+  renderPrototypes();
+  renderDecisions();
+  renderFailureLog();
+
+  // Restore prompt
+  document.getElementById('daily-prompt').textContent = prompts[promptIdx];
+
+  // Wire up align slider save
+  const alignSlider = document.getElementById('align-slider');
+  if (alignSlider) alignSlider.addEventListener('input', () => saveCompass());
+
+  // Wire up compass field auto-save
+  COMPASS_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', saveCompass);
+  });
+
+  // Wire up odyssey field auto-save
+  ODYSSEY_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', saveOdyssey);
+  });
+
+  // Energy journal slider label
   document.getElementById('j-energy').addEventListener('input', function() {
     const v = parseInt(this.value);
-    document.getElementById('j-energy-val').textContent = (v >= 0 ? '+' : '') + v;
+    const span = document.getElementById('j-energy-val');
+    span.textContent = (v >= 0 ? '+' : '') + v;
+    span.style.color = v > 0 ? 'var(--sage)' : v < 0 ? 'var(--red)' : 'var(--text-muted)';
   });
+
+  updateCompass();
 });
 
 window.addEventListener('load', updateCompass);
