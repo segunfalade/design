@@ -1,530 +1,1181 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inner War · Second Strength</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,500;1,400&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font-sans)}
-.app{min-height:600px;padding:1rem 0}
-.nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.5rem}
-.nav-btn{padding:7px 14px;font-size:13px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary);cursor:pointer;transition:all .15s}
-.nav-btn.active{background:var(--color-background-secondary);color:var(--color-text-primary);border-color:var(--color-border-primary);font-weight:500}
-.nav-btn:hover:not(.active){background:var(--color-background-secondary)}
-.screen{display:none}
-.screen.active{display:block}
-.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem}
-.card+.card{margin-top:1rem}
-.label{font-size:12px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem}
-.heading{font-size:16px;font-weight:500;color:var(--color-text-primary);margin-bottom:.5rem}
-.body{font-size:14px;color:var(--color-text-secondary);line-height:1.7}
-.tag{display:inline-block;font-size:11px;padding:3px 9px;border-radius:var(--border-radius-md);margin-right:4px;margin-bottom:4px}
-.tag-war{background:#EEEDFE;color:#3C3489}
-.tag-str{background:#E1F5EE;color:#085041}
-.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-bottom:1rem}
-.metric{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:1rem;text-align:center}
-.metric-num{font-size:24px;font-weight:500;color:var(--color-text-primary)}
-.metric-lbl{font-size:12px;color:var(--color-text-tertiary);margin-top:2px}
-.divider{border:none;border-top:0.5px solid var(--color-border-tertiary);margin:1rem 0}
-.lesson-row{padding:.75rem 0;border-bottom:0.5px solid var(--color-border-tertiary)}
-.lesson-row:last-child{border-bottom:none}
-.lesson-title{font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:.2rem}
-.lesson-body{font-size:13px;color:var(--color-text-secondary);line-height:1.6}
-.check-btn{float:right;font-size:11px;padding:4px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary);cursor:pointer;margin-top:2px;transition:all .15s}
-.check-btn.done{background:#E1F5EE;color:#085041;border-color:#9FE1CB}
-.daily-q{font-size:15px;font-weight:500;color:var(--color-text-primary);line-height:1.6;margin-bottom:1rem}
-.answer-box{width:100%;min-height:80px;font-size:14px;padding:.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary);resize:vertical;font-family:var(--font-sans)}
-.answer-box:focus{outline:none;border-color:var(--color-border-primary)}
-.btn-primary{padding:8px 18px;font-size:13px;font-weight:500;border:0.5px solid var(--color-border-primary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-primary);cursor:pointer;margin-top:.75rem;transition:all .15s}
-.btn-primary:hover{background:var(--color-background-secondary)}
-.resistance-meter{margin:1rem 0}
-.meter-bar{height:10px;border-radius:5px;background:var(--color-background-secondary);overflow:hidden;margin-top:.5rem}
-.meter-fill{height:100%;border-radius:5px;transition:width .4s ease;background:linear-gradient(90deg,#1D9E75,#AFA9EC)}
-.section-head{font-size:18px;font-weight:500;color:var(--color-text-primary);margin-bottom:.25rem}
-.section-sub{font-size:13px;color:var(--color-text-tertiary);margin-bottom:1.25rem}
-.badge-pill{font-size:11px;padding:2px 8px;border-radius:20px;vertical-align:middle;margin-left:6px}
-.pill-war{background:#EEEDFE;color:#3C3489}
-.pill-str{background:#E1F5EE;color:#085041}
-.accordion-btn{width:100%;text-align:left;padding:.85rem 1rem;font-size:14px;font-weight:500;color:var(--color-text-primary);background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);cursor:pointer;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;transition:background .15s}
-.accordion-btn:hover{background:var(--color-background-secondary)}
-.accordion-body{display:none;padding:.85rem 1rem;font-size:13px;color:var(--color-text-secondary);line-height:1.7;border:0.5px solid var(--color-border-tertiary);border-top:none;border-radius:0 0 var(--border-radius-md) var(--border-radius-md);margin-top:-6px;margin-bottom:6px;background:var(--color-background-secondary)}
-.accordion-body.open{display:block}
-.task-row{display:flex;align-items:flex-start;gap:.75rem;padding:.6rem 0;border-bottom:0.5px solid var(--color-border-tertiary)}
-.task-row:last-child{border-bottom:none}
-.task-check{width:18px;height:18px;flex-shrink:0;margin-top:2px;cursor:pointer;accent-color:#1D9E75}
-.task-text{font-size:14px;color:var(--color-text-secondary);line-height:1.5}
-.task-text.done{text-decoration:line-through;color:var(--color-text-tertiary)}
-.quote-block{border-left:3px solid #AFA9EC;padding:.75rem 1rem;margin:1rem 0;font-size:14px;color:var(--color-text-secondary);font-style:italic;line-height:1.7;border-radius:0}
-.progress-ring{text-align:center;padding:1rem 0}
-.ring-num{font-size:32px;font-weight:500;color:var(--color-text-primary)}
-.ring-lbl{font-size:12px;color:var(--color-text-tertiary);margin-top:4px}
+  :root {
+    --bg: #0f0f11;
+    --surface: #18181c;
+    --surface2: #202026;
+    --border: #2e2e38;
+    --border2: #3a3a48;
+    --text: #e8e8f0;
+    --muted: #888899;
+    --faint: #444458;
+    --purple: #a78bfa;
+    --purple-dim: #6d5aad;
+    --purple-bg: #1e1830;
+    --teal: #34d399;
+    --teal-dim: #0f7a55;
+    --teal-bg: #0d2420;
+    --coral: #f87171;
+    --coral-bg: #2a1414;
+    --amber: #fbbf24;
+    --amber-bg: #261e08;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* LAYOUT */
+  .shell {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 1.75rem 1rem 2rem;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    overflow-y: auto;
+  }
+
+  .logo {
+    margin-bottom: 2rem;
+    padding-left: .25rem;
+  }
+
+  .logo-title {
+    font-family: 'Lora', serif;
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -.01em;
+    line-height: 1.3;
+  }
+
+  .logo-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 3px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+
+  .nav-section {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--faint);
+    padding: .25rem .5rem;
+    margin-bottom: .4rem;
+    margin-top: 1.25rem;
+  }
+
+  .nav-section:first-of-type { margin-top: 0; }
+
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    padding: .55rem .75rem;
+    font-size: 13.5px;
+    color: var(--muted);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    text-align: left;
+    transition: all .15s;
+    margin-bottom: 2px;
+  }
+
+  .nav-btn svg { flex-shrink: 0; opacity: .7; }
+
+  .nav-btn:hover { background: var(--surface2); color: var(--text); }
+
+  .nav-btn.active {
+    background: var(--purple-bg);
+    color: var(--purple);
+    font-weight: 500;
+  }
+
+  .nav-btn.active svg { opacity: 1; }
+
+  .main {
+    margin-left: 220px;
+    flex: 1;
+    padding: 2rem 2.5rem 3rem;
+    max-width: 820px;
+  }
+
+  /* SCREENS */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* TYPOGRAPHY */
+  .page-title {
+    font-family: 'Lora', serif;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: .3rem;
+  }
+
+  .page-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 1.75rem;
+  }
+
+  .section-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--faint);
+    margin-bottom: .6rem;
+    display: block;
+  }
+
+  .heading {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: .4rem;
+  }
+
+  .body-text {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.75;
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: .75rem;
+    margin-bottom: 1rem;
+  }
+
+  .metric-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.25rem;
+    text-align: center;
+  }
+
+  .metric-num {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .metric-lbl {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 5px;
+  }
+
+  /* TAGS */
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 9px;
+    border-radius: 20px;
+    font-weight: 500;
+    margin-right: 6px;
+  }
+
+  .tag-war { background: var(--purple-bg); color: var(--purple); }
+  .tag-str { background: var(--teal-bg); color: var(--teal); }
+
+  /* QUOTE BLOCK */
+  .quote {
+    border-left: 2px solid var(--purple-dim);
+    padding: .75rem 1rem;
+    font-family: 'Lora', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.75;
+    margin: 1rem 0;
+    background: var(--purple-bg);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  }
+
+  .quote-source {
+    font-family: 'Inter', sans-serif;
+    font-style: normal;
+    font-size: 11px;
+    color: var(--faint);
+    margin-top: .4rem;
+    display: block;
+  }
+
+  /* DIVIDER */
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 1.25rem 0;
+  }
+
+  /* ACCORDION */
+  .acc-btn {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .85rem 1rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+    margin-bottom: 6px;
+    transition: background .15s;
+  }
+
+  .acc-btn:hover { background: var(--surface); border-color: var(--border2); }
+
+  .acc-btn .arrow {
+    font-size: 18px;
+    color: var(--faint);
+    transition: transform .2s;
+    line-height: 1;
+  }
+
+  .acc-btn.open .arrow { transform: rotate(180deg); }
+
+  .acc-body {
+    display: none;
+    padding: .85rem 1.1rem;
+    font-size: 13.5px;
+    color: var(--muted);
+    line-height: 1.75;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    margin-top: -6px;
+    margin-bottom: 6px;
+  }
+
+  .acc-body.open { display: block; }
+
+  /* CHECKLIST */
+  .checklist-row {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    padding: .7rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .checklist-row:last-child { border-bottom: none; }
+
+  .checklist-row input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    accent-color: var(--teal);
+    cursor: pointer;
+  }
+
+  .check-label {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.55;
+    cursor: pointer;
+  }
+
+  .check-label.done {
+    text-decoration: line-through;
+    color: var(--faint);
+  }
+
+  /* LESSON ROW */
+  .lesson {
+    padding: .9rem 0;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .lesson:last-child { border-bottom: none; }
+
+  .lesson-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: .25rem;
+    padding-right: 80px;
+  }
+
+  .lesson-body {
+    font-size: 13.5px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .read-btn {
+    position: absolute;
+    top: .9rem;
+    right: 0;
+    font-size: 11px;
+    padding: 3px 10px;
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    background: transparent;
+    color: var(--faint);
+    cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+
+  .read-btn:hover { border-color: var(--purple-dim); color: var(--purple); }
+  .read-btn.done { background: var(--teal-bg); color: var(--teal); border-color: var(--teal-dim); }
+
+  /* TEXTAREA */
+  textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 1.65;
+    padding: .85rem 1rem;
+    resize: vertical;
+    min-height: 100px;
+    transition: border-color .15s;
+  }
+
+  textarea:focus { outline: none; border-color: var(--purple-dim); }
+  textarea::placeholder { color: var(--faint); }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-block;
+    padding: .6rem 1.2rem;
+    font-size: 13.5px;
+    font-weight: 500;
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    transition: all .15s;
+    margin-top: .75rem;
+    margin-right: .5rem;
+  }
+
+  .btn:hover { background: var(--surface2); border-color: var(--purple-dim); }
+
+  .btn-primary {
+    background: var(--purple-bg);
+    border-color: var(--purple-dim);
+    color: var(--purple);
+  }
+
+  .btn-primary:hover { background: #251f45; }
+
+  .btn-teal {
+    background: var(--teal-bg);
+    border-color: var(--teal-dim);
+    color: var(--teal);
+  }
+
+  .btn-teal:hover { background: #122e26; }
+
+  /* RESISTANCE METER */
+  .meter-wrap {
+    margin: 1rem 0;
+  }
+
+  .meter-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--faint);
+    margin-bottom: .4rem;
+  }
+
+  .meter-track {
+    height: 8px;
+    background: var(--surface2);
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .meter-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--teal), var(--purple));
+    transition: width .3s ease;
+  }
+
+  input[type="range"] {
+    width: 100%;
+    margin-top: .6rem;
+    accent-color: var(--purple);
+    cursor: pointer;
+  }
+
+  /* SIDE-BY-SIDE COMPARE */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+
+  .compare-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.25rem;
+  }
+
+  .compare-card.bad { border-top: 2px solid var(--coral); }
+  .compare-card.good { border-top: 2px solid var(--teal); }
+
+  .compare-head {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: .85rem;
+  }
+
+  .compare-head.bad { color: var(--coral); }
+  .compare-head.good { color: var(--teal); }
+
+  .compare-item {
+    padding: .55rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  .compare-item:last-child { border-bottom: none; }
+
+  .compare-item strong {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  /* JOURNAL HISTORY */
+  .journal-entry {
+    padding: .8rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .journal-entry:last-child { border-bottom: none; }
+
+  .journal-date {
+    font-size: 11px;
+    color: var(--faint);
+    margin-bottom: .25rem;
+  }
+
+  .journal-q-small {
+    font-size: 12px;
+    color: var(--purple);
+    margin-bottom: .3rem;
+    font-style: italic;
+  }
+
+  .journal-text {
+    font-size: 13.5px;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  /* TASK DONE BADGE */
+  .done-badge {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 9px;
+    border-radius: 20px;
+    background: var(--teal-bg);
+    color: var(--teal);
+    border: 1px solid var(--teal-dim);
+    margin-left: .5rem;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 680px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 1.25rem 1.1rem 2rem; }
+    .compare-grid { grid-template-columns: 1fr; }
+    .mobile-nav {
+      display: flex;
+      overflow-x: auto;
+      gap: .4rem;
+      padding: .75rem 1.1rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .mobile-nav-btn {
+      flex-shrink: 0;
+      padding: .45rem .85rem;
+      font-size: 12.5px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .mobile-nav-btn.active { background: var(--purple-bg); color: var(--purple); border-color: var(--purple-dim); }
+  }
+
+  @media (min-width: 681px) {
+    .mobile-nav { display: none; }
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 </style>
+</head>
+<body>
 
-<h2 class="sr-only">Inner War & Second Strength — self-development companion app based on The War of Art and From Strength to Strength</h2>
+<!-- MOBILE NAV -->
+<div class="mobile-nav" id="mobile-nav">
+  <button class="mobile-nav-btn active" onclick="show('dashboard',this)">Today</button>
+  <button class="mobile-nav-btn" onclick="show('resistance',this)">Resistance</button>
+  <button class="mobile-nav-btn" onclick="show('pro',this)">Turn Pro</button>
+  <button class="mobile-nav-btn" onclick="show('curve',this)">Second Curve</button>
+  <button class="mobile-nav-btn" onclick="show('lessons',this)">Lessons</button>
+  <button class="mobile-nav-btn" onclick="show('journal',this)">Journal</button>
+</div>
 
-<div class="app">
-  <div style="margin-bottom:1.25rem">
-    <div style="font-size:20px;font-weight:500;color:var(--color-text-primary)">Inner War · Second Strength</div>
-    <div style="font-size:13px;color:var(--color-text-tertiary);margin-top:2px">Your daily companion for the freelance midlife transition</div>
-  </div>
+<div class="shell">
 
-  <nav class="nav" aria-label="App sections">
-    <button class="nav-btn active" onclick="show('dashboard')"><i class="ti ti-home" aria-hidden="true"></i> Today</button>
-    <button class="nav-btn" onclick="show('resistance')"><i class="ti ti-shield" aria-hidden="true"></i> Resistance</button>
-    <button class="nav-btn" onclick="show('pro')"><i class="ti ti-briefcase" aria-hidden="true"></i> Turn Pro</button>
-    <button class="nav-btn" onclick="show('curve')"><i class="ti ti-trending-up" aria-hidden="true"></i> Second Curve</button>
-    <button class="nav-btn" onclick="show('lessons')"><i class="ti ti-book" aria-hidden="true"></i> All Lessons</button>
-    <button class="nav-btn" onclick="show('journal')"><i class="ti ti-pencil" aria-hidden="true"></i> Journal</button>
-  </nav>
-
-  <!-- DASHBOARD -->
-  <div id="screen-dashboard" class="screen active">
-    <div class="section-head">Good day, Segun</div>
-    <div class="section-sub">One small act of self-direction. That is the whole task.</div>
-
-    <div class="grid2">
-      <div class="metric"><div class="metric-num" id="streak-num">0</div><div class="metric-lbl">Day streak</div></div>
-      <div class="metric"><div class="metric-num" id="done-num">0</div><div class="metric-lbl">Actions completed</div></div>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-title">Inner War<br>Second Strength</div>
+      <div class="logo-sub">Daily Companion</div>
     </div>
 
-    <div class="card">
-      <div class="label">Today's resistance check</div>
-      <div class="daily-q" id="today-q">Loading your daily question…</div>
-      <div class="resistance-meter">
-        <div style="font-size:12px;color:var(--color-text-tertiary);display:flex;justify-content:space-between"><span>No resistance</span><span>Maximum</span></div>
-        <div class="meter-bar"><div class="meter-fill" id="resist-fill" style="width:0%"></div></div>
-      </div>
-      <input type="range" min="0" max="100" value="0" id="resist-slider" style="width:100%;margin-bottom:.5rem" oninput="updateResist(this.value)">
-      <div style="font-size:12px;color:var(--color-text-tertiary);margin-bottom:.75rem" id="resist-label">Move the slider to rate your resistance right now</div>
-      <div class="quote-block" id="resist-insight">Resistance is always highest toward the things that matter most. If you feel it strongly, you're probably aimed at something real.</div>
-    </div>
+    <div class="nav-section">Daily</div>
+    <button class="nav-btn active" onclick="show('dashboard',this)" id="nav-dashboard">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Today
+    </button>
+    <button class="nav-btn" onclick="show('journal',this)" id="nav-journal">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+      Journal
+    </button>
 
-    <div class="card" style="margin-top:1rem">
-      <div class="label">One action today</div>
-      <div class="heading">Your micro-task</div>
-      <div class="body" id="micro-task">Loading task…</div>
-      <button class="btn-primary" id="task-done-btn" onclick="markTaskDone()">Mark done</button>
-    </div>
+    <div class="nav-section">War of Art</div>
+    <button class="nav-btn" onclick="show('resistance',this)" id="nav-resistance">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Resistance
+    </button>
+    <button class="nav-btn" onclick="show('pro',this)" id="nav-pro">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+      Turn Pro
+    </button>
 
-    <div class="card" style="margin-top:1rem">
-      <div class="label">Daily anchor quote</div>
-      <div class="quote-block" id="daily-quote">Loading…</div>
-      <div style="font-size:12px;color:var(--color-text-tertiary)" id="quote-source"></div>
-    </div>
-  </div>
+    <div class="nav-section">Second Curve</div>
+    <button class="nav-btn" onclick="show('curve',this)" id="nav-curve">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      The Second Curve
+    </button>
+    <button class="nav-btn" onclick="show('lessons',this)" id="nav-lessons">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      All Lessons
+    </button>
+  </aside>
 
-  <!-- RESISTANCE SCREEN -->
-  <div id="screen-resistance" class="screen">
-    <div class="section-head">Understanding resistance</div>
-    <div class="section-sub"><span class="tag tag-war">War of Art</span> The enemy has a name. Naming it is the first weapon.</div>
+  <!-- MAIN -->
+  <main class="main">
 
-    <div class="card">
-      <div class="label">What resistance is</div>
-      <div class="body">Resistance is the internal force that opposes any meaningful, creative, or transformative work. It is not personal. It is not a character flaw. It is a universal force — and it is most powerful precisely where something matters most to you. That is how you can use it as a compass.</div>
-    </div>
+    <!-- ===== TODAY ===== -->
+    <div class="screen active" id="screen-dashboard">
+      <div class="page-title">Good day, Segun</div>
+      <div class="page-sub">One small act of self-direction. That is the whole task today.</div>
 
-    <div style="margin-top:1rem">
-      <div class="heading" style="margin-bottom:.75rem">How resistance disguises itself</div>
-      <button class="accordion-btn" onclick="toggleAcc(this)">Procrastination <span class="ti ti-chevron-down" aria-hidden="true"></span></button>
-      <div class="accordion-body">Resistance's favourite mask. It never says "I won't." It says "I will — later." Later is its home territory. The antidote is to begin before you feel ready, because readiness is not a prerequisite — it is a reward for beginning.</div>
-
-      <button class="accordion-btn" onclick="toggleAcc(this)">Self-doubt <span class="ti ti-chevron-down" aria-hidden="true"></span></button>
-      <div class="accordion-body">Resistance speaks in the first person so you think it is your own voice. "I'm not good enough. Who am I to do this?" These thoughts are not insights — they are Resistance in disguise. The fact that you can recognise them as a pattern is your first leverage point.</div>
-
-      <button class="accordion-btn" onclick="toggleAcc(this)">Rationalisation <span class="ti ti-chevron-down" aria-hidden="true"></span></button>
-      <div class="accordion-body">Resistance is highly intelligent. It will give you excellent reasons not to do the work. The argument will sound logical. The timing will seem genuinely bad. This is its most dangerous form — it recruits your own mind against you.</div>
-
-      <button class="accordion-btn" onclick="toggleAcc(this)">Drama and crisis <span class="ti ti-chevron-down" aria-hidden="true"></span></button>
-      <div class="accordion-body">Resistance manufactures urgency elsewhere. Suddenly there are phone calls to make, things to research, other people who need you. Real emergencies exist. But notice how often a "crisis" appears right before the work session.</div>
-
-      <button class="accordion-btn" onclick="toggleAcc(this)">Seeking support / talking about it <span class="ti ti-chevron-down" aria-hidden="true"></span></button>
-      <div class="accordion-body">Talking about what you plan to do gives a small neurological reward similar to doing it. Resistance knows this. Beware the urge to share your plans before you have done the work — it siphons the energy the work needs.</div>
-
-      <button class="accordion-btn" onclick="toggleAcc(this)">Perfectionism <span class="ti ti-chevron-down" aria-hidden="true"></span></button>
-      <div class="accordion-body">Resistance hides inside the desire for a better outcome. "I will do it when I have a proper setup / more clarity / a better plan." Perfectionism is fear wearing a respectable coat. Done imperfectly is infinitely more real than perfect but unstarted.</div>
-    </div>
-
-    <div class="card" style="margin-top:1rem">
-      <div class="label">The compass rule</div>
-      <div class="body">The more important something is to your development, the more Resistance you will feel toward it. When you notice maximum avoidance around a task, that is not a signal to abandon it. It is a signal that you are aimed at something real. Fear is not a stop sign. It is a compass.</div>
-    </div>
-
-    <div class="card" style="margin-top:1rem">
-      <div class="label">Resistance self-check</div>
-      <div class="daily-q">What is the one task you have been avoiding most consistently this week?</div>
-      <textarea class="answer-box" placeholder="Write it here. Naming it reduces its power." id="resist-task-box"></textarea>
-      <button class="btn-primary" onclick="sendPrompt('I identified my biggest resistance task. Help me break it into one 20-minute action I can do today. My task: ' + document.getElementById('resist-task-box').value + ' ↗')">Get a micro-action for this ↗</button>
-    </div>
-  </div>
-
-  <!-- TURN PRO -->
-  <div id="screen-pro" class="screen">
-    <div class="section-head">Turning professional</div>
-    <div class="section-sub"><span class="tag tag-war">War of Art</span> Not professional as in paid. Professional as in showing up.</div>
-
-    <div class="card">
-      <div class="label">The core distinction</div>
-      <div class="body">The amateur waits for inspiration. The professional shows up and does the work, then lets inspiration find them there. Turning pro is not a credential. It is a decision — one you make every morning, and renew every time Resistance rises.</div>
-    </div>
-
-    <div style="margin-top:1.25rem">
-      <div class="heading" style="margin-bottom:.75rem">Amateur vs professional — the full contrast</div>
-
-      <div class="grid2">
-        <div class="card" style="border-top:2px solid #E24B4A">
-          <div class="label" style="color:#A32D2D">The amateur</div>
-          <div class="lesson-row"><div class="lesson-title">Plays part-time</div><div class="lesson-body">Shows up when motivated, disappears when it gets hard.</div></div>
-          <div class="lesson-row"><div class="lesson-title">Overidentifies with the work</div><div class="lesson-body">Takes criticism of the work as criticism of the self. Gets paralysed by failure.</div></div>
-          <div class="lesson-row"><div class="lesson-title">Seeks permission</div><div class="lesson-body">Waits for someone to validate their right to begin.</div></div>
-          <div class="lesson-row"><div class="lesson-title">Works for outcomes</div><div class="lesson-body">Stops when results don't materialise quickly.</div></div>
-          <div class="lesson-row"><div class="lesson-title">Gives Resistance what it wants</div><div class="lesson-body">Accepts the negotiation. Lets the feeling win.</div></div>
+      <div class="card-grid">
+        <div class="metric-card">
+          <div class="metric-num" id="streak-num">0</div>
+          <div class="metric-lbl">Day streak</div>
         </div>
-        <div class="card" style="border-top:2px solid #1D9E75">
-          <div class="label" style="color:#085041">The professional</div>
-          <div class="lesson-row"><div class="lesson-title">Shows up every day</div><div class="lesson-body">Regardless of mood, inspiration, or results. Like a surgeon — you don't cancel surgery because you don't feel like it.</div></div>
-          <div class="lesson-row"><div class="lesson-title">Maintains distance</div><div class="lesson-body">Takes the work seriously. Doesn't take the self too seriously. Can receive criticism without collapse.</div></div>
-          <div class="lesson-row"><div class="lesson-title">Acts on authority</div><div class="lesson-body">Begins without external permission. The work is its own justification.</div></div>
-          <div class="lesson-row"><div class="lesson-title">Works for the craft</div><div class="lesson-body">Trusts that the outcome follows consistent action — eventually.</div></div>
-          <div class="lesson-row"><div class="lesson-title">Does not negotiate with Resistance</div><div class="lesson-body">Feels the fear. Sits down and begins anyway.</div></div>
+        <div class="metric-card">
+          <div class="metric-num" id="done-num">0</div>
+          <div class="metric-lbl">Tasks completed</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num" id="read-num">0</div>
+          <div class="metric-lbl">Lessons marked read</div>
         </div>
       </div>
-    </div>
 
-    <div class="card" style="margin-top:1rem">
-      <div class="label">Territorial vs hierarchical — the deepest lesson</div>
-      <div class="body" style="margin-bottom:.75rem">There are two ways to do your work. The hierarchical orientation measures worth against other people — rankings, approval, validation, comparison. The territorial orientation does the work because the work itself feeds you.</div>
-      <div class="body">A useful test: if you were the last person on earth, would you still do it? If yes, you are working territorially. If the work only makes sense in the eyes of others, you are working hierarchically — and hierarchy is fragile. It hands your motivation to people who are not obligated to give it back.</div>
-      <div class="quote-block">The hack writes what he thinks others want to see. The artist writes what is inside him, regardless of reception.</div>
-    </div>
-
-    <div class="card" style="margin-top:1rem">
-      <div class="label">Professional habits checklist — this week</div>
-      <div id="pro-checklist">
-        <div class="task-row"><input type="checkbox" class="task-check" onchange="toggleTask(this)"><div class="task-text">I showed up to my one business task without waiting to feel motivated</div></div>
-        <div class="task-row"><input type="checkbox" class="task-check" onchange="toggleTask(this)"><div class="task-text">I did not negotiate with Resistance — I started before I felt ready</div></div>
-        <div class="task-row"><input type="checkbox" class="task-check" onchange="toggleTask(this)"><div class="task-text">I separated the quality of my work from my worth as a person</div></div>
-        <div class="task-row"><input type="checkbox" class="task-check" onchange="toggleTask(this)"><div class="task-text">I worked from territory — because the work is worth doing, not for approval</div></div>
-        <div class="task-row"><input type="checkbox" class="task-check" onchange="toggleTask(this)"><div class="task-text">I kept my creative workspace (desk, doc, browser tab) ready and clear</div></div>
-        <div class="task-row"><input type="checkbox" class="task-check" onchange="toggleTask(this)"><div class="task-text">I was patient — I did not demand results from actions taken today</div></div>
+      <div class="card">
+        <span class="section-label">Resistance check — rate your friction right now</span>
+        <div class="heading" id="today-q" style="font-family:'Lora',serif;font-weight:500;font-size:16px;line-height:1.5;margin-bottom:.75rem;">Loading your daily question…</div>
+        <div class="meter-wrap">
+          <div class="meter-labels"><span>No resistance</span><span>Maximum resistance</span></div>
+          <div class="meter-track"><div class="meter-fill" id="resist-fill" style="width:0%"></div></div>
+          <input type="range" min="0" max="100" value="0" id="resist-slider" oninput="updateResist(this.value)">
+        </div>
+        <div id="resist-label" style="font-size:13px;color:var(--faint);margin-bottom:.5rem;">Move the slider to check in honestly.</div>
+        <div class="quote" id="resist-insight" style="margin-top:.5rem">Resistance is always strongest toward what matters most. High friction is a compass, not a verdict.</div>
       </div>
-    </div>
-  </div>
 
-  <!-- SECOND CURVE -->
-  <div id="screen-curve" class="screen">
-    <div class="section-head">The second curve</div>
-    <div class="section-sub"><span class="tag tag-str">From Strength to Strength</span> Your greatest contribution may be ahead — but it looks different.</div>
-
-    <div class="card">
-      <div class="label">The two intelligences</div>
-      <div class="body" style="margin-bottom:.75rem"><strong style="font-weight:500">Fluid intelligence</strong> is raw processing speed — the ability to solve new problems, adapt quickly, generate novel ideas. It peaks in the 30s and declines gradually. Most first-career success is built on it.</div>
-      <div class="body"><strong style="font-weight:500">Crystallised intelligence</strong> is the accumulated wisdom of lived experience — pattern recognition, judgment, knowing what to ignore, the ability to synthesise and teach. It rises with age and does not significantly decline until very late in life.</div>
-    </div>
-
-    <div class="card" style="margin-top:1rem">
-      <div class="label">What this means for you</div>
-      <div class="body">The midlife professional who suffers is the one who keeps trying to compete on fluid intelligence terms — speed, novelty, volume. The one who thrives deliberately makes the jump to crystallised intelligence work: consulting, teaching, synthesising, advising, building from depth rather than speed.</div>
-      <div class="quote-block" style="margin-top:.75rem">When you were young, you had raw smarts. Now you have wisdom. Wisdom is rarer. It is also more valuable to people who need to make serious decisions.</div>
-    </div>
-
-    <div style="margin-top:1.25rem">
-      <div class="heading" style="margin-bottom:.75rem">The five lessons of the second curve</div>
-
-      <button class="accordion-btn" onclick="toggleAcc(this)">1. The striver's curse <span class="ti ti-chevron-down" aria-hidden="true"></span></button>
-      <div class="accordion-body">People who strive hard for excellence often find their decline terrifying, their successes increasingly unsatisfying, and their relationships thin. The very ambition that drove early success becomes the source of later misery — because identity was too tightly fused to performance. The way out is to loosen that fusion deliberately, before the decline forces it.</div>
-
-      <button class="accordion-btn" onclick="toggleAcc(this)">2. The satisfaction equation <span class="ti ti-chevron-down" aria-hidden="true"></span></button>
-      <div class="accordion-body">Satisfaction = What you have ÷ What you want. Most people try to raise the numerator (achieve more). But the denominator is where the leverage is. Managing your wants — through a reverse bucket list, through gratitude, through deliberately reducing attachment to status markers — produces more lasting satisfaction than any achievement can.</div>
-
-      <button class="accordion-btn" onclick="toggleAcc(this)">3. Résumé virtues vs eulogy virtues <span class="ti ti-chevron-down" aria-hidden="true"></span></button>
-      <div class="accordion-body">Résumé virtues are professional skills — what you did, what you achieved, what titles you held. Eulogy virtues are character traits — whether you were kind, honest, loving, present. Brooks argues that the second half of life calls for a deliberate shift in attention toward eulogy virtues. Not because résumé virtues don't matter, but because they are not what makes a life feel meaningful at the end of it.</div>
-
-      <button class="accordion-btn" onclick="toggleAcc(this)">4. Relationships are the foundation <span class="ti ti-chevron-down" aria-hidden="true"></span></button>
-      <div class="accordion-body">The single greatest predictor of happiness in the second half of life is the quality of your close relationships. Not the breadth — the depth. Brooks distinguishes between "deal friends" (transactional, professional) and "real friends" (those who know you outside the role). Successful people are often rich in the former and poor in the latter. The transition requires building the latter, deliberately.</div>
-
-      <button class="accordion-btn" onclick="toggleAcc(this)">5. The reverse bucket list <span class="ti ti-chevron-down" aria-hidden="true"></span></button>
-      <div class="accordion-body">Instead of adding more things to pursue, the reverse bucket list removes them. Each year, identify desires, status games, comparisons, and ambitions that are costing you energy and don't reflect your real values — then subtract them. This is not resignation. It is precision. You are clearing space for what actually matters.</div>
-
-      <button class="accordion-btn" onclick="toggleAcc(this)">6. Confronting decline directly <span class="ti ti-chevron-down" aria-hidden="true"></span></button>
-      <div class="accordion-body">Brooks draws on Buddhist "maranasati" practice — mindfulness of death — not to be morbid but to bring clarity. When you hold your mortality plainly in mind, trivial pursuits lose their grip and what matters becomes sharper. Most midlife suffering comes from avoiding this confrontation. Looking at it directly, paradoxically, produces peace.</div>
-    </div>
-
-    <div class="card" style="margin-top:1rem">
-      <div class="label">Your second-curve self-audit</div>
-      <div style="margin-bottom:.75rem">
-        <div class="task-row"><input type="checkbox" class="task-check" onchange="toggleTask(this)"><div class="task-text">I can name 3 things I know deeply — from experience, not from speed — that others would pay for</div></div>
-        <div class="task-row"><input type="checkbox" class="task-check" onchange="toggleTask(this)"><div class="task-text">I have at least one relationship I am investing in that is not transactional</div></div>
-        <div class="task-row"><input type="checkbox" class="task-check" onchange="toggleTask(this)"><div class="task-text">I have identified one desire or comparison I am ready to subtract from my life</div></div>
-        <div class="task-row"><input type="checkbox" class="task-check" onchange="toggleTask(this)"><div class="task-text">My current work relies more on judgment and synthesis than on speed</div></div>
-        <div class="task-row"><input type="checkbox" class="task-check" onchange="toggleTask(this)"><div class="task-text">I am building eulogy virtues alongside résumé virtues</div></div>
+      <div class="card">
+        <span class="section-label">One action today</span>
+        <div class="heading">Your micro-task</div>
+        <div class="body-text" id="micro-task" style="margin-bottom:.75rem;">Loading…</div>
+        <button class="btn btn-teal" id="task-btn" onclick="markTaskDone()">Mark done</button>
       </div>
-      <button class="btn-primary" onclick="sendPrompt('Based on the second curve framework from From Strength to Strength, help me identify what crystallised intelligence I already have as a copywriter and strategist that I could leverage as a freelancer ↗')">Map my crystallised strengths ↗</button>
-    </div>
-  </div>
 
-  <!-- ALL LESSONS -->
-  <div id="screen-lessons" class="screen">
-    <div class="section-head">Complete lesson library</div>
-    <div class="section-sub">Every major idea from both books, organised for daily use.</div>
-
-    <div class="heading" style="margin-bottom:.75rem">From The War of Art <span class="badge-pill pill-war">Pressfield</span></div>
-
-    <div class="card">
-      <div class="lesson-row">
-        <button class="check-btn" onclick="toggleCheck(this)">Mark read</button>
-        <div class="lesson-title">Resistance is universal and predictable</div>
-        <div class="lesson-body">Every person doing meaningful work faces Resistance. It is not unique to you. Its presence is proof you are doing something that matters. Its strength is proportional to the importance of the work.</div>
-      </div>
-      <div class="lesson-row">
-        <button class="check-btn" onclick="toggleCheck(this)">Mark read</button>
-        <div class="lesson-title">Resistance is fuelled by fear</div>
-        <div class="lesson-body">At its root, Resistance is fear — of failure, of success, of being seen, of being found out. The professional does not wait for fear to go away. The professional acts in the presence of fear.</div>
-      </div>
-      <div class="lesson-row">
-        <button class="check-btn" onclick="toggleCheck(this)">Mark read</button>
-        <div class="lesson-title">Identity precedes action</div>
-        <div class="lesson-body">If you write, you are a writer. If you do strategy work, you are a strategist. You do not earn the identity at the end — you claim it at the beginning, then your actions confirm it. The amateur waits to feel like one. The professional decides to be one.</div>
-      </div>
-      <div class="lesson-row">
-        <button class="check-btn" onclick="toggleCheck(this)">Mark read</button>
-        <div class="lesson-title">Turning pro is a decision, not a credential</div>
-        <div class="lesson-body">The shift from amateur to professional is internal. It happens the moment you decide to treat your work with the same seriousness you would give a paying job — whether or not anyone is watching.</div>
-      </div>
-      <div class="lesson-row">
-        <button class="check-btn" onclick="toggleCheck(this)">Mark read</button>
-        <div class="lesson-title">The professional is patient</div>
-        <div class="lesson-body">Real work takes time. Rushing to finish or demanding early results causes you to flame out. Your job is to keep showing up. The result will come when the work earns it.</div>
-      </div>
-      <div class="lesson-row">
-        <button class="check-btn" onclick="toggleCheck(this)">Mark read</button>
-        <div class="lesson-title">Habit is the professional's most powerful ally</div>
-        <div class="lesson-body">Amateurs rely on motivation. Professionals rely on habit. A ritual — a fixed time, a fixed place, a fixed starting action — bypasses the daily negotiation with Resistance. You do not decide whether to do the work. You just follow the ritual.</div>
-      </div>
-      <div class="lesson-row">
-        <button class="check-btn" onclick="toggleCheck(this)">Mark read</button>
-        <div class="lesson-title">Do not seek hierarchy — find your territory</div>
-        <div class="lesson-body">Hierarchical work measures itself against others and chases their approval. Territorial work is done because the doing feeds you. Territory cannot be taken from you by a bad review or a missed client. It is yours by nature of the work itself.</div>
-      </div>
-      <div class="lesson-row">
-        <button class="check-btn" onclick="toggleCheck(this)">Mark read</button>
-        <div class="lesson-title">The muse rewards those who show up</div>
-        <div class="lesson-body">Inspiration does not precede the work. It follows from it. When you commit to showing up consistently, unseen forces — pattern, insight, creative connection — begin to arrive. You cannot summon them without first sitting down.</div>
-      </div>
-      <div class="lesson-row">
-        <button class="check-btn" onclick="toggleCheck(this)">Mark read</button>
-        <div class="lesson-title">The hack vs the artist</div>
-        <div class="lesson-body">The hack shapes their work to what they believe others want. The artist produces what is authentic, regardless of reception. In the long run, the hack's work is thin — it has no territory, no self. The artist's work compounds. It is the only kind worth doing.</div>
+      <div class="card">
+        <span class="section-label">Daily anchor</span>
+        <div class="quote" id="daily-quote">Loading…</div>
+        <span class="quote-source" id="daily-source"></span>
       </div>
     </div>
 
-    <div class="heading" style="margin:.75rem 0">From Strength to Strength <span class="badge-pill pill-str">Brooks</span></div>
+    <!-- ===== RESISTANCE ===== -->
+    <div class="screen" id="screen-resistance">
+      <div class="page-title">Understanding Resistance</div>
+      <div class="page-sub"><span class="tag tag-war">War of Art</span> The enemy has a name. Naming it is the first weapon.</div>
 
-    <div class="card">
-      <div class="lesson-row">
-        <button class="check-btn" onclick="toggleCheck(this)">Mark read</button>
-        <div class="lesson-title">Decline is not failure — it is redesign</div>
-        <div class="lesson-body">Professional decline is not a personal failing. It is a biological reality. The failure is in not adapting — in continuing to compete on terms that no longer favour you instead of pivoting to terms that do.</div>
+      <div class="card">
+        <span class="section-label">What it is</span>
+        <div class="body-text">Resistance is the internal force that opposes any meaningful, creative, or transformative work. It is not personal to you. It is universal — every person doing anything that matters faces it. Its strength is proportional to the importance of what you are trying to do. That is how you can use it as a compass: when you feel maximum avoidance around a task, that task is probably the most important one.</div>
       </div>
-      <div class="lesson-row">
-        <button class="check-btn" onclick="toggleCheck(this)">Mark read</button>
-        <div class="lesson-title">The jump must be deliberate</div>
-        <div class="lesson-body">The transition from fluid to crystallised intelligence does not happen automatically. You must decide to make it. This means choosing work that rewards judgment, depth, and accumulated pattern recognition — not speed, novelty, or raw output.</div>
-      </div>
-      <div class="lesson-row">
-        <button class="check-btn" onclick="toggleCheck(this)">Mark read</button>
-        <div class="lesson-title">Success addiction keeps you on the wrong curve</div>
-        <div class="lesson-body">If your identity is fused with professional achievement, every sign of decline feels like erasure. The way out is not more achievement — it is decoupling your self-worth from your output metrics. This is work, not just wisdom.</div>
-      </div>
-      <div class="lesson-row">
-        <button class="check-btn" onclick="toggleCheck(this)">Mark read</button>
-        <div class="lesson-title">Manage your wants, not just your achievements</div>
-        <div class="lesson-body">Satisfaction = what you have ÷ what you want. The denominator is often ignored. Deliberately reducing the wants you have inherited from comparison culture produces more peace than any new achievement can.</div>
-      </div>
-      <div class="lesson-row">
-        <button class="check-btn" onclick="toggleCheck(this)">Mark read</button>
-        <div class="lesson-title">Teach and mentor rather than compete</div>
-        <div class="lesson-body">The natural second-curve role is the teacher, the advisor, the synthesiser. Not because you are finished competing, but because the return on sharing wisdom is higher — for you and for others — than the return on trying to out-produce people half your age.</div>
-      </div>
-      <div class="lesson-row">
-        <button class="check-btn" onclick="toggleCheck(this)">Mark read</button>
-        <div class="lesson-title">Real friends over deal friends</div>
-        <div class="lesson-body">Successful people are often rich in transactional relationships and poor in genuine ones. Loneliness at the top is real and common. The investment in deep, non-transactional friendship is not a luxury for the second half of life. It is the foundation.</div>
-      </div>
-      <div class="lesson-row">
-        <button class="check-btn" onclick="toggleCheck(this)">Mark read</button>
-        <div class="lesson-title">Vulnerability is a second-curve strength</div>
-        <div class="lesson-body">First-curve success often requires projecting invulnerability. Second-curve work — teaching, advising, leading with wisdom — is actually more powerful when it includes honest acknowledgment of uncertainty and failure. Vulnerability earns trust in a way that performance cannot.</div>
-      </div>
-      <div class="lesson-row">
-        <button class="check-btn" onclick="toggleCheck(this)">Mark read</button>
-        <div class="lesson-title">Contemplating mortality produces clarity</div>
-        <div class="lesson-body">When you hold the reality of your own mortality plainly — not as a morbid exercise but as a clarifying lens — trivial pursuits lose their grip. What matters becomes obvious. This is why Brooks recommends some version of death meditation not as pessimism but as a tool for precision.</div>
-      </div>
-    </div>
-  </div>
 
-  <!-- JOURNAL -->
-  <div id="screen-journal" class="screen">
-    <div class="section-head">Daily journal</div>
-    <div class="section-sub">One question. One answer. One sentence is enough to start.</div>
+      <div style="margin:1.25rem 0 .5rem">
+        <div class="heading" style="margin-bottom:.75rem">How Resistance disguises itself — click to expose each form</div>
 
-    <div class="card" id="journal-card">
-      <div class="label">Today's prompt</div>
-      <div class="daily-q" id="journal-q">Loading prompt…</div>
-      <textarea class="answer-box" id="journal-answer" placeholder="Write here. Even one sentence counts." style="min-height:120px"></textarea>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.75rem">
-        <button class="btn-primary" onclick="saveJournal()">Save entry</button>
-        <button class="btn-primary" onclick="nextJournalQ()">Different question</button>
-        <button class="btn-primary" onclick="sendPrompt('Journal entry: ' + document.getElementById('journal-answer').value + '\n\nHelp me go deeper on what this reveals about my resistance, my second curve, or my next action. ↗')">Go deeper with Claude ↗</button>
+        <button class="acc-btn" onclick="toggleAcc(this)">Procrastination <span class="arrow">›</span></button>
+        <div class="acc-body">Resistance's most common mask. It never says "I won't do this." It says "I will do it — later." Later is its home territory. The antidote is not motivation. It is beginning before you feel ready, because readiness is not a prerequisite for starting. It is a reward that follows from starting.</div>
+
+        <button class="acc-btn" onclick="toggleAcc(this)">Self-doubt <span class="arrow">›</span></button>
+        <div class="acc-body">Resistance speaks in the first person, so you think it is your own voice. "I'm not good enough. Who am I to do this? Others do it better." These thoughts are not honest self-assessments. They are Resistance in disguise. The fact that you can recognise them as a recurring pattern is your first point of leverage against them.</div>
+
+        <button class="acc-btn" onclick="toggleAcc(this)">Rationalisation <span class="arrow">›</span></button>
+        <div class="acc-body">Resistance is highly intelligent. It will construct excellent reasons why now is not the right time — the setup is not ready, the idea needs more development, the market conditions are wrong. The argument will sound logical. This is its most dangerous form because it recruits your own reasoning mind against you.</div>
+
+        <button class="acc-btn" onclick="toggleAcc(this)">Manufactured crisis and drama <span class="arrow">›</span></button>
+        <div class="acc-body">Resistance manufactures urgency elsewhere. Suddenly there are calls to make, fires to put out, other people who urgently need you. Real emergencies exist. But notice the pattern — how often does a "crisis" arrive precisely when you were about to sit down to do the meaningful work?</div>
+
+        <button class="acc-btn" onclick="toggleAcc(this)">Talking about it instead of doing it <span class="arrow">›</span></button>
+        <div class="acc-body">Describing what you plan to do gives a small neurological reward that mimics the reward of doing it. Resistance exploits this. The urge to share your plans, seek support, or get validation before you have produced anything is often Resistance siphoning the energy the work actually needs.</div>
+
+        <button class="acc-btn" onclick="toggleAcc(this)">Perfectionism <span class="arrow">›</span></button>
+        <div class="acc-body">Resistance hides comfortably inside the desire for a better outcome. "I will begin when I have a better setup / clearer strategy / more time." Perfectionism is fear wearing a respectable coat. Work done imperfectly today is infinitely more real than perfect work that never leaves the planning stage.</div>
+
+        <button class="acc-btn" onclick="toggleAcc(this)">Seeking excessive support and validation <span class="arrow">›</span></button>
+        <div class="acc-body">Joining groups, reading more about the thing, asking for opinions — all of these can be genuine support or a sophisticated form of avoidance. The test: are you gathering information you do not yet have, or are you deferring the act of beginning?</div>
+      </div>
+
+      <div class="card">
+        <span class="section-label">The compass rule</span>
+        <div class="body-text">The degree of Resistance you feel toward a task is roughly proportional to its importance to your creative growth and freedom. This means the things you avoid most consistently are almost certainly the things most worth doing. Use resistance as a map, not a wall.</div>
+      </div>
+
+      <div class="card">
+        <span class="section-label">Resistance self-check — write it down</span>
+        <div class="heading" style="margin-bottom:.75rem;font-weight:500">What is the one task you have been avoiding most consistently this week?</div>
+        <textarea id="resist-task" placeholder="Name it here. Naming it reduces its power considerably."></textarea>
+        <div style="margin-top:.25rem">
+          <button class="btn btn-primary" onclick="copyResistTask()">Copy as prompt for Claude</button>
+        </div>
+        <div id="copy-confirm" style="font-size:12px;color:var(--teal);margin-top:.4rem;display:none;">Copied. Paste it into a new Claude chat for a micro-action plan.</div>
       </div>
     </div>
 
-    <div class="card" style="margin-top:1rem" id="journal-history">
-      <div class="label">Previous entries</div>
-      <div id="journal-log" style="font-size:13px;color:var(--color-text-tertiary)">No entries yet. Your first sentence is waiting.</div>
+    <!-- ===== TURN PRO ===== -->
+    <div class="screen" id="screen-pro">
+      <div class="page-title">Turning Professional</div>
+      <div class="page-sub"><span class="tag tag-war">War of Art</span> Not professional as in paid. Professional as in showing up — every day, regardless.</div>
+
+      <div class="card">
+        <span class="section-label">The core shift</span>
+        <div class="body-text">The amateur waits for inspiration before working. The professional shows up first and lets inspiration find them there. Turning pro is not a credential someone else confers. It is a decision you make internally — and renew every morning when Resistance rises again.</div>
+      </div>
+
+      <div class="compare-grid">
+        <div class="compare-card bad">
+          <div class="compare-head bad">The amateur</div>
+          <div class="compare-item"><strong>Plays part-time</strong>Shows up when motivated. Disappears when it gets hard or boring.</div>
+          <div class="compare-item"><strong>Overidentifies with the work</strong>Takes criticism of the work as criticism of the self. Gets paralysed by failure.</div>
+          <div class="compare-item"><strong>Waits for permission</strong>Needs someone to validate their right to call themselves a writer, strategist, or consultant.</div>
+          <div class="compare-item"><strong>Works for outcomes</strong>Stops when results don't materialise fast enough.</div>
+          <div class="compare-item"><strong>Negotiates with Resistance</strong>Accepts the feeling as a verdict. Lets the friction win.</div>
+        </div>
+        <div class="compare-card good">
+          <div class="compare-head good">The professional</div>
+          <div class="compare-item"><strong>Shows up every day</strong>Regardless of mood, inspiration, or results. The work does not wait for feeling.</div>
+          <div class="compare-item"><strong>Maintains healthy distance</strong>Takes the craft seriously. Does not take the self too seriously. Criticism is information.</div>
+          <div class="compare-item"><strong>Acts on authority</strong>Begins without external permission. The work justifies the identity.</div>
+          <div class="compare-item"><strong>Works for the craft</strong>Trusts that outcomes follow from consistent action — eventually, not immediately.</div>
+          <div class="compare-item"><strong>Does not negotiate with Resistance</strong>Feels the fear. Sits down and begins anyway. Every single time.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="section-label">The deepest lesson — territorial vs hierarchical</span>
+        <div class="heading" style="margin-bottom:.6rem;font-weight:500">Two ways to do your work</div>
+        <div class="body-text" style="margin-bottom:.75rem">The <strong style="color:var(--coral);font-weight:600">hierarchical orientation</strong> measures your worth against other people — rankings, approval, validation, comparison. Your motivation depends on what others think. This is fragile. It hands your creative energy to people who have no obligation to sustain it.</div>
+        <div class="body-text">The <strong style="color:var(--teal);font-weight:600">territorial orientation</strong> does the work because the work itself feeds you. Your territory — your craft, your thinking, your particular way of seeing — cannot be taken from you by a bad review, a lost client, or an indifferent market.</div>
+        <div class="quote">A useful test: if you were the last person on earth, would you still do this work? If yes, you are working territorially. That is the only foundation that holds.</div>
+      </div>
+
+      <div class="card">
+        <span class="section-label">Professional habits — this week</span>
+        <div id="pro-checklist">
+          <div class="checklist-row"><input type="checkbox" id="p1" onchange="toggleCheck(this,'pl1')"><label class="check-label" id="pl1" for="p1">I showed up to my one business task without waiting to feel motivated</label></div>
+          <div class="checklist-row"><input type="checkbox" id="p2" onchange="toggleCheck(this,'pl2')"><label class="check-label" id="pl2" for="p2">I did not negotiate with Resistance — I started before I felt ready</label></div>
+          <div class="checklist-row"><input type="checkbox" id="p3" onchange="toggleCheck(this,'pl3')"><label class="check-label" id="pl3" for="p3">I separated the quality of my work from my personal worth</label></div>
+          <div class="checklist-row"><input type="checkbox" id="p4" onchange="toggleCheck(this,'pl4')"><label class="check-label" id="pl4" for="p4">I worked from territory — because the craft matters, not for approval</label></div>
+          <div class="checklist-row"><input type="checkbox" id="p5" onchange="toggleCheck(this,'pl5')"><label class="check-label" id="pl5" for="p5">I kept my creative workspace ready and clear for the next session</label></div>
+          <div class="checklist-row"><input type="checkbox" id="p6" onchange="toggleCheck(this,'pl6')"><label class="check-label" id="pl6" for="p6">I was patient — I did not demand immediate results from today's actions</label></div>
+          <div class="checklist-row"><input type="checkbox" id="p7" onchange="toggleCheck(this,'pl7')"><label class="check-label" id="pl7" for="p7">I chose at least one habit or ritual that makes the work automatic, not optional</label></div>
+        </div>
+      </div>
     </div>
-  </div>
+
+    <!-- ===== SECOND CURVE ===== -->
+    <div class="screen" id="screen-curve">
+      <div class="page-title">The Second Curve</div>
+      <div class="page-sub"><span class="tag tag-str">From Strength to Strength</span> Your greatest contribution may still be ahead — but it looks different from here.</div>
+
+      <div class="card">
+        <span class="section-label">The two intelligences</span>
+        <div class="heading" style="margin-bottom:.6rem;font-weight:500">Why midlife feels like decline — and why that's the wrong frame</div>
+        <div class="body-text" style="margin-bottom:.75rem"><strong style="color:var(--coral);font-weight:600">Fluid intelligence</strong> is raw processing speed — the ability to solve novel problems quickly, generate new ideas at volume, adapt on the fly. It peaks in the early-to-mid 30s and declines gradually. Most first-career success is built on it.</div>
+        <div class="body-text"><strong style="color:var(--teal);font-weight:600">Crystallised intelligence</strong> is accumulated wisdom — deep pattern recognition, sound judgment, the ability to synthesise, teach, and know what to ignore. It rises with age and does not significantly decline until very late life. The midlife professional who thrives makes the deliberate jump to work that rewards this kind of intelligence.</div>
+        <div class="quote">When you were young, you had raw smarts. Now you have wisdom. Wisdom is rarer. It is also more valuable to people trying to make serious decisions.</div>
+      </div>
+
+      <div style="margin:1.25rem 0 .5rem">
+        <div class="heading" style="margin-bottom:.75rem">The five essential second-curve lessons</div>
+
+        <button class="acc-btn" onclick="toggleAcc(this)">1. The striver's curse <span class="arrow">›</span></button>
+        <div class="acc-body">People who have worked hardest for excellence often find their decline most terrifying and their successes most unsatisfying. This is because their identity became fused with performance metrics. The way out is not more achievement — it is deliberately loosening the fusion between self-worth and output, before decline forces it. This is proactive work, not passive acceptance.</div>
+
+        <button class="acc-btn" onclick="toggleAcc(this)">2. The satisfaction equation <span class="arrow">›</span></button>
+        <div class="acc-body">Satisfaction = what you have ÷ what you want. Most people chase the numerator (achieve more, earn more, accumulate more). But the denominator — your wants — is where the real leverage is. Deliberately reducing inherited desires, social comparison games, and status attachments that no longer reflect your actual values produces more lasting peace than any new achievement can. This is what Brooks calls the reverse bucket list: subtract, don't only add.</div>
+
+        <button class="acc-btn" onclick="toggleAcc(this)">3. Résumé virtues vs eulogy virtues <span class="arrow">›</span></button>
+        <div class="acc-body">Résumé virtues are professional skills — titles, achievements, outputs. Eulogy virtues are character traits — whether you were kind, honest, generous, present. The second half of life calls for a deliberate shift in attention toward eulogy virtues. Not because résumé virtues don't matter, but because at the end of a life, nobody remembers the metrics. They remember who you were to them.</div>
+
+        <button class="acc-btn" onclick="toggleAcc(this)">4. Real friends, not deal friends <span class="arrow">›</span></button>
+        <div class="acc-body">Successful people tend to be rich in transactional relationships (deal friends, professional contacts, people who need them for something) and poor in genuine friendships (people who know them outside the role, who would still be there if the success evaporated). Research is clear: the single greatest predictor of happiness in the second half of life is the quality of close, non-transactional relationships. This requires deliberate investment — it does not happen automatically.</div>
+
+        <button class="acc-btn" onclick="toggleAcc(this)">5. Confronting decline directly produces clarity <span class="arrow">›</span></button>
+        <div class="acc-body">For a striver, professional decline feels like a preview of death — of being erased and forgotten. Brooks draws on Buddhist and Stoic traditions to argue that the only way through this fear is to face it directly rather than avoid it. Holding your mortality honestly in view — not as morbid exercise but as a clarifying lens — strips trivial pursuits of their grip and makes what actually matters unmistakably clear. This is not pessimism. It is precision.</div>
+      </div>
+
+      <div class="card">
+        <span class="section-label">Second-curve self-audit</span>
+        <div id="curve-checklist">
+          <div class="checklist-row"><input type="checkbox" id="c1" onchange="toggleCheck(this,'cl1')"><label class="check-label" id="cl1" for="c1">I can name three things I know deeply — from years of experience — that someone younger in my field does not yet know</label></div>
+          <div class="checklist-row"><input type="checkbox" id="c2" onchange="toggleCheck(this,'cl2')"><label class="check-label" id="cl2" for="c2">My current freelance positioning leans on judgment and synthesis, not just speed or volume of output</label></div>
+          <div class="checklist-row"><input type="checkbox" id="c3" onchange="toggleCheck(this,'cl3')"><label class="check-label" id="cl3" for="c3">I have at least one relationship I am actively investing in that is not transactional</label></div>
+          <div class="checklist-row"><input type="checkbox" id="c4" onchange="toggleCheck(this,'cl4')"><label class="check-label" id="cl4" for="c4">I have identified one desire or comparison I am ready to subtract from my life this year</label></div>
+          <div class="checklist-row"><input type="checkbox" id="c5" onchange="toggleCheck(this,'cl5')"><label class="check-label" id="cl5" for="c5">I am building at least one eulogy virtue alongside my professional development</label></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ALL LESSONS ===== -->
+    <div class="screen" id="screen-lessons">
+      <div class="page-title">Complete Lesson Library</div>
+      <div class="page-sub">Every major idea from both books. Mark each one read as you internalise it.</div>
+
+      <div class="card">
+        <div style="margin-bottom:1rem"><span class="tag tag-war">War of Art</span> <span style="font-size:13px;color:var(--muted)">Pressfield</span></div>
+
+        <div class="lesson">
+          <button class="read-btn" onclick="markRead(this)">Mark read</button>
+          <div class="lesson-title">Resistance is universal and predictable</div>
+          <div class="lesson-body">Everyone doing meaningful work faces it. Its presence is not a sign of weakness — it is confirmation you are aimed at something real. Its strength is proportional to the importance of the work.</div>
+        </div>
+
+        <div class="lesson">
+          <button class="read-btn" onclick="markRead(this)">Mark read</button>
+          <div class="lesson-title">Resistance is fuelled by fear</div>
+          <div class="lesson-body">At its root, Resistance is fear — of failure, of success, of being truly seen, of being found out. The professional does not wait for fear to dissolve. The professional acts in the full presence of it.</div>
+        </div>
+
+        <div class="lesson">
+          <button class="read-btn" onclick="markRead(this)">Mark read</button>
+          <div class="lesson-title">Identity precedes action</div>
+          <div class="lesson-body">If you do strategy work, you are a strategist. If you write copy, you are a copywriter. You do not earn the identity at the end of enough successful projects. You claim it now, then your consistent actions confirm it over time. The amateur waits to feel like one. The professional decides to be one.</div>
+        </div>
+
+        <div class="lesson">
+          <button class="read-btn" onclick="markRead(this)">Mark read</button>
+          <div class="lesson-title">Turning pro is a decision, not a credential</div>
+          <div class="lesson-body">The shift from amateur to professional is internal. It happens the moment you decide to treat your work with the same seriousness you would give a client-paid deadline — whether or not anyone is watching. No qualification required.</div>
+        </div>
+
+        <div class="lesson">
+          <button class="read-btn" onclick="markRead(this)">Mark read</button>
+          <div class="lesson-title">The professional is patient</div>
+          <div class="lesson-body">Real work takes real time. Rushing to finish or demanding early results causes you to flame out. Your job is to keep showing up. The result appears when the work earns it — not when the impatience demands it.</div>
+        </div>
+
+        <div class="lesson">
+          <button class="read-btn" onclick="markRead(this)">Mark read</button>
+          <div class="lesson-title">Habit is the professional's most powerful ally</div>
+          <div class="lesson-body">Amateurs rely on motivation. Professionals rely on habit. A ritual — a fixed time, a fixed place, a fixed starting action — bypasses the daily negotiation with Resistance. When you follow the ritual, you are not deciding whether to do the work. You are simply following the ritual.</div>
+        </div>
+
+        <div class="lesson">
+          <button class="read-btn" onclick="markRead(this)">Mark read</button>
+          <div class="lesson-title">Work from territory, not hierarchy</div>
+          <div class="lesson-body">Hierarchical work measures itself by comparison to others and chases their approval. Territorial work is done because the doing itself feeds you. Territory cannot be taken from you by a bad review, a failed pitch, or someone else's success. It is yours by nature of the craft itself.</div>
+        </div>
+
+        <div class="lesson">
+          <button class="read-btn" onclick="markRead(this)">Mark read</button>
+          <div class="lesson-title">Inspiration follows from showing up</div>
+          <div class="lesson-body">Insight does not precede the work. It arrives during it. When you commit to showing up consistently, creative connections begin to appear. You cannot summon them without first sitting down. The muse rewards presence, not intention.</div>
+        </div>
+
+        <div class="lesson">
+          <button class="read-btn" onclick="markRead(this)">Mark read</button>
+          <div class="lesson-title">The hack vs the artist</div>
+          <div class="lesson-body">The hack shapes their work to what they believe others want to see. The artist produces what is authentic, regardless of predicted reception. In the long run, hack work is thin — it has no territory, no self behind it. Authentic work compounds. It is the only kind worth producing.</div>
+        </div>
+
+        <div class="lesson">
+          <button class="read-btn" onclick="markRead(this)">Mark read</button>
+          <div class="lesson-title">Fear is a compass, not a stop sign</div>
+          <div class="lesson-body">The more strongly Resistance pulls you away from something, the more important that thing probably is. Use the strength of your avoidance as a map. Maximum fear usually marks the most important direction.</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:1.25rem">
+        <div style="margin-bottom:1rem"><span class="tag tag-str">From Strength to Strength</span> <span style="font-size:13px;color:var(--muted)">Brooks</span></div>
+
+        <div class="lesson">
+          <button class="read-btn" onclick="markRead(this)">Mark read</button>
+          <div class="lesson-title">Decline is not failure — it is redesign</div>
+          <div class="lesson-body">Professional decline in certain abilities is a biological reality, not a personal failing. The failure is in refusing to adapt — in continuing to compete on terms that no longer favour your stage of life instead of pivoting to terms that do.</div>
+        </div>
+
+        <div class="lesson">
+          <button class="read-btn" onclick="markRead(this)">Mark read</button>
+          <div class="lesson-title">The jump to the second curve must be deliberate</div>
+          <div class="lesson-body">The transition from fluid to crystallised intelligence does not happen by itself. You must choose it — by deliberately pursuing work that rewards judgment, depth, accumulated pattern recognition, and synthesis rather than raw speed or novelty.</div>
+        </div>
+
+        <div class="lesson">
+          <button class="read-btn" onclick="markRead(this)">Mark read</button>
+          <div class="lesson-title">Success addiction keeps you on the wrong curve</div>
+          <div class="lesson-body">If your identity is fused with professional achievement metrics, every sign of slowing down feels like erasure. The way out is not more achievement — it is actively decoupling your self-worth from your output numbers. This is inner work, not just philosophical agreement.</div>
+        </div>
+
+        <div class="lesson">
+          <button class="read-btn" onclick="markRead(this)">Mark read</button>
+          <div class="lesson-title">Manage your wants, not only your achievements</div>
+          <div class="lesson-body">Satisfaction = what you have ÷ what you want. The denominator is where the leverage lives. Reducing the wants you have absorbed from status culture and comparison produces more lasting peace than any new achievement can generate.</div>
+        </div>
+
+        <div class="lesson">
+          <button class="read-btn" onclick="markRead(this)">Mark read</button>
+          <div class="lesson-title">Teach and share rather than compete</div>
+          <div class="lesson-body">The natural second-curve role is the teacher, the advisor, the experienced synthesiser. Not because you are done with serious work, but because the return on sharing deep wisdom is higher — for you and others — than trying to out-produce people at a different stage.</div>
+        </div>
+
+        <div class="lesson">
+          <button class="read-btn" onclick="markRead(this)">Mark read</button>
+          <div class="lesson-title">Real friends over deal friends</div>
+          <div class="lesson-body">Successful people are often rich in transactional contacts and poor in genuine friendship. Loneliness at the top is common and real. Deep, non-transactional friendship is not a luxury in the second half of life. It is the foundation of happiness in it.</div>
+        </div>
+
+        <div class="lesson">
+          <button class="read-btn" onclick="markRead(this)">Mark read</button>
+          <div class="lesson-title">Vulnerability is a second-curve strength</div>
+          <div class="lesson-body">First-curve success often requires projecting invulnerability. Second-curve work — teaching, advising, leading through wisdom — is actually more powerful when it includes honest acknowledgment of failure and uncertainty. Vulnerability earns trust in ways that performance cannot.</div>
+        </div>
+
+        <div class="lesson">
+          <button class="read-btn" onclick="markRead(this)">Mark read</button>
+          <div class="lesson-title">Contemplating mortality produces clarity</div>
+          <div class="lesson-body">Holding the reality of your own death honestly in view — not as a morbid exercise but as a clarifying lens — strips trivial pursuits of their hold and makes what actually matters unmistakably clear. Most midlife suffering comes from avoiding this confrontation. Facing it directly, paradoxically, produces peace.</div>
+        </div>
+
+        <div class="lesson">
+          <button class="read-btn" onclick="markRead(this)">Mark read</button>
+          <div class="lesson-title">Résumé virtues fade. Eulogy virtues last.</div>
+          <div class="lesson-body">At the end of a life, people do not recall your titles or metrics. They recall whether you were kind, present, honest, and generous. The second half of life is the right time to invest more deliberately in the traits that survive you.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== JOURNAL ===== -->
+    <div class="screen" id="screen-journal">
+      <div class="page-title">Daily Journal</div>
+      <div class="page-sub">One question. One answer. One sentence is enough to begin.</div>
+
+      <div class="card">
+        <span class="section-label">Today's prompt</span>
+        <div class="heading" style="font-family:'Lora',serif;font-weight:500;font-size:17px;line-height:1.55;margin-bottom:1rem" id="journal-q">Loading prompt…</div>
+        <textarea id="journal-answer" placeholder="Write here. Even a single sentence counts as today's work." style="min-height:130px;"></textarea>
+        <div>
+          <button class="btn btn-primary" onclick="saveJournal()">Save entry</button>
+          <button class="btn" onclick="nextJournalQ()">Different question</button>
+          <button class="btn btn-teal" onclick="copyJournal()">Copy for Claude</button>
+        </div>
+        <div id="journal-copy-confirm" style="font-size:12px;color:var(--teal);margin-top:.5rem;display:none;">Copied. Paste into a new Claude chat to go deeper.</div>
+      </div>
+
+      <div class="card" id="journal-history-card">
+        <span class="section-label">Previous entries</span>
+        <div id="journal-log">
+          <div style="font-size:13px;color:var(--faint);padding:.5rem 0;">No entries yet. Your first sentence is waiting.</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
 </div>
 
 <script>
-var state={streak:0,done:0,taskDone:false,resistVal:0,journalIdx:0,entries:[]};
-
-var quotes=[
-  {text:"The professional shows up every day. The amateur shows up when the mood strikes.",src:"War of Art — Pressfield"},
-  {text:"Resistance is always strongest at the finish line. That is how you know you are close.",src:"War of Art — Pressfield"},
-  {text:"Fear is not a stop sign. It is a compass pointing toward what matters most.",src:"War of Art — Pressfield"},
-  {text:"The hack writes what others want to see. The artist writes what is inside.",src:"War of Art — Pressfield"},
-  {text:"Do the work for its own sake. That is the only territory nobody can take from you.",src:"War of Art — Pressfield"},
-  {text:"Satisfaction equals what you have, divided by what you want. The denominator is where the leverage is.",src:"From Strength to Strength — Brooks"},
-  {text:"When you were young, you had raw smarts. Now you have wisdom. Wisdom is rarer.",src:"From Strength to Strength — Brooks"},
-  {text:"Résumé virtues are what you did. Eulogy virtues are who you were. Only one of them survives you.",src:"From Strength to Strength — Brooks"},
-  {text:"The striver's curse: the harder you chased excellence, the more terrifying the decline.",src:"From Strength to Strength — Brooks"},
-  {text:"The relationships that sustain you in the second half are not the ones you network into. They are the ones you invest in.",src:"From Strength to Strength — Brooks"}
-];
-
-var dailyQs=[
-  "What task have you been putting off — and what is Resistance telling you about why it matters?",
-  "Are you working today for territory or for hierarchy? Would you do this work if nobody ever saw it?",
-  "Where in your freelance build did you last feel the pull of real creative engagement?",
-  "What does your fluid intelligence want to compete on — and where could your crystallised wisdom win instead?",
-  "Name one thing you want that is costing you peace. Is it worth keeping?",
-  "What would a professional version of you do in the next 60 minutes?",
-  "What are you treating as an emergency that Resistance manufactured?",
-  "Who in your life is a real friend versus a deal friend? When did you last invest in a real one?",
-  "If you held your mortality plainly in view today, what would immediately become less important?"
-];
-
-var microTasks=[
-  "Write one sentence describing your ideal proptech client and the specific problem you solve for them.",
-  "Open a blank doc. Write the headline of one email you could send to a prospect this week.",
-  "Write down three things you know from experience that someone entering your field does not yet know.",
-  "Identify one résumé virtue you have. Now name the eulogy virtue you want to build alongside it.",
-  "Name the one task you have been avoiding. Set a timer for 20 minutes and start — nothing else.",
-  "Write one line about why your work matters beyond the fee. Keep it. It is your territorial anchor.",
-  "List two 'deal relationships' and one 'real relationship.' Text the real one today.",
-  "Draft the first line of your freelance positioning statement. One sentence only.",
-  "Write down what Resistance is telling you today. Then do the opposite of what it suggests."
-];
-
-var resistInsights={
-  low:"Low resistance today. Good. Use this window — it will not always be open. Begin before it closes.",
-  mid:"Moderate resistance. This is normal territory. Name what specifically feels hard, then do the smallest possible first step.",
-  high:"High resistance. This almost certainly means you are aimed at something important. The feeling is a signal, not a verdict. Start anyway — even badly."
+var state = {
+  streak: 0,
+  done: 0,
+  readCount: 0,
+  taskDone: false,
+  journalIdx: 0,
+  journalEntries: [],
+  resistVal: 0
 };
 
-var journalQs=[
-  "What is one thing you know deeply — from years of doing it — that someone younger in your field does not yet know?",
-  "Describe a moment this week when Resistance won. What form did it take?",
-  "What would turning pro look like for you, practically, tomorrow morning?",
-  "What desire are you holding right now that is costing you more peace than it is worth?",
-  "If your work were never seen or praised by anyone, would you still do it? Why or why not?",
-  "What is the most important relationship in your life that you have under-invested in?",
-  "Describe your current work in terms of crystallised intelligence — what experience and judgment are you bringing that is genuinely rare?",
-  "What does your résumé say you are? What would your eulogy say you were? Which is truer right now?",
+var quotes = [
+  { text: "The professional shows up every day. The amateur shows up when the mood strikes.", src: "— War of Art, Pressfield" },
+  { text: "Resistance is always strongest at the finish line. That is how you know you are close.", src: "— War of Art, Pressfield" },
+  { text: "Fear is not a stop sign. It is a compass pointing at what matters most.", src: "— War of Art, Pressfield" },
+  { text: "The hack writes what others want to see. The artist produces what is inside, regardless of reception.", src: "— War of Art, Pressfield" },
+  { text: "Do the work for its own sake. That is the only territory nobody can take from you.", src: "— War of Art, Pressfield" },
+  { text: "Satisfaction equals what you have divided by what you want. The denominator is where the real leverage is.", src: "— From Strength to Strength, Brooks" },
+  { text: "When you were young, you had raw smarts. Now you have wisdom. Wisdom is rarer.", src: "— From Strength to Strength, Brooks" },
+  { text: "Résumé virtues are what you did. Eulogy virtues are who you were. Only one of them survives you.", src: "— From Strength to Strength, Brooks" },
+  { text: "The striver's curse: the more you invested in excellence, the more terrifying the decline.", src: "— From Strength to Strength, Brooks" },
+  { text: "The relationships that sustain you in the second half are not the ones you network into.", src: "— From Strength to Strength, Brooks" }
+];
+
+var dailyQs = [
+  "What task have you been avoiding — and what does the strength of that avoidance tell you about its importance?",
+  "Are you working today for territory or hierarchy? Would you do this work if nobody ever saw it?",
+  "Where in your freelance build did you last feel a genuine pull of creative engagement?",
+  "Where could your crystallised wisdom — built from years of experience — win over someone competing on speed alone?",
+  "Name one want or comparison you are holding right now that is costing you more peace than it is worth.",
+  "What would the professional version of you do in the next 60 minutes?",
+  "What is Resistance pretending is an emergency right now?",
+  "Who in your life is a real friend versus a deal friend? When did you last invest in the real one?",
+  "If you held your mortality plainly in view today, what would immediately matter less?"
+];
+
+var microTasks = [
+  "Write one sentence describing your ideal proptech client and the exact problem you solve for them. Stop there.",
+  "Open a blank document. Write only the subject line of one email you could send to a prospect this week.",
+  "Write down three things you know from years of experience that someone entering your field does not yet know.",
+  "Identify one résumé virtue you have built. Then name the eulogy virtue you want to build alongside it.",
+  "Name the one task you have been avoiding longest. Set a timer for 20 minutes. Start — nothing else.",
+  "Write one line about why your copy work matters beyond the fee. Keep it. It is your territorial anchor.",
+  "List two deal relationships and one real relationship in your life. Text or call the real one today.",
+  "Draft the opening line of your freelance positioning statement. One sentence only — do not revise it yet.",
+  "Write down what Resistance is telling you right now. Then do the opposite of what it is suggesting."
+];
+
+var journalQs = [
+  "What is one thing you know deeply — from years of doing it — that someone earlier in your field does not yet know?",
+  "Describe a moment this week when Resistance won. What disguise was it wearing?",
+  "What would turning professional look like for you, practically, starting tomorrow morning?",
+  "What desire are you carrying right now that is costing you more peace than it is worth?",
+  "If your work were never seen or praised by anyone, would you still do it? What does your answer reveal?",
+  "What is the most important relationship in your life that you have been under-investing in?",
+  "Describe your current work in terms of crystallised intelligence. What judgment and depth are you bringing that is genuinely rare?",
+  "What does your résumé say you are? What would your eulogy say you were? Which is truer today?",
   "What is the one action, taken consistently for 30 days, that would most change your freelance trajectory?"
 ];
 
-function show(id){
-  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
-  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active')});
-  document.getElementById('screen-'+id).classList.add('active');
-  event.currentTarget.classList.add('active');
+var resistInsights = {
+  low: "Low resistance today. Good. Use this window — it does not always stay open. Begin before it closes.",
+  mid: "Moderate resistance. This is normal creative territory. Name exactly what feels hard, then take the smallest possible first step.",
+  high: "High resistance. This almost certainly means you are aimed at something genuinely important. The feeling is a signal, not a verdict. Start anyway — even badly."
+};
+
+function show(id, btn) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  document.querySelectorAll('.nav-btn, .mobile-nav-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('screen-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  var navBtn = document.getElementById('nav-' + id);
+  if (navBtn) navBtn.classList.add('active');
 }
 
-function updateResist(v){
-  state.resistVal=parseInt(v);
-  document.getElementById('resist-fill').style.width=v+'%';
-  var lbl,ins;
-  if(v<33){lbl='Resistance is low right now';ins=resistInsights.low}
-  else if(v<66){lbl='Resistance is moderate';ins=resistInsights.mid}
-  else{lbl='Resistance is high — something important is nearby';ins=resistInsights.high}
-  document.getElementById('resist-label').textContent=lbl;
-  document.getElementById('resist-insight').textContent=ins;
+function updateResist(v) {
+  state.resistVal = parseInt(v);
+  document.getElementById('resist-fill').style.width = v + '%';
+  var lbl, ins;
+  if (v < 33) { lbl = 'Resistance is low right now.'; ins = resistInsights.low; }
+  else if (v < 66) { lbl = 'Resistance is moderate.'; ins = resistInsights.mid; }
+  else { lbl = 'Resistance is high — something important is probably nearby.'; ins = resistInsights.high; }
+  document.getElementById('resist-label').textContent = lbl;
+  document.getElementById('resist-insight').textContent = ins;
 }
 
-function toggleAcc(btn){
-  var body=btn.nextElementSibling;
-  var icon=btn.querySelector('.ti-chevron-down');
+function toggleAcc(btn) {
+  var body = btn.nextElementSibling;
+  var isOpen = body.classList.contains('open');
   body.classList.toggle('open');
-  if(icon)icon.style.transform=body.classList.contains('open')?'rotate(180deg)':'';
+  btn.classList.toggle('open');
 }
 
-function toggleCheck(btn){
-  btn.classList.toggle('done');
-  btn.textContent=btn.classList.contains('done')?'Done ✓':'Mark read';
+function toggleCheck(cb, labelId) {
+  document.getElementById(labelId).classList.toggle('done', cb.checked);
 }
 
-function toggleTask(cb){
-  var txt=cb.nextElementSibling;
-  txt.classList.toggle('done',cb.checked);
-}
-
-function markTaskDone(){
-  if(!state.taskDone){
-    state.taskDone=true;
-    state.done++;
-    state.streak++;
-    document.getElementById('done-num').textContent=state.done;
-    document.getElementById('streak-num').textContent=state.streak;
-    var btn=document.getElementById('task-done-btn');
-    btn.textContent='Done for today ✓';
-    btn.style.color='#085041';
-    btn.style.borderColor='#9FE1CB';
-    btn.style.background='#E1F5EE';
+function markRead(btn) {
+  var isDone = btn.classList.contains('done');
+  if (!isDone) {
+    btn.classList.add('done');
+    btn.textContent = 'Read ✓';
+    state.readCount++;
+    document.getElementById('read-num').textContent = state.readCount;
+  } else {
+    btn.classList.remove('done');
+    btn.textContent = 'Mark read';
+    state.readCount = Math.max(0, state.readCount - 1);
+    document.getElementById('read-num').textContent = state.readCount;
   }
 }
 
-function saveJournal(){
-  var answer=document.getElementById('journal-answer').value.trim();
-  var q=document.getElementById('journal-q').textContent;
-  if(!answer)return;
-  state.entries.unshift({q:q,a:answer,d:new Date().toLocaleDateString()});
-  document.getElementById('journal-answer').value='';
+function markTaskDone() {
+  if (!state.taskDone) {
+    state.taskDone = true;
+    state.done++;
+    state.streak++;
+    document.getElementById('done-num').textContent = state.done;
+    document.getElementById('streak-num').textContent = state.streak;
+    var btn = document.getElementById('task-btn');
+    btn.textContent = 'Done for today ✓';
+    btn.classList.remove('btn-teal');
+    btn.style.background = 'var(--teal-bg)';
+    btn.style.color = 'var(--teal)';
+    btn.style.borderColor = 'var(--teal-dim)';
+    btn.disabled = true;
+    btn.style.cursor = 'default';
+  }
+}
+
+function copyResistTask() {
+  var task = document.getElementById('resist-task').value.trim();
+  if (!task) { alert('Write your avoidance task first.'); return; }
+  var prompt = 'I identified my biggest resistance task this week: "' + task + '". Based on the War of Art framework, help me break this into one specific 20-minute action I can take today.';
+  navigator.clipboard.writeText(prompt).then(function() {
+    document.getElementById('copy-confirm').style.display = 'block';
+    setTimeout(function() { document.getElementById('copy-confirm').style.display = 'none'; }, 3000);
+  });
+}
+
+function saveJournal() {
+  var answer = document.getElementById('journal-answer').value.trim();
+  var q = document.getElementById('journal-q').textContent;
+  if (!answer) return;
+  state.journalEntries.unshift({ q: q, a: answer, d: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) });
+  document.getElementById('journal-answer').value = '';
   renderJournal();
 }
 
-function renderJournal(){
-  var log=document.getElementById('journal-log');
-  if(!state.entries.length){log.textContent='No entries yet. Your first sentence is waiting.';return}
-  log.innerHTML=state.entries.slice(0,5).map(function(e){
-    return '<div style="padding:.6rem 0;border-bottom:0.5px solid var(--color-border-tertiary)"><div style="font-size:11px;color:var(--color-text-tertiary);margin-bottom:.2rem">'+e.d+'</div><div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:.25rem;font-style:italic">'+e.q+'</div><div style="font-size:13px;color:var(--color-text-primary)">'+e.a+'</div></div>'
+function renderJournal() {
+  var log = document.getElementById('journal-log');
+  if (!state.journalEntries.length) {
+    log.innerHTML = '<div style="font-size:13px;color:var(--faint);padding:.5rem 0;">No entries yet. Your first sentence is waiting.</div>';
+    return;
+  }
+  log.innerHTML = state.journalEntries.slice(0, 8).map(function(e) {
+    return '<div class="journal-entry"><div class="journal-date">' + e.d + '</div><div class="journal-q-small">' + e.q + '</div><div class="journal-text">' + e.a + '</div></div>';
   }).join('');
 }
 
-function nextJournalQ(){
-  state.journalIdx=(state.journalIdx+1)%journalQs.length;
-  document.getElementById('journal-q').textContent=journalQs[state.journalIdx];
+function nextJournalQ() {
+  state.journalIdx = (state.journalIdx + 1) % journalQs.length;
+  document.getElementById('journal-q').textContent = journalQs[state.journalIdx];
 }
 
-function init(){
-  var d=new Date().getDate();
-  var qi=d%dailyQs.length;
-  var ti=d%microTasks.length;
-  var qti=d%quotes.length;
-  document.getElementById('today-q').textContent=dailyQs[qi];
-  document.getElementById('micro-task').textContent=microTasks[ti];
-  document.getElementById('daily-quote').textContent=quotes[qti].text;
-  document.getElementById('quote-source').textContent='— '+quotes[qti].src;
-  state.journalIdx=d%journalQs.length;
-  document.getElementById('journal-q').textContent=journalQs[state.journalIdx];
+function copyJournal() {
+  var answer = document.getElementById('journal-answer').value.trim();
+  var q = document.getElementById('journal-q').textContent;
+  if (!answer) { alert('Write something in the journal first.'); return; }
+  var prompt = 'Journal prompt: "' + q + '"\n\nMy response: ' + answer + '\n\nHelp me go deeper on what this reveals — about my Resistance patterns, my second-curve transition, or my next concrete action as a freelance copy strategist.';
+  navigator.clipboard.writeText(prompt).then(function() {
+    document.getElementById('journal-copy-confirm').style.display = 'block';
+    setTimeout(function() { document.getElementById('journal-copy-confirm').style.display = 'none'; }, 3000);
+  });
+}
+
+function init() {
+  var d = new Date().getDate();
+  document.getElementById('today-q').textContent = dailyQs[d % dailyQs.length];
+  document.getElementById('micro-task').textContent = microTasks[d % microTasks.length];
+  var q = quotes[d % quotes.length];
+  document.getElementById('daily-quote').textContent = q.text;
+  document.getElementById('daily-source').textContent = q.src;
+  state.journalIdx = d % journalQs.length;
+  document.getElementById('journal-q').textContent = journalQs[state.journalIdx];
   renderJournal();
 }
 
 init();
 </script>
+</body>
+</html>
