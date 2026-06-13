@@ -1,0 +1,401 @@
+Here is a complete, single-file web app designed specifically for your workflow as a copy strategist. It captures the exact methodology from the document, organized into a clean, intuitive interface that you can use while interviewing clients or reviewing interview transcripts. 
+
+It is contained entirely in one HTML file, styled with Tailwind CSS (loaded via CDN, so no installation is needed), and uses Vanilla JavaScript to automatically save your notes to your browser's local storage so you never lose your work.
+
+Save this code as `index.html` and upload it to your GitHub repository to host via GitHub Pages.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>North Star Values Strategist Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        /* Auto-resizing textarea hiding scrollbar for cleaner look */
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        /* Print styles for when you want to save the final report to PDF */
+        @media print {
+            body { background-color: white; }
+            .no-print { display: none !important; }
+            .print-full { width: 100% !important; max-width: 100% !important; }
+            .print-border-none { border: none !important; box-shadow: none !important; }
+            textarea { border: none !important; resize: none !important; height: auto !important; overflow: visible !important;}
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- Navbar -->
+    <nav class="bg-slate-900 text-white shadow-md sticky top-0 z-50 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center">
+                    <svg class="w-6 h-6 mr-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
+                    <span class="font-bold text-xl tracking-tight">North Star Values Capture</span>
+                </div>
+                <div class="flex space-x-3">
+                    <button onclick="clearData()" class="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors">Clear Form</button>
+                    <button onclick="copyToClipboard()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-md text-sm font-medium transition-colors">Copy to Clipboard</button>
+                    <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm">Export / Print PDF</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-8 print-full">
+        
+        <!-- Left Column: Interview Capture -->
+        <div class="w-full lg:w-2/3 space-y-8 print-full">
+            
+            <!-- Context Header -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 print-border-none">
+                <h1 class="text-2xl font-bold text-slate-900 mb-2">Client Discovery Interview</h1>
+                <p class="text-slate-500 mb-4">Strategic positioning for coaches, consultants, and course creators targeting midlifers & skeptics.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Client Name</label>
+                        <input type="text" id="clientName" class="w-full p-2 border border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Jane Doe">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Date</label>
+                        <input type="date" id="interviewDate" class="w-full p-2 border border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-md no-print">
+                <p class="text-sm text-blue-800 font-medium"><strong>Strategist Note:</strong> Do not mindlessly read these questions. Weave them into natural conversation. Listen for patterns across answers. Notice what they reject as much as what they embrace.</p>
+            </div>
+
+            <!-- Form Sections Generated from Document -->
+            <form id="interviewForm" class="space-y-8">
+
+                <!-- 1. Past Decisions & Patterns -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 print-border-none">
+                    <h2 class="text-xl font-bold text-slate-800 mb-4 border-b pb-2">1. Past Decisions & Patterns</h2>
+                    
+                    <div class="mb-6">
+                        <label class="block text-md font-semibold text-slate-900 mb-2">“Tell me about a decision you're really proud of making…”</label>
+                        <p class="text-xs text-slate-500 mb-2 font-medium tracking-wide uppercase">Listen for: What made it significant? How did they know it was right? What would others have done?</p>
+                        <textarea id="q1" class="w-full p-3 border border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Capture their story and the underlying motivations here..."></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-md font-semibold text-slate-900 mb-2">“What's something you'd never compromise on, no matter what?”</label>
+                        <p class="text-xs text-slate-500 mb-2 font-medium tracking-wide uppercase">Listen for: What makes it important? Always true? How has it guided choices?</p>
+                        <textarea id="q2" class="w-full p-3 border border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Capture non-negotiables..."></textarea>
+                    </div>
+                </div>
+
+                <!-- 2. Success & Status -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 print-border-none">
+                    <h2 class="text-xl font-bold text-slate-800 mb-4 border-b pb-2">2. Success & Status</h2>
+                    
+                    <div class="mb-6">
+                        <label class="block text-md font-semibold text-slate-900 mb-2">“What does ‘making it’ look like to you?”</label>
+                        <p class="text-xs text-slate-500 mb-2 font-medium tracking-wide uppercase">Listen for: How would they feel? What would others notice? What changes daily?</p>
+                        <textarea id="q3" class="w-full p-3 border border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Capture their vision of success..."></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-md font-semibold text-slate-900 mb-2">“Who do you admire most and why?”</label>
+                        <p class="text-xs text-slate-500 mb-2 font-medium tracking-wide uppercase">Listen for: What draws them? What do they represent? How are they different?</p>
+                        <textarea id="q4" class="w-full p-3 border border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Capture admired traits (often reflects their own desired North Star)..."></textarea>
+                    </div>
+                </div>
+
+                <!-- 3. Life Approach -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 print-border-none">
+                    <h2 class="text-xl font-bold text-slate-800 mb-4 border-b pb-2">3. Life Approach</h2>
+                    
+                    <div class="mb-6">
+                        <label class="block text-md font-semibold text-slate-900 mb-2">“What frustrates you most about how others approach life?”</label>
+                        <p class="text-xs text-slate-500 mb-2 font-medium tracking-wide uppercase">Listen for: Why do others act that way? How do they do it differently? What do others not understand?</p>
+                        <textarea id="q5" class="w-full p-3 border border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Capture their frustrations (great for identifying shared enemies for copy)..."></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-md font-semibold text-slate-900 mb-2">“What do you wish more people understood about you?”</label>
+                        <p class="text-xs text-slate-500 mb-2 font-medium tracking-wide uppercase">Listen for: Why is it important? How do they show it? When do they feel understood?</p>
+                        <textarea id="q6" class="w-full p-3 border border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Capture desire for validation or specific identity..."></textarea>
+                    </div>
+                </div>
+
+                <!-- 4. Future & Legacy -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 print-border-none">
+                    <h2 class="text-xl font-bold text-slate-800 mb-4 border-b pb-2">4. Future & Legacy</h2>
+                    
+                    <div class="mb-6">
+                        <label class="block text-md font-semibold text-slate-900 mb-2">“When you look back on your life, what do you want to be known for?”</label>
+                        <p class="text-xs text-slate-500 mb-2 font-medium tracking-wide uppercase">Listen for: Who would recognize this? Why does it matter? Steps taken?</p>
+                        <textarea id="q7" class="w-full p-3 border border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Capture legacy goals (highly relevant for midlifers)..."></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-md font-semibold text-slate-900 mb-2">“What kind of impact do you want to have on others?”</label>
+                        <p class="text-xs text-slate-500 mb-2 font-medium tracking-wide uppercase">Listen for: How should people feel around them? What difference to make? Who to influence?</p>
+                        <textarea id="q8" class="w-full p-3 border border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Capture intended impact..."></textarea>
+                    </div>
+                </div>
+
+                <!-- 5. Hidden Motivators -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 print-border-none">
+                    <h2 class="text-xl font-bold text-slate-800 mb-4 border-b pb-2">5. Hidden Motivators</h2>
+                    
+                    <div class="mb-6">
+                        <label class="block text-md font-semibold text-slate-900 mb-2">“What's something you see others chasing that doesn't interest you at all?”</label>
+                        <p class="text-xs text-slate-500 mb-2 font-medium tracking-wide uppercase">Listen for: Why doesn't it appeal? What are others really after? What pursue instead?</p>
+                        <textarea id="q9" class="w-full p-3 border border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Capture their rejection of mainstream goals..."></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-md font-semibold text-slate-900 mb-2">“What's a belief you have that most people would disagree with?”</label>
+                        <p class="text-xs text-slate-500 mb-2 font-medium tracking-wide uppercase">Listen for: How did they conclude this? What do others miss? How does it influence choices?</p>
+                        <textarea id="q10" class="w-full p-3 border border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Capture core contrarian beliefs (perfect for appealing to skeptics)..."></textarea>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- Right Column: Interpretation & Analysis (Sticky) -->
+        <div class="w-full lg:w-1/3 space-y-6 print-full">
+            
+            <div class="sticky top-20 space-y-6">
+                
+                <!-- Diagnosis Section -->
+                <div class="bg-slate-900 text-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-xl font-bold mb-4">North Star Diagnosis</h2>
+                    <p class="text-sm text-slate-300 mb-4">Based on your notes, which values drive this client? (Select primary ones to build your strategy)</p>
+                    
+                    <div class="space-y-3">
+                        <label class="flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" class="ns-checkbox mt-1 form-checkbox h-4 w-4 text-blue-500 rounded bg-slate-800 border-slate-600" value="Merit">
+                            <div>
+                                <span class="font-bold text-blue-300">Merit</span>
+                                <p class="text-xs text-slate-400 leading-tight mt-1">Need to feel competent, prove worth, focus on achievement, desire respect for contribution.</p>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" class="ns-checkbox mt-1 form-checkbox h-4 w-4 text-blue-500 rounded bg-slate-800 border-slate-600" value="Belonging">
+                            <div>
+                                <span class="font-bold text-blue-300">Belonging</span>
+                                <p class="text-xs text-slate-400 leading-tight mt-1">Need to be part of something bigger, fit in, fear of isolation, desire for acceptance.</p>
+                            </div>
+                        </label>
+
+                        <label class="flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" class="ns-checkbox mt-1 form-checkbox h-4 w-4 text-blue-500 rounded bg-slate-800 border-slate-600" value="Validation">
+                            <div>
+                                <span class="font-bold text-blue-300">Validation</span>
+                                <p class="text-xs text-slate-400 leading-tight mt-1">Need permission to exist/act, seeking external confirmation, looking for identity sanctioning.</p>
+                            </div>
+                        </label>
+
+                        <label class="flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" class="ns-checkbox mt-1 form-checkbox h-4 w-4 text-blue-500 rounded bg-slate-800 border-slate-600" value="Exclusivity">
+                            <div>
+                                <span class="font-bold text-blue-300">Exclusivity</span>
+                                <p class="text-xs text-slate-400 leading-tight mt-1">Need to feel special/unique, rise above ordinary, elite status, part of the "chosen few".</p>
+                            </div>
+                        </label>
+
+                        <label class="flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" class="ns-checkbox mt-1 form-checkbox h-4 w-4 text-blue-500 rounded bg-slate-800 border-slate-600" value="Pity">
+                            <div>
+                                <span class="font-bold text-blue-300">Pity</span>
+                                <p class="text-xs text-slate-400 leading-tight mt-1">Reframing weakness as virtue, finding power in victimhood, using struggles for moral leverage.</p>
+                            </div>
+                        </label>
+
+                        <label class="flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" class="ns-checkbox mt-1 form-checkbox h-4 w-4 text-blue-500 rounded bg-slate-800 border-slate-600" value="Power">
+                            <div>
+                                <span class="font-bold text-blue-300">Power</span>
+                                <p class="text-xs text-slate-400 leading-tight mt-1">Need for agency/control, shape circumstances, having options, drive for autonomy & influence.</p>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="mt-6">
+                        <label class="block text-sm font-semibold text-slate-200 mb-2">Final Strategy Notes</label>
+                        <textarea id="finalDiagnosis" class="w-full p-2 bg-slate-800 border border-slate-700 rounded-md focus:ring-blue-500 text-sm text-white placeholder-slate-500" placeholder="How will you use this to position them to midlifers/skeptics?"></textarea>
+                    </div>
+                </div>
+
+                <!-- Quick Reference Guide (No Print) -->
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 no-print text-sm">
+                    <h3 class="font-bold text-slate-800 mb-3 uppercase tracking-wider text-xs">Strongest Indicators To Look For</h3>
+                    <ul class="list-disc pl-5 space-y-1 text-slate-600 mb-4">
+                        <li>What they criticize in others</li>
+                        <li>Where they won't compromise</li>
+                        <li>Who they admire and why</li>
+                        <li>What they want to be known for</li>
+                    </ul>
+
+                    <h3 class="font-bold text-slate-800 mb-3 uppercase tracking-wider text-xs border-t pt-4">Pitfalls to Avoid</h3>
+                    <ul class="list-disc pl-5 space-y-1 text-slate-600 text-xs">
+                        <li>Don't stop at surface-level (ask "why" and "how")</li>
+                        <li>Don't rush to categorize (let patterns emerge)</li>
+                        <li>Stay neutral and curious</li>
+                        <li>Don't impose your own values</li>
+                        <li>Watch for inconsistencies (actions > words)</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JavaScript for auto-saving to local storage and copying data -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load saved data on start
+            loadData();
+
+            // Set up auto-save for all textareas and inputs
+            const inputs = document.querySelectorAll('input[type="text"], input[type="date"], textarea');
+            inputs.forEach(input => {
+                input.addEventListener('input', saveData);
+            });
+
+            // Set up auto-save for checkboxes
+            const checkboxes = document.querySelectorAll('.ns-checkbox');
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', saveData);
+            });
+            
+            // Auto-resize textareas based on content
+            const tx = document.getElementsByTagName("textarea");
+            for (let i = 0; i < tx.length; i++) {
+                tx[i].setAttribute("style", "height:" + (tx[i].scrollHeight) + "px;overflow-y:hidden;");
+                tx[i].addEventListener("input", OnInput, false);
+            }
+            function OnInput() {
+                this.style.height = 0;
+                this.style.height = (this.scrollHeight) + "px";
+            }
+        });
+
+        function saveData() {
+            const data = {
+                clientName: document.getElementById('clientName').value,
+                interviewDate: document.getElementById('interviewDate').value,
+                q1: document.getElementById('q1').value,
+                q2: document.getElementById('q2').value,
+                q3: document.getElementById('q3').value,
+                q4: document.getElementById('q4').value,
+                q5: document.getElementById('q5').value,
+                q6: document.getElementById('q6').value,
+                q7: document.getElementById('q7').value,
+                q8: document.getElementById('q8').value,
+                q9: document.getElementById('q9').value,
+                q10: document.getElementById('q10').value,
+                finalDiagnosis: document.getElementById('finalDiagnosis').value,
+                checkboxes: Array.from(document.querySelectorAll('.ns-checkbox')).map(cb => cb.checked)
+            };
+            localStorage.setItem('northStarDraft', JSON.stringify(data));
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('northStarDraft');
+            if (saved) {
+                const data = JSON.parse(saved);
+                document.getElementById('clientName').value = data.clientName || '';
+                document.getElementById('interviewDate').value = data.interviewDate || '';
+                document.getElementById('q1').value = data.q1 || '';
+                document.getElementById('q2').value = data.q2 || '';
+                document.getElementById('q3').value = data.q3 || '';
+                document.getElementById('q4').value = data.q4 || '';
+                document.getElementById('q5').value = data.q5 || '';
+                document.getElementById('q6').value = data.q6 || '';
+                document.getElementById('q7').value = data.q7 || '';
+                document.getElementById('q8').value = data.q8 || '';
+                document.getElementById('q9').value = data.q9 || '';
+                document.getElementById('q10').value = data.q10 || '';
+                document.getElementById('finalDiagnosis').value = data.finalDiagnosis || '';
+                
+                const checkboxes = document.querySelectorAll('.ns-checkbox');
+                if (data.checkboxes) {
+                    checkboxes.forEach((cb, index) => {
+                        cb.checked = data.checkboxes[index];
+                    });
+                }
+            }
+        }
+
+        function clearData() {
+            if(confirm("Are you sure you want to clear the entire form? This cannot be undone.")) {
+                localStorage.removeItem('northStarDraft');
+                
+                // Clear inputs
+                document.querySelectorAll('input[type="text"], input[type="date"], textarea').forEach(input => {
+                    input.value = '';
+                    input.style.height = '80px'; // reset textarea height
+                });
+                
+                // Clear checkboxes
+                document.querySelectorAll('.ns-checkbox').forEach(cb => {
+                    cb.checked = false;
+                });
+            }
+        }
+
+        function copyToClipboard() {
+            const clientName = document.getElementById('clientName').value || 'Unnamed Client';
+            const date = document.getElementById('interviewDate').value || 'No Date';
+            
+            // Get selected values
+            const selectedValues = Array.from(document.querySelectorAll('.ns-checkbox:checked'))
+                                        .map(cb => cb.value).join(', ') || 'None selected';
+
+            let report = `NORTH STAR VALUES DISCOVERY REPORT\nClient: ${clientName}\nDate: ${date}\n\n`;
+            
+            report += `--- DIAGNOSIS & STRATEGY ---\n`;
+            report += `Identified Core Values: ${selectedValues}\n`;
+            report += `Strategy Notes: \n${document.getElementById('finalDiagnosis').value}\n\n`;
+            
+            report += `--- RAW INTERVIEW NOTES ---\n`;
+            
+            const questions = [
+                {q: "Proudest Decision", a: document.getElementById('q1').value},
+                {q: "Never Compromise On", a: document.getElementById('q2').value},
+                {q: "What 'Making It' Looks Like", a: document.getElementById('q3').value},
+                {q: "Who They Admire", a: document.getElementById('q4').value},
+                {q: "Frustrations with Others", a: document.getElementById('q5').value},
+                {q: "Wish Others Understood", a: document.getElementById('q6').value},
+                {q: "Desired Legacy", a: document.getElementById('q7').value},
+                {q: "Desired Impact", a: document.getElementById('q8').value},
+                {q: "Mainstream Chases They Reject", a: document.getElementById('q9').value},
+                {q: "Contrarian Beliefs", a: document.getElementById('q10').value}
+            ];
+
+            questions.forEach((item, index) => {
+                if(item.a.trim() !== '') {
+                    report += `${index + 1}. ${item.q}:\n${item.a}\n\n`;
+                }
+            });
+
+            navigator.clipboard.writeText(report).then(() => {
+                alert('Notes copied to clipboard! Ready to paste into your Google Doc or Notion.');
+            }).catch(err => {
+                alert('Failed to copy. Please try selecting the text manually.');
+                console.error(err);
+            });
+        }
+    </script>
+</body>
+</html>
+```
