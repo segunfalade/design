@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Strategic Brain Dashboard</title>
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0f1117;
+    color: white;
+}
+
+header {
+    background: #161b22;
+    padding: 15px;
+    display: flex;
+    gap: 15px;
+    border-bottom: 1px solid #30363d;
+}
+
+button {
+    background: #21262d;
+    border: 1px solid #30363d;
+    color: white;
+    padding: 8px 14px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #30363d;
+}
+
+.section {
+    display: none;
+    padding: 20px;
+}
+
+.active {
+    display: block;
+}
+
+h2 {
+    border-bottom: 1px solid #30363d;
+    padding-bottom: 10px;
+}
+
+.box {
+    background: #161b22;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+}
+
+.editable {
+    min-height: 100px;
+    padding: 10px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+}
+
+.grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 15px;
+}
+
+.grid-5 {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+}
+
+.small {
+    min-height: 80px;
+}
+
+.large {
+    min-height: 150px;
+}
+</style>
+
+<script>
+function showSection(id) {
+    let sections = document.querySelectorAll('.section');
+    sections.forEach(sec => sec.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
+</script>
+</head>
+
+<body>
+
+<header>
+    <button onclick="showSection('brain')">Brain Dump</button>
+    <button onclick="showSection('brands')">Brand & Funnels</button>
+    <button onclick="showSection('strategy')">Strategy Map</button>
+    <button onclick="showSection('vision')">Vision Board</button>
+    <button onclick="showSection('content')">Content Flow</button>
+</header>
+
+<!-- Brain Dump -->
+<div id="brain" class="section active">
+    <h2>🧠 Brain Dump Playground</h2>
+    <div class="editable large" contenteditable="true">
+        Throw ideas here. No structure. Just thinking space.
+    </div>
+</div>
+
+<!-- Brand & Funnel Library -->
+<div id="brands" class="section">
+    <h2>📚 Brand & Funnel Library</h2>
+
+    <div class="box">
+        <strong>Brand Name</strong>
+        <div class="editable small" contenteditable="true">Name</div>
+
+        <strong>Entry Point</strong>
+        <div class="editable small" contenteditable="true"></div>
+
+        <strong>Lead Magnet</strong>
+        <div class="editable small" contenteditable="true"></div>
+
+        <strong>Core Offer</strong>
+        <div class="editable small" contenteditable="true"></div>
+
+        <strong>Upsells</strong>
+        <div class="editable small" contenteditable="true"></div>
+
+        <strong>Content Angle</strong>
+        <div class="editable small" contenteditable="true"></div>
+
+        <strong>Notes</strong>
+        <div class="editable small" contenteditable="true"></div>
+    </div>
+</div>
+
+<!-- Strategy Map -->
+<div id="strategy" class="section">
+    <h2>🗺 Strategy Map</h2>
+
+    <div class="grid-3">
+        <div class="box">
+            <strong>Now</strong>
+            <div class="editable large" contenteditable="true"></div>
+        </div>
+
+        <div class="box">
+            <strong>Building</strong>
+            <div class="editable large" contenteditable="true"></div>
+        </div>
+
+        <div class="box">
+            <strong>Future Vision</strong>
+            <div class="editable large" contenteditable="true"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Vision Board -->
+<div id="vision" class="section">
+    <h2>🎯 Vision Board</h2>
+
+    <div class="grid-3">
+        <div class="box">
+            <strong>Business Direction</strong>
+            <div class="editable large" contenteditable="true"></div>
+        </div>
+
+        <div class="box">
+            <strong>Identity</strong>
+            <div class="editable large" contenteditable="true"></div>
+        </div>
+
+        <div class="box">
+            <strong>Revenue Targets</strong>
+            <div class="editable large" contenteditable="true"></div>
+        </div>
+    </div>
+
+    <div class="box">
+        <strong>Creative Direction</strong>
+        <div class="editable large" contenteditable="true"></div>
+    </div>
+</div>
+
+<!-- Content Flow -->
+<div id="content" class="section">
+    <h2>📈 Content Funnel Flow</h2>
+
+    <div class="grid-5">
+        <div class="box">
+            <strong>Awareness</strong>
+            <div class="editable small" contenteditable="true"></div>
+        </div>
+        <div class="box">
+            <strong>Interest</strong>
+            <div class="editable small" contenteditable="true"></div>
+        </div>
+        <div class="box">
+            <strong>Trust</strong>
+            <div class="editable small" contenteditable="true"></div>
+        </div>
+        <div class="box">
+            <strong>Offer</strong>
+            <div class="editable small" contenteditable="true"></div>
+        </div>
+        <div class="box">
+            <strong>Retention</strong>
+            <div class="editable small" contenteditable="true"></div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
