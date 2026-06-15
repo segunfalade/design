@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strategic Playground | Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .card-gradient { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
+        .dot-grid { background-image: radial-gradient(#334155 1px, transparent 1px); background-size: 20px 20px; }
+        .sticky-note { transition: transform 0.2s; cursor: pointer; }
+        .sticky-note:hover { transform: scale(1.02) rotate(-1deg); }
+    </style>
+</head>
+<body class="dot-grid min-h-screen">
+
+    <!-- NAVIGATION -->
+    <nav class="glass sticky top-0 z-50 px-6 py-4 flex justify-between items-center mb-8">
+        <div class="flex items-center gap-3">
+            <div class="bg-indigo-500 w-8 h-8 rounded-lg flex items-center justify-center">
+                <i class="fas fa-brain text-white"></i>
+            </div>
+            <h1 class="text-xl font-bold tracking-tight">STRATEGIC PLAYGROUND</h1>
+        </div>
+        <div class="flex gap-4">
+            <button onclick="exportData()" class="text-sm bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-md transition">
+                <i class="fas fa-download mr-2"></i> Export Data
+            </button>
+            <button onclick="document.getElementById('importFile').click()" class="text-sm bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-md transition">
+                <i class="fas fa-upload mr-2"></i> Import
+            </button>
+            <input type="file" id="importFile" class="hidden" onchange="importData(event)">
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-6 pb-20">
+        
+        <!-- TOP SECTION: THE VISION & DIRECTION -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <!-- Vision Board -->
+            <div class="glass p-6 rounded-2xl col-span-2">
+                <h2 class="text-indigo-400 font-semibold mb-4 flex items-center">
+                    <i class="fas fa-compass mr-2"></i> NORTH STAR DIRECTION
+                </h2>
+                <textarea id="vision-text" oninput="save()" class="w-full h-40 bg-transparent border-none focus:ring-0 text-xl italic text-slate-300 placeholder-slate-600" placeholder="Where is the business heading this year? Define the flow..."></textarea>
+            </div>
+            
+            <!-- Quick Links / Reference -->
+            <div class="glass p-6 rounded-2xl">
+                <h2 class="text-emerald-400 font-semibold mb-4 flex items-center">
+                    <i class="fas fa-link mr-2"></i> KEY ASSETS
+                </h2>
+                <div id="links-container" class="space-y-3">
+                    <!-- Links added here -->
+                </div>
+                <button onclick="addItem('link')" class="mt-4 w-full py-2 border border-dashed border-slate-500 rounded-lg hover:border-emerald-500 text-slate-400 hover:text-emerald-400 transition">
+                    + Add Link
+                </button>
+            </div>
+        </div>
+
+        <!-- MIDDLE SECTION: THE PLAYGROUND -->
+        <div class="flex justify-between items-end mb-6">
+            <h2 class="text-2xl font-bold">The Idea Matrix</h2>
+            <div class="flex gap-2">
+                <button onclick="addItem('idea', 'blue')" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg text-sm transition">+ Strategy Note</button>
+                <button onclick="addItem('idea', 'purple')" class="bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded-lg text-sm transition">+ Content Idea</button>
+                <button onclick="addItem('funnel')" class="bg-orange-600 hover:bg-orange-500 px-4 py-2 rounded-lg text-sm transition">+ Brand Funnel</button>
+            </div>
+        </div>
+
+        <!-- MASONRY GRID FOR IDEAS -->
+        <div id="playground" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Dynamic Cards Load Here -->
+        </div>
+
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+        let db = {
+            vision: "",
+            links: [],
+            cards: []
+        };
+
+        // Initialize
+        window.onload = () => {
+            const saved = localStorage.getItem('strategic_playground');
+            if (saved) {
+                db = JSON.parse(saved);
+                document.getElementById('vision-text').value = db.vision || "";
+                renderAll();
+            }
+        };
+
+        function save() {
+            db.vision = document.getElementById('vision-text').value;
+            localStorage.setItem('strategic_playground', JSON.stringify(db));
+        }
+
+        function addItem(type, color = 'slate') {
+            const id = Date.now();
+            if (type === 'link') {
+                db.links.push({ id, label: 'New Link', url: '#' });
+            } else if (type === 'idea') {
+                db.cards.push({ id, type: 'idea', color, title: 'New Idea', content: '' });
+            } else if (type === 'funnel') {
+                db.cards.push({ id, type: 'funnel', brand: 'Brand Name', steps: 'Ad -> LP -> Checkout', img: '' });
+            }
+            renderAll();
+            save();
+        }
+
+        function deleteItem(type, id) {
+            if (type === 'link') db.links = db.links.filter(i => i.id !== id);
+            else db.cards = db.cards.filter(i => i.id !== id);
+            renderAll();
+            save();
+        }
+
+        function updateCard(id, field, value) {
+            const card = db.cards.find(c => c.id === id);
+            if (card) card[field] = value;
+            save();
+        }
+
+        function updateLink(id, field, value) {
+            const link = db.links.find(l => l.id === id);
+            if (link) link[field] = value;
+            save();
+        }
+
+        function renderAll() {
+            // Render Links
+            const linkBox = document.getElementById('links-container');
+            linkBox.innerHTML = db.links.map(link => `
+                <div class="flex items-center gap-2 group">
+                    <input oninput="updateLink(${link.id}, 'label', this.value)" value="${link.label}" class="bg-transparent border-b border-transparent focus:border-emerald-500 outline-none text-sm w-1/2">
+                    <input oninput="updateLink(${link.id}, 'url', this.value)" value="${link.url}" class="bg-transparent border-b border-transparent focus:border-emerald-500 outline-none text-xs text-slate-500 w-1/2">
+                    <button onclick="deleteItem('link', ${link.id})" class="opacity-0 group-hover:opacity-100 text-red-400 text-xs transition"><i class="fas fa-times"></i></button>
+                </div>
+            `).join('');
+
+            // Render Cards
+            const playground = document.getElementById('playground');
+            playground.innerHTML = db.cards.map(card => {
+                if (card.type === 'idea') {
+                    const colorClass = card.color === 'blue' ? 'border-blue-500' : 'border-purple-500';
+                    return `
+                        <div class="glass p-5 rounded-xl border-t-4 ${colorClass} relative sticky-note">
+                            <button onclick="deleteItem('card', ${card.id})" class="absolute top-2 right-2 text-slate-600 hover:text-red-400"><i class="fas fa-trash text-xs"></i></button>
+                            <input oninput="updateCard(${card.id}, 'title', this.value)" value="${card.title}" class="bg-transparent font-bold mb-2 block w-full outline-none">
+                            <textarea oninput="updateCard(${card.id}, 'content', this.value)" class="bg-transparent w-full h-32 text-sm text-slate-400 resize-none focus:ring-0 border-none p-0" placeholder="Type your idea...">${card.content}</textarea>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="glass p-0 rounded-xl border border-orange-500/30 overflow-hidden relative">
+                            <div class="p-4 bg-orange-500/10 border-b border-orange-500/20">
+                                <button onclick="deleteItem('card', ${card.id})" class="absolute top-2 right-2 text-slate-600 hover:text-red-400 z-10"><i class="fas fa-trash text-xs"></i></button>
+                                <input oninput="updateCard(${card.id}, 'brand', this.value)" value="${card.brand}" class="bg-transparent font-bold text-orange-400 block w-full outline-none">
+                            </div>
+                            <div class="p-4">
+                                <label class="text-[10px] uppercase tracking-widest text-slate-500">Funnel Flow</label>
+                                <input oninput="updateCard(${card.id}, 'steps', this.value)" value="${card.steps}" class="bg-transparent text-sm block w-full outline-none mb-3">
+                                
+                                <label class="text-[10px] uppercase tracking-widest text-slate-500">Visual Ref (URL)</label>
+                                <input oninput="updateCard(${card.id}, 'img', this.value)" value="${card.img}" placeholder="Image URL" class="bg-transparent text-xs block w-full outline-none mb-2 text-blue-400">
+                                ${card.img ? `<img src="${card.img}" class="w-full h-32 object-cover rounded shadow-inner" onerror="this.style.display='none'">` : '<div class="w-full h-12 bg-slate-800/50 rounded flex items-center justify-center text-slate-600 text-xs">No screenshot</div>'}
+                            </div>
+                        </div>
+                    `;
+                }
+            }).join('');
+        }
+
+        // EXPORT/IMPORT
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "strategy_backup_" + new Date().toISOString().slice(0,10) + ".json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        function importData(event) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                db = JSON.parse(e.target.result);
+                save();
+                renderAll();
+                document.getElementById('vision-text').value = db.vision;
+            };
+            reader.readAsText(event.target.files[0]);
+        }
+    </script>
+</body>
+</html>
