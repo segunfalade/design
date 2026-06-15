@@ -1,0 +1,1722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strategy Playground</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #1a1a2e;
+            --bg-medium: #16213e;
+            --bg-light: #0f3460;
+            --accent: #e94560;
+            --accent2: #533483;
+            --text: #eee;
+            --text-dim: #aaa;
+            --card-bg: #1e2a4a;
+            --success: #4ecdc4;
+            --warning: #ffe66d;
+            --info: #a8e6cf;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* TOP BAR */
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: var(--bg-medium);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            z-index: 1000;
+            gap: 12px;
+        }
+
+        .topbar .logo {
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-right: 20px;
+        }
+
+        .topbar .board-name {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            min-width: 200px;
+        }
+
+        .topbar .board-name:focus {
+            border-color: var(--accent);
+        }
+
+        .topbar-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .topbar-btn {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text);
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .topbar-btn:hover {
+            background: rgba(255,255,255,0.15);
+            border-color: var(--accent);
+        }
+
+        .topbar-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .zoom-display {
+            font-size: 12px;
+            color: var(--text-dim);
+            min-width: 45px;
+            text-align: center;
+        }
+
+        /* LEFT SIDEBAR */
+        .sidebar {
+            position: fixed;
+            top: 50px;
+            left: 0;
+            width: 260px;
+            height: calc(100vh - 50px);
+            background: var(--bg-medium);
+            border-right: 1px solid rgba(255,255,255,0.1);
+            z-index: 999;
+            overflow-y: auto;
+            transition: transform 0.3s;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-260px);
+        }
+
+        .sidebar-section {
+            padding: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .sidebar-section h3 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-dim);
+            margin-bottom: 12px;
+        }
+
+        .element-palette {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .palette-item {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 12px 8px;
+            text-align: center;
+            cursor: grab;
+            transition: all 0.2s;
+            font-size: 12px;
+        }
+
+        .palette-item:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .palette-item .icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .board-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .board-item {
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s;
+        }
+
+        .board-item:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        .board-item.active {
+            background: rgba(233, 69, 96, 0.2);
+            border: 1px solid rgba(233, 69, 96, 0.3);
+        }
+
+        .board-item .delete-board {
+            opacity: 0;
+            cursor: pointer;
+            color: var(--accent);
+            font-size: 16px;
+        }
+
+        .board-item:hover .delete-board {
+            opacity: 1;
+        }
+
+        .add-board-btn {
+            width: 100%;
+            padding: 8px;
+            background: rgba(255,255,255,0.05);
+            border: 1px dashed rgba(255,255,255,0.2);
+            border-radius: 6px;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 13px;
+            margin-top: 8px;
+            transition: all 0.2s;
+        }
+
+        .add-board-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* COLOR PALETTE */
+        .color-palette {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .color-swatch {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .color-swatch:hover, .color-swatch.active {
+            border-color: white;
+            transform: scale(1.2);
+        }
+
+        /* MAIN CANVAS */
+        .canvas-container {
+            position: fixed;
+            top: 50px;
+            left: 260px;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+            cursor: grab;
+            background: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .canvas-container.grabbing {
+            cursor: grabbing;
+        }
+
+        .canvas {
+            position: absolute;
+            width: 10000px;
+            height: 10000px;
+            transform-origin: 0 0;
+        }
+
+        /* SVG CONNECTIONS */
+        .connections-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .connection-line {
+            fill: none;
+            stroke: rgba(255,255,255,0.3);
+            stroke-width: 2;
+            pointer-events: stroke;
+            cursor: pointer;
+        }
+
+        .connection-line:hover {
+            stroke: var(--accent);
+            stroke-width: 3;
+        }
+
+        .connection-arrow {
+            fill: rgba(255,255,255,0.3);
+        }
+
+        /* CANVAS ELEMENTS */
+        .canvas-element {
+            position: absolute;
+            min-width: 140px;
+            min-height: 80px;
+            border-radius: 12px;
+            padding: 14px;
+            cursor: move;
+            z-index: 10;
+            transition: box-shadow 0.2s;
+            user-select: none;
+        }
+
+        .canvas-element:hover {
+            z-index: 100;
+        }
+
+        .canvas-element.selected {
+            box-shadow: 0 0 0 2px var(--accent), 0 8px 32px rgba(0,0,0,0.4);
+            z-index: 101;
+        }
+
+        .canvas-element .element-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .canvas-element .element-type {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.7;
+        }
+
+        .canvas-element .element-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .canvas-element:hover .element-actions {
+            opacity: 1;
+        }
+
+        .element-action-btn {
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            border: none;
+            background: rgba(0,0,0,0.3);
+            color: white;
+            cursor: pointer;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .element-action-btn:hover {
+            background: var(--accent);
+        }
+
+        .canvas-element .element-content {
+            font-size: 13px;
+            line-height: 1.5;
+            outline: none;
+            min-height: 20px;
+            word-wrap: break-word;
+        }
+
+        .canvas-element .element-content:empty::before {
+            content: attr(data-placeholder);
+            opacity: 0.4;
+        }
+
+        .canvas-element .connect-handle {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: var(--accent);
+            border: 2px solid white;
+            border-radius: 50%;
+            cursor: crosshair;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 200;
+        }
+
+        .canvas-element:hover .connect-handle {
+            opacity: 1;
+        }
+
+        .connect-handle.top { top: -7px; left: 50%; transform: translateX(-50%); }
+        .connect-handle.right { right: -7px; top: 50%; transform: translateY(-50%); }
+        .connect-handle.bottom { bottom: -7px; left: 50%; transform: translateX(-50%); }
+        .connect-handle.left { left: -7px; top: 50%; transform: translateY(-50%); }
+
+        /* ELEMENT TYPE STYLES */
+        .el-sticky {
+            background: linear-gradient(135deg, #ffe66d, #f0c929);
+            color: #333;
+            box-shadow: 0 4px 16px rgba(255,230,109,0.3);
+        }
+
+        .el-idea {
+            background: linear-gradient(135deg, #a8e6cf, #3dc1d3);
+            color: #1a1a2e;
+            box-shadow: 0 4px 16px rgba(168,230,207,0.3);
+        }
+
+        .el-brand {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: white;
+            box-shadow: 0 4px 16px rgba(108,92,231,0.3);
+            min-width: 200px;
+        }
+
+        .el-funnel {
+            background: linear-gradient(135deg, #e94560, #c23616);
+            color: white;
+            box-shadow: 0 4px 16px rgba(233,69,96,0.3);
+            clip-path: polygon(5% 0%, 95% 0%, 100% 100%, 0% 100%);
+            padding: 20px 24px;
+        }
+
+        .el-strategy {
+            background: linear-gradient(135deg, #0f3460, #533483);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 4px 16px rgba(15,52,96,0.4);
+        }
+
+        .el-content {
+            background: linear-gradient(135deg, #2d3436, #636e72);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        }
+
+        .el-note {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: var(--text);
+            backdrop-filter: blur(10px);
+        }
+
+        .el-milestone {
+            background: linear-gradient(135deg, #00b894, #00cec9);
+            color: #1a1a2e;
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            box-shadow: 0 4px 16px rgba(0,184,148,0.3);
+        }
+
+        /* RIGHT PANEL */
+        .right-panel {
+            position: fixed;
+            top: 50px;
+            right: 0;
+            width: 300px;
+            height: calc(100vh - 50px);
+            background: var(--bg-medium);
+            border-left: 1px solid rgba(255,255,255,0.1);
+            z-index: 999;
+            overflow-y: auto;
+            transform: translateX(300px);
+            transition: transform 0.3s;
+            padding: 20px;
+        }
+
+        .right-panel.open {
+            transform: translateX(0);
+        }
+
+        .right-panel h3 {
+            font-size: 14px;
+            margin-bottom: 16px;
+            color: var(--text-dim);
+        }
+
+        .panel-field {
+            margin-bottom: 14px;
+        }
+
+        .panel-field label {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+        }
+
+        .panel-field input,
+        .panel-field textarea,
+        .panel-field select {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .panel-field textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .panel-field input:focus,
+        .panel-field textarea:focus,
+        .panel-field select:focus {
+            border-color: var(--accent);
+        }
+
+        /* MINIMAP */
+        .minimap {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            width: 180px;
+            height: 120px;
+            background: rgba(22, 33, 62, 0.9);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            z-index: 998;
+            overflow: hidden;
+        }
+
+        .minimap-viewport {
+            position: absolute;
+            border: 1px solid var(--accent);
+            background: rgba(233, 69, 96, 0.1);
+            pointer-events: none;
+        }
+
+        .minimap-element {
+            position: absolute;
+            border-radius: 2px;
+            opacity: 0.7;
+        }
+
+        /* CONTEXT MENU */
+        .context-menu {
+            position: fixed;
+            background: var(--bg-medium);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            padding: 6px;
+            z-index: 2000;
+            min-width: 180px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            display: none;
+        }
+
+        .context-menu.show {
+            display: block;
+        }
+
+        .context-menu-item {
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .context-menu-item:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        .context-menu-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.1);
+            margin: 4px 0;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-medium);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 24px;
+            min-width: 400px;
+            max-width: 600px;
+        }
+
+        .modal h2 {
+            margin-bottom: 16px;
+            font-size: 18px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            padding: 8px 20px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .modal-btn.primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .modal-btn.secondary {
+            background: rgba(255,255,255,0.1);
+            color: var(--text);
+        }
+
+        /* SEARCH */
+        .search-box {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1500;
+            display: none;
+        }
+
+        .search-box.show {
+            display: block;
+        }
+
+        .search-box input {
+            width: 400px;
+            padding: 12px 20px;
+            background: var(--bg-medium);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 15px;
+            outline: none;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--bg-medium);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 13px;
+            z-index: 5000;
+            transition: transform 0.3s;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* HELP HINT */
+        .help-hint {
+            position: fixed;
+            bottom: 16px;
+            left: 276px;
+            font-size: 11px;
+            color: var(--text-dim);
+            z-index: 998;
+        }
+
+        .help-hint kbd {
+            background: rgba(255,255,255,0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.15);
+            border-radius: 3px;
+        }
+
+        /* Temp connection line while dragging */
+        .temp-connection {
+            stroke: var(--accent);
+            stroke-width: 2;
+            stroke-dasharray: 5,5;
+            fill: none;
+        }
+
+        /* Tags on elements */
+        .element-tags {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .element-tag {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        /* Funnel visualization */
+        .funnel-stages {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 8px;
+        }
+
+        .funnel-stage-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.3);
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <!-- TOP BAR -->
+    <div class="topbar">
+        <div class="logo">⬡ Strategy Playground</div>
+        <input type="text" class="board-name" id="boardName" value="Untitled Board" />
+        <div class="topbar-actions">
+            <button class="topbar-btn" onclick="toggleSearch()" title="Search (Ctrl+F)">🔍</button>
+            <button class="topbar-btn" onclick="zoomIn()">+</button>
+            <span class="zoom-display" id="zoomDisplay">100%</span>
+            <button class="topbar-btn" onclick="zoomOut()">−</button>
+            <button class="topbar-btn" onclick="resetView()">⌂</button>
+            <button class="topbar-btn" onclick="exportBoard()">↓ Export</button>
+            <button class="topbar-btn" onclick="importBoard()">↑ Import</button>
+            <button class="topbar-btn" onclick="saveAll()">💾 Save</button>
+        </div>
+    </div>
+
+    <!-- LEFT SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-section">
+            <h3>Add Elements</h3>
+            <div class="element-palette">
+                <div class="palette-item" draggable="true" data-type="sticky">
+                    <span class="icon">📝</span>
+                    Sticky Note
+                </div>
+                <div class="palette-item" draggable="true" data-type="idea">
+                    <span class="icon">💡</span>
+                    Idea
+                </div>
+                <div class="palette-item" draggable="true" data-type="brand">
+                    <span class="icon">🏢</span>
+                    Brand
+                </div>
+                <div class="palette-item" draggable="true" data-type="funnel">
+                    <span class="icon">🔻</span>
+                    Funnel
+                </div>
+                <div class="palette-item" draggable="true" data-type="strategy">
+                    <span class="icon">🎯</span>
+                    Strategy
+                </div>
+                <div class="palette-item" draggable="true" data-type="content">
+                    <span class="icon">📱</span>
+                    Content
+                </div>
+                <div class="palette-item" draggable="true" data-type="note">
+                    <span class="icon">🗒️</span>
+                    Note
+                </div>
+                <div class="palette-item" draggable="true" data-type="milestone">
+                    <span class="icon">🏆</span>
+                    Milestone
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <h3>Boards</h3>
+            <div class="board-list" id="boardList"></div>
+            <button class="add-board-btn" onclick="createNewBoard()">+ New Board</button>
+        </div>
+
+        <div class="sidebar-section">
+            <h3>Quick Colors</h3>
+            <div class="color-palette">
+                <div class="color-swatch" style="background:#e94560" data-color="#e94560"></div>
+                <div class="color-swatch" style="background:#6c5ce7" data-color="#6c5ce7"></div>
+                <div class="color-swatch" style="background:#00b894" data-color="#00b894"></div>
+                <div class="color-swatch" style="background:#fdcb6e" data-color="#fdcb6e"></div>
+                <div class="color-swatch" style="background:#0984e3" data-color="#0984e3"></div>
+                <div class="color-swatch" style="background:#e17055" data-color="#e17055"></div>
+                <div class="color-swatch" style="background:#00cec9" data-color="#00cec9"></div>
+                <div class="color-swatch" style="background:#fd79a8" data-color="#fd79a8"></div>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <h3>Templates</h3>
+            <div class="board-list">
+                <div class="board-item" onclick="loadTemplate('brand-funnel')">📊 Brand Funnel Map</div>
+                <div class="board-item" onclick="loadTemplate('content-calendar')">📅 Content Flow</div>
+                <div class="board-item" onclick="loadTemplate('brainstorm')">🧠 Brainstorm</div>
+                <div class="board-item" onclick="loadTemplate('strategy')">🗺️ Strategy Map</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CANVAS -->
+    <div class="canvas-container" id="canvasContainer">
+        <div class="canvas" id="canvas">
+            <svg class="connections-svg" id="connectionsSvg">
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" class="connection-arrow"/>
+                    </marker>
+                </defs>
+            </svg>
+        </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel" id="rightPanel">
+        <h3>Element Properties</h3>
+        <div id="panelContent">
+            <p style="color:var(--text-dim); font-size:13px;">Select an element to edit its properties</p>
+        </div>
+    </div>
+
+    <!-- MINIMAP -->
+    <div class="minimap" id="minimap"></div>
+
+    <!-- CONTEXT MENU -->
+    <div class="context-menu" id="contextMenu">
+        <div class="context-menu-item" onclick="duplicateSelected()">📋 Duplicate</div>
+        <div class="context-menu-item" onclick="changeElementType()">🔄 Change Type</div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" onclick="bringToFront()">⬆ Bring to Front</div>
+        <div class="context-menu-item" onclick="sendToBack()">⬇ Send to Back</div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" onclick="deleteSelected()" style="color:var(--accent)">🗑 Delete</div>
+    </div>
+
+    <!-- SEARCH BOX -->
+    <div class="search-box" id="searchBox">
+        <input type="text" id="searchInput" placeholder="Search elements..." oninput="searchElements(this.value)" />
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+    <!-- HELP HINT -->
+    <div class="help-hint">
+        <kbd>Space</kbd>+Drag to pan · <kbd>Scroll</kbd> to zoom · <kbd>Del</kbd> to delete · <kbd>Ctrl+S</kbd> to save · <kbd>Ctrl+D</kbd> to duplicate
+    </div>
+
+    <!-- HIDDEN FILE INPUT -->
+    <input type="file" id="fileInput" accept=".json" style="display:none" onchange="handleImport(event)" />
+
+    <script>
+        // ==================== STATE ====================
+        let state = {
+            boards: {},
+            currentBoard: 'default',
+            zoom: 1,
+            panX: 0,
+            panY: 0
+        };
+
+        let currentElements = {};
+        let currentConnections = [];
+        let selectedElement = null;
+        let isDragging = false;
+        let isPanning = false;
+        let isConnecting = false;
+        let connectionStart = null;
+        let dragOffset = { x: 0, y: 0 };
+        let panStart = { x: 0, y: 0 };
+        let spacePressed = false;
+        let elementCounter = 0;
+
+        // ==================== INITIALIZATION ====================
+        function init() {
+            loadState();
+            if (!state.boards[state.currentBoard]) {
+                state.boards[state.currentBoard] = {
+                    name: 'Untitled Board',
+                    elements: {},
+                    connections: []
+                };
+            }
+            loadCurrentBoard();
+            renderBoardList();
+            setupEventListeners();
+            updateCanvasTransform();
+            showToast('Welcome to Strategy Playground! 🎨');
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem('strategyPlayground');
+            if (saved) {
+                state = JSON.parse(saved);
+            }
+        }
+
+        function saveAll() {
+            saveCurrentBoardData();
+            localStorage.setItem('strategyPlayground', JSON.stringify(state));
+            showToast('Saved! 💾');
+        }
+
+        function saveCurrentBoardData() {
+            state.boards[state.currentBoard] = {
+                name: document.getElementById('boardName').value,
+                elements: currentElements,
+                connections: currentConnections
+            };
+        }
+
+        function loadCurrentBoard() {
+            const board = state.boards[state.currentBoard];
+            if (!board) return;
+            
+            currentElements = board.elements || {};
+            currentConnections = board.connections || [];
+            document.getElementById('boardName').value = board.name || 'Untitled Board';
+            
+            renderAllElements();
+            renderAllConnections();
+            updateMinimap();
+        }
+
+        // ==================== BOARD MANAGEMENT ====================
+        function createNewBoard() {
+            const id = 'board_' + Date.now();
+            state.boards[id] = {
+                name: 'New Board',
+                elements: {},
+                connections: []
+            };
+            switchBoard(id);
+            renderBoardList();
+            saveAll();
+        }
+
+        function switchBoard(id) {
+            saveCurrentBoardData();
+            state.currentBoard = id;
+            loadCurrentBoard();
+            renderBoardList();
+        }
+
+        function deleteBoard(id, e) {
+            e.stopPropagation();
+            if (Object.keys(state.boards).length <= 1) {
+                showToast('Cannot delete the last board');
+                return;
+            }
+            delete state.boards[id];
+            if (state.currentBoard === id) {
+                state.currentBoard = Object.keys(state.boards)[0];
+                loadCurrentBoard();
+            }
+            renderBoardList();
+            saveAll();
+        }
+
+        function renderBoardList() {
+            const list = document.getElementById('boardList');
+            list.innerHTML = '';
+            Object.keys(state.boards).forEach(id => {
+                const board = state.boards[id];
+                const item = document.createElement('div');
+                item.className = 'board-item' + (id === state.currentBoard ? ' active' : '');
+                item.innerHTML = `
+                    <span onclick="switchBoard('${id}')">${board.name}</span>
+                    <span class="delete-board" onclick="deleteBoard('${id}', event)">×</span>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // ==================== ELEMENT CREATION ====================
+        function createElement(type, x, y, data = {}) {
+            elementCounter++;
+            const id = 'el_' + Date.now() + '_' + elementCounter;
+            const element = {
+                id,
+                type,
+                x: x || 200 + Math.random() * 400,
+                y: y || 200 + Math.random() * 300,
+                width: data.width || getDefaultWidth(type),
+                height: data.height || getDefaultHeight(type),
+                content: data.content || getDefaultContent(type),
+                color: data.color || null,
+                tags: data.tags || [],
+                notes: data.notes || '',
+                zIndex: data.zIndex || elementCounter
+            };
+            
+            currentElements[id] = element;
+            renderElement(element);
+            updateMinimap();
+            return element;
+        }
+
+        function getDefaultWidth(type) {
+            const widths = { sticky: 180, idea: 180, brand: 220, funnel: 200, strategy: 200, content: 180, note: 200, milestone: 100 };
+            return widths[type] || 180;
+        }
+
+        function getDefaultHeight(type) {
+            const heights = { sticky: 120, idea: 100, brand: 140, funnel: 120, strategy: 140, content: 120, note: 100, milestone: 100 };
+            return heights[type] || 120;
+        }
+
+        function getDefaultContent(type) {
+            const contents = { 
+                sticky: 'New idea...', 
+                idea: '💡 Bright idea', 
+                brand: 'Brand Name\n\nFunnel: TOFU → MOFU → BOFU', 
+                funnel: 'Funnel Stage', 
+                strategy: 'Strategy Node', 
+                content: 'Content Piece', 
+                note: 'Quick note...', 
+                milestone: '🏆' 
+            };
+            return contents[type] || 'New element';
+        }
+
+        function renderElement(el) {
+            const div = document.createElement('div');
+            div.id = el.id;
+            div.className = `canvas-element el-${el.type}`;
+            div.style.left = el.x + 'px';
+            div.style.top = el.y + 'px';
+            div.style.width = el.width + 'px';
+            div.style.minHeight = el.height + 'px';
+            div.style.zIndex = el.zIndex || 10;
+
+            if (el.color) {
+                div.style.background = el.color;
+                div.style.boxShadow = `0 4px 16px ${el.color}44`;
+            }
+
+            div.innerHTML = `
+                <div class="element-header">
+                    <span class="element-type">${getTypeLabel(el.type)}</span>
+                    <div class="element-actions">
+                        <button class="element-action-btn" onclick="event.stopPropagation(); openProperties('${el.id}')" title="Properties">⚙</button>
+                        <button class="element-action-btn" onclick="event.stopPropagation(); deleteElement('${el.id}')" title="Delete">×</button>
+                    </div>
+                </div>
+                <div class="element-content" contenteditable="true" data-placeholder="Type here..." 
+                    oninput="updateElementContent('${el.id}', this.innerText)"
+                    onfocus="event.stopPropagation()"
+                    onmousedown="event.stopPropagation()">${el.content}</div>
+                ${el.tags && el.tags.length ? `<div class="element-tags">${el.tags.map(t => `<span class="element-tag">${t}</span>`).join('')}</div>` : ''}
+                <div class="connect-handle top" onmousedown="startConnection(event, '${el.id}', 'top')"></div>
+                <div class="connect-handle right" onmousedown="startConnection(event, '${el.id}', 'right')"></div>
+                <div class="connect-handle bottom" onmousedown="startConnection(event, '${el.id}', 'bottom')"></div>
+                <div class="connect-handle left" onmousedown="startConnection(event, '${el.id}', 'left')"></div>
+            `;
+
+            div.addEventListener('mousedown', (e) => startDrag(e, el.id));
+            div.addEventListener('contextmenu', (e) => showContextMenu(e, el.id));
+            div.addEventListener('click', (e) => selectElement(el.id));
+
+            document.getElementById('canvas').appendChild(div);
+        }
+
+        function renderAllElements() {
+            // Clear existing
+            document.querySelectorAll('.canvas-element').forEach(el => el.remove());
+            Object.values(currentElements).forEach(el => renderElement(el));
+        }
+
+        function getTypeLabel(type) {
+            const labels = { sticky: '📝 Sticky', idea: '💡 Idea', brand: '🏢 Brand', funnel: '🔻 Funnel', strategy: '🎯 Strategy', content: '📱 Content', note: '🗒️ Note', milestone: '🏆 Milestone' };
+            return labels[type] || type;
+        }
+
+        // ==================== ELEMENT INTERACTIONS ====================
+        function startDrag(e, id) {
+            if (e.target.classList.contains('element-content') || 
+                e.target.classList.contains('connect-handle') ||
+                e.target.classList.contains('element-action-btn')) return;
+            if (spacePressed) return;
+
+            e.preventDefault();
+            isDragging = true;
+            selectedElement = id;
+            
+            const el = currentElements[id];
+            const rect = document.getElementById('canvas').getBoundingClientRect();
+            dragOffset.x = (e.clientX - rect.left) / state.zoom - el.x;
+            dragOffset.y = (e.clientY - rect.top) / state.zoom - el.y;
+
+            // Bring to front
+            elementCounter++;
+            el.zIndex = elementCounter;
+            document.getElementById(id).style.zIndex = elementCounter;
+
+            document.getElementById(id).classList.add('selected');
+        }
+
+        function selectElement(id) {
+            document.querySelectorAll('.canvas-element').forEach(el => el.classList.remove('selected'));
+            selectedElement = id;
+            document.getElementById(id).classList.add('selected');
+        }
+
+        function updateElementContent(id, content) {
+            if (currentElements[id]) {
+                currentElements[id].content = content;
+            }
+        }
+
+        function deleteElement(id) {
+            delete currentElements[id];
+            currentConnections = currentConnections.filter(c => c.from !== id && c.to !== id);
+            const el = document.getElementById(id);
+            if (el) el.remove();
+            renderAllConnections();
+            updateMinimap();
+            if (selectedElement === id) {
+                selectedElement = null;
+                closeRightPanel();
+            }
+        }
+
+        function deleteSelected() {
+            if (selectedElement) {
+                deleteElement(selectedElement);
+            }
+            hideContextMenu();
+        }
+
+        function duplicateSelected() {
+            if (!selectedElement) return;
+            const el = currentElements[selectedElement];
+            if (el) {
+                createElement(el.type, el.x + 30, el.y + 30, {
+                    content: el.content,
+                    color: el.color,
+                    tags: [...(el.tags || [])],
+                    notes: el.notes
+                });
+            }
+            hideContextMenu();
+        }
+
+        function bringToFront() {
+            if (!selectedElement) return;
+            elementCounter++;
+            currentElements[selectedElement].zIndex = elementCounter;
+            document.getElementById(selectedElement).style.zIndex = elementCounter;
+            hideContextMenu();
+        }
+
+        function sendToBack() {
+            if (!selectedElement) return;
+            currentElements[selectedElement].zIndex = 1;
+            document.getElementById(selectedElement).style.zIndex = 1;
+            hideContextMenu();
+        }
+
+        function changeElementType() {
+            if (!selectedElement) return;
+            const el = currentElements[selectedElement];
+            const types = ['sticky', 'idea', 'brand', 'funnel', 'strategy', 'content', 'note', 'milestone'];
+            const currentIdx = types.indexOf(el.type);
+            el.type = types[(currentIdx + 1) % types.length];
+            
+            const domEl = document.getElementById(selectedElement);
+            domEl.className = `canvas-element el-${el.type}`;
+            if (el.color) {
+                domEl.style.background = el.color;
+            }
+            domEl.querySelector('.element-type').textContent = getTypeLabel(el.type);
+            hideContextMenu();
+        }
+
+        // ==================== CONNECTIONS ====================
+        function startConnection(e, id, side) {
+            e.preventDefault();
+            e.stopPropagation();
+            isConnecting = true;
+            connectionStart = { id, side };
+            
+            // Create temp line
+            const svg = document.getElementById('connectionsSvg');
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.id = 'tempLine';
+            line.classList.add('temp-connection');
+            
+            const pos = getHandlePosition(id, side);
+            line.setAttribute('x1', pos.x);
+            line.setAttribute('y1', pos.y);
+            line.setAttribute('x2', pos.x);
+            line.setAttribute('y2', pos.y);
+            svg.appendChild(line);
+        }
+
+        function getHandlePosition(id, side) {
+            const el = currentElements[id];
+            if (!el) return { x: 0, y: 0 };
+            
+            const x = el.x;
+            const y = el.y;
+            const w = el.width || 180;
+            const h = el.height || 120;
+
+            switch(side) {
+                case 'top': return { x: x + w/2, y: y };
+                case 'right': return { x: x + w, y: y + h/2 };
+                case 'bottom': return { x: x + w/2, y: y + h };
+                case 'left': return { x: x, y: y + h/2 };
+                default: return { x: x + w/2, y: y + h/2 };
+            }
+        }
+
+        function finishConnection(targetId, targetSide) {
+            if (!isConnecting || !connectionStart) return;
+            if (connectionStart.id === targetId) {
+                cancelConnection();
+                return;
+            }
+
+            currentConnections.push({
+                from: connectionStart.id,
+                fromSide: connectionStart.side,
+                to: targetId,
+                toSide: targetSide || 'left'
+            });
+
+            cancelConnection();
+            renderAllConnections();
+            updateMinimap();
+        }
+
+        function cancelConnection() {
+            isConnecting = false;
+            connectionStart = null;
+            const tempLine = document.getElementById('tempLine');
+            if (tempLine) tempLine.remove();
+        }
+
+        function renderAllConnections() {
+            const svg = document.getElementById('connectionsSvg');
+            // Remove all except defs and temp line
+            Array.from(svg.children).forEach(child => {
+                if (child.tagName !== 'defs' && child.id !== 'tempLine') {
+                    child.remove();
+                }
+            });
+
+            currentConnections.forEach((conn, idx) => {
+                const fromPos = getHandlePosition(conn.from, conn.fromSide);
+                const toPos = getHandlePosition(conn.to, conn.toSide);
+
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                
+                // Create curved path
+                const dx = toPos.x - fromPos.x;
+                const dy = toPos.y - fromPos.y;
+                const cx1 = fromPos.x + dx * 0.4;
+                const cy1 = fromPos.y;
+                const cx2 = toPos.x - dx * 0.4;
+                const cy2 = toPos.y;
+
+                path.setAttribute('d', `M ${fromPos.x} ${fromPos.y} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${toPos.x} ${toPos.y}`);
+                path.classList.add('connection-line');
+                path.setAttribute('marker-end', 'url(#arrowhead)');
+                path.addEventListener('dblclick', () => {
+                    currentConnections.splice(idx, 1);
+                    renderAllConnections();
+                });
+                svg.appendChild(path);
+            });
+        }
+
+        // ==================== PAN & ZOOM ====================
+        function updateCanvasTransform() {
+            const canvas = document.getElementById('canvas');
+            canvas.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.zoom})`;
+            document.getElementById('zoomDisplay').textContent = Math.round(state.zoom * 100) + '%';
+            updateMinimap();
+        }
+
+        function zoomIn() {
+            state.zoom = Math.min(state.zoom + 0.1, 3);
+            updateCanvasTransform();
+        }
+
+        function zoomOut() {
+            state.zoom = Math.max(state.zoom - 0.1, 0.2);
+            updateCanvasTransform();
+        }
+
+        function resetView() {
+            state.zoom = 1;
+            state.panX = 0;
+            state.panY = 0;
+            updateCanvasTransform();
+        }
+
+        // ==================== CONTEXT MENU ====================
+        function showContextMenu(e, id) {
+            e.preventDefault();
+            selectElement(id);
+            const menu = document.getElementById('contextMenu');
+            menu.style.left = e.clientX + 'px';
+            menu.style.top = e.clientY + 'px';
+            menu.classList.add('show');
+        }
+
+        function hideContextMenu() {
+            document.getElementById('contextMenu').classList.remove('show');
+        }
+
+        // ==================== RIGHT PANEL ====================
+        function openProperties(id) {
+            const el = currentElements[id];
+            if (!el) return;
+
+            const panel = document.getElementById('rightPanel');
+            const content = document.getElementById('panelContent');
+
+            content.innerHTML = `
+                <div class="panel-field">
+                    <label>Type</label>
+                    <select onchange="updateElementType('${id}', this.value)">
+                        <option value="sticky" ${el.type==='sticky'?'selected':''}>📝 Sticky Note</option>
+                        <option value="idea" ${el.type==='idea'?'selected':''}>💡 Idea</option>
+                        <option value="brand" ${el.type==='brand'?'selected':''}>🏢 Brand</option>
+                        <option value="funnel" ${el.type==='funnel'?'selected':''}>🔻 Funnel</option>
+                        <option value="strategy" ${el.type==='strategy'?'selected':''}>🎯 Strategy</option>
+                        <option value="content" ${el.type==='content'?'selected':''}>📱 Content</option>
+                        <option value="note" ${el.type==='note'?'selected':''}>🗒️ Note</option>
+                        <option value="milestone" ${el.type==='milestone'?'selected':''}>🏆 Milestone</option>
+                    </select>
+                </div>
+                <div class="panel-field">
+                    <label>Content</label>
+                    <textarea onchange="updatePanelContent('${id}', this.value)">${el.content}</textarea>
+                </div>
+                <div class="panel-field">
+                    <label>Notes / Details</label>
+                    <textarea onchange="updatePanelNotes('${id}', this.value)" placeholder="Additional notes...">${el.notes || ''}</textarea>
+                </div>
+                <div class="panel-field">
+                    <label>Tags (comma separated)</label>
+                    <input type="text" value="${(el.tags || []).join(', ')}" onchange="updatePanelTags('${id}', this.value)" />
+                </div>
+                <div class="panel-field">
+                    <label>Custom Color</label>
+                    <input type="color" value="${el.color || '#e94560'}" onchange="updatePanelColor('${id}', this.value)" />
+                </div>
+                <div class="panel-field">
+                    <label>Width</label>
+                    <input type="number" value="${el.width}" onchange="updatePanelSize('${id}', 'width', this.value)" />
+                </div>
+                <div class="panel-field">
+                    <label>Height</label>
+                    <input type="number" value="${el.height}" onchange="updatePanelSize('${id}', 'height', this.value)" />
+                </div>
+                <div class="panel-field">
+                    <label>Position</label>
+                    <div style="display:flex;gap:8px">
+                        <input type="number" value="${Math.round(el.x)}" onchange="updatePanelPos('${id}', 'x', this.value)" style="width:50%" placeholder="X" />
+                        <input type="number" value="${Math.round(el.y)}" onchange="updatePanelPos('${id}', 'y', this.value)" style="width:50%" placeholder="Y" />
+                    </div>
+                </div>
+            `;
+
+            panel.classList.add('open');
+        }
+
+        function closeRightPanel() {
+            document.getElementById('rightPanel').classList.remove('open');
+        }
+
+        function updateElementType(id, type) {
+            currentElements[id].type = type;
+            const domEl = document.getElementById(id);
+            domEl.className = `canvas-element el-${type}`;
+            domEl.querySelector('.element-type').textContent = getTypeLabel(type);
+            if (currentElements[id].color) {
+                domEl.style.background = currentElements[id].color;
+            }
+        }
+
+        function updatePanelContent(id, value) {
+            currentElements[id].content = value;
+            document.getElementById(id).querySelector('.element-content').innerText = value;
+        }
+
+        function updatePanelNotes(id, value) {
+            currentElements[id].notes = value;
+        }
+
+        function updatePanelTags(id, value) {
+            currentElements[id].tags = value.split(',').map(t => t.trim()).filter(t => t);
+            // Re-render tags
+            const domEl = document.getElementById(id);
+            let tagsDiv = domEl.querySelector('.element-tags');
+            if (!tagsDiv) {
+                tagsDiv = document.createElement('div');
+                tagsDiv.className = 'element-tags';
+                domEl.appendChild(tagsDiv);
+            }
+            tagsDiv.innerHTML = currentElements[id].tags.map(t => `<span class="element-tag">${t}</span>`).join('');
+        }
+
+        function updatePanelColor(id, color) {
+            currentElements[id].color = color;
+            const domEl = document.getElementById(id);
+            domEl.style.background = color;
+            domEl.style.boxShadow = `0 4px 16px ${color}44`;
+        }
+
+        function updatePanelSize(id, prop, value) {
+            currentElements[id][prop] = parseInt(value);
+            const domEl = document.getElementById(id);
+            if (prop === 'width') domEl.style.width = value + 'px';
+            if (prop === 'height') domEl.style.minHeight = value + 'px';
+        }
+
+        function updatePanelPos(id, prop, value) {
+            currentElements[id][prop] = parseInt(value);
+            const domEl = document.getElementById(id);
+            if (prop === 'x') domEl.style.left = value + 'px';
+            if (prop === 'y') domEl.style.top = value + 'px';
+            renderAllConnections();
+        }
+
+        // ==================== MINIMAP ====================
+        function updateMinimap() {
+            const minimap = document.getElementById('minimap');
+            minimap.innerHTML = '';
+
+            const elements = Object.values(currentElements);
+            if (elements.length === 0) return;
+
+            // Calculate bounds
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            elements.forEach(el => {
+                minX = Math.min(minX, el.x);
+                minY = Math.min(minY, el.y);
+                maxX = Math.max(maxX, el.x + (el.width || 180));
+                maxY = Math.max(maxY, el.y + (el.height || 120));
+            });
+
+            const padding = 100;
+            minX -= padding; minY -= padding;
+            maxX += padding; maxY += padding;
+
+            const worldW = maxX - minX;
+            const worldH = maxY - minY;
+            const scale = Math.min(180 / worldW, 120 / worldH);
+
+            elements.forEach(el => {
+                const dot = document.createElement('div');
+                dot.className = 'minimap-element';
+                dot.style.left = ((el.x - minX) * scale) + 'px';
+                dot.style.top = ((el.y - minY) * scale) + 'px';
+                dot.style.width = Math.max(3, (el.width || 180) * scale) + 'px';
+                dot.style.height = Math.max(2, (el.height || 120) * scale) + 'px';
+                dot.style.background = el.color || getElementColor(el.type);
+                minimap.appendChild(dot);
+            });
+
+            // Viewport indicator
+            const container = document.getElementById('canvasContainer');
+            const vp = document.createElement('div');
+            vp.className = 'minimap-viewport';
+            const vpLeft = (-state.panX / state.zoom - minX) * scale;
+            const vpTop = (-state.panY / state.zoom - minY) * scale;
+            const vpWidth = (container.clientWidth / state.zoom) * scale;
+            const vpHeight = (container.clientHeight / state.zoom) * scale;
+            vp.style.left = vpLeft + 'px';
+            vp.style.top = vpTop + 'px';
+            vp.style.width = vpWidth + 'px';
+            vp.style.height = vpHeight + 'px';
+            minimap.appendChild(vp);
+        }
+
+        function getElementColor(type) {
+            const colors = { sticky: '#ffe66d', idea: '#a8e6cf', brand: '#6c5ce7', funnel: '#e94560', strategy: '#533483', content: '#636e72', note: '#444', milestone: '#00b894' };
+            return colors[type] || '#666';
+        }
+
+        // ==================== SEARCH ====================
+        function toggleSearch() {
+            const box = document.getElementById('searchBox');
+            box.classList.toggle('show');
+            if (box.classList.contains('show')) {
+                document.getElementById('searchInput').focus();
+            }
+        }
+
+        function searchElements(query) {
+            document.querySelectorAll('.canvas-element').forEach(el => {
+                if (!query) {
+                    el.style.opacity = '1';
+                    return;
+                }
+                const id = el.id;
+                const data = currentElements[id];
+                if (!data) return;
+                const match = data.content.toLowerCase().includes(query.toLowerCase()) ||
+                    (data.tags || []).some(t => t.toLowerCase().includes(query.toLowerCase())) ||
+                    data.type.includes(query.toLowerCase());
+                el.style.opacity = match ? '1' : '0.2';
+            });
+        }
+
+        // ==================== TEMPLATES ====================
+        function loadTemplate(type) {
+            if (!confirm('This will replace the current board. Continue?')) return;
+            
+            currentElements = {};
+            currentConnections = [];
+            document.querySelectorAll('.canvas-element').forEach(el => el.remove());
+
+            switch(type) {
+                case 'brand-funnel':
+                    loadBrandFunnelTemplate();
+                    break;
+                case 'content-calendar':
+                    loadContentFlowTemplate();
+                    break;
+                case 'brainstorm':
+                    loadBrainstormTemplate();
+                    break;
+                case 'strategy':
+                    loadStrategyMapTemplate();
+                    break;
+            }
+
+            renderAllConnections();
+            updateMinimap();
+            showToast('Template loaded! 📋');
+        }
+
+        function loadBrandFunnelTemplate() {
+            createElement('brand', 300, 100, { content: '🏢 Brand Name\n\nIndustry: \nAudience: \nUSP: ' });
+            createElement('funnel', 250, 300, { content: '🔝 TOFU - Awareness', width: 300, height: 80 });
+            createElement('funnel', 280, 420, { content: '🔄 MOFU - Consideration', width: 240, height: 80 });
+            createElement('funnel', 310, 540, { content: '💰 BOFU - Conversion', width: 180, height: 80 });
+            createElement('sticky', 600, 300, { content: 'Content:\n- Blog posts\n- Social media\n- SEO' });
+            createElement('sticky', 600, 450, { content: 'Lead Magnets:\n- Ebooks\n- Webinars\n- Templates' });
+            createElement('sticky', 600, 600, { content: 'Conversion:\n- Landing pages\n- Email sequences\n- Offers' });
+            
+            currentConnections.push(
+                { from: Object.keys(currentElements)[0], fromSide: 'bottom', to: Object.keys(currentElements)[1], toSide: 'top' },
+                { from: Object.keys(currentElements)[1], fromSide: 'bottom', to: Object.keys(currentElements)[2], toSide: 'top' },
+                { from: Object.keys(currentElements)[2], fromSide: 'bottom', to: Object.keys(currentElements)[3], toSide: 'top' },
+                { from: Object.keys(currentElements)[1], fromSide: 'right', to: Object.keys(currentElements)[4], toSide: 'left' },
+                { from: Object.keys(currentElements)[2], fromSide: 'right', to: Object.keys(currentElements)[5], toSide: 'left' },
+                { from: Object.keys(currentElements)[3], fromSide: 'right', to: Object.keys(currentElements)[6], toSide: 'left' }
+            );
+        }
+
+        function loadContentFlowTemplate() {
+            createElement('strategy', 100, 100, { content: '🎯 Content Strategy\n\nPillars:\n1. \n2. \n3. ' });
+            createElement('content', 400, 50, { content: '📱 Instagram\n\nFormat: Reels\nFreq: Daily' });
+            createElement('content', 400, 200, { content: '📱 YouTube\n\nFormat: Long-form\nFreq: Weekly' });
+            createElement('content', 400, 350, { content: '📱 Twitter/X\n\nFormat: Threads\nFreq: Daily' });
+            createElement('content', 400, 500, { content: '📱 Newsletter\n\nFormat: Email\nFreq: Weekly' });
+            createElement('milestone', 700, 150, { content: '🏆\nLaunch', width: 100, height: 100 });
+            createElement('milestone', 700, 350, { content: '🏆\n1K\nFollowers', width: 100, height: 100 });
+
+            const keys = Object.keys(currentElements);
+            currentConnections.push(
+                { from: keys[0], fromSide: 'right', to: keys[1], toSide: 'left' },
+                { from: keys[0], fromSide: 'right', to: keys[2], toSide: 'left' },
+                { from: keys[0], fromSide: 'right', to: keys[3], toSide: 'left' },
+                { from: keys[0], fromSide: 'right', to: keys[4], toSide: 'left' },
+                { from: keys[1], fromSide: 'right', to: keys[5], toSide: 'left' },
+                { from: keys[2], fromSide: 'right', to: keys[6], toSide: 'left' }
+            );
+        }
+
+        function loadBrainstormTemplate() {
+            createElement('idea', 400, 300, { content: '💡 Central Idea\n\nWhat\'s the main concept?', width: 220, height: 120 });
+            
+            const positions = [
+                { x: 150, y: 100 }, { x: 650, y: 100 },
+                { x: 100, y: 350 }, { x: 700, y: 350 },
+                { x: 150, y: 550 }, { x: 650, y: 550 }
+            ];
+
+            positions.forEach((pos, i) => {
+                createElement('sticky', pos.x, pos.y, { content: `Idea ${i + 1}\n\n...` });
+            });
+
+            const keys = Object.keys(currentElements);
+            for (let i = 1; i < keys.length; i++) {
+                currentConnections.push({
+                    from: keys[0], fromSide: i <= 2 ? 'top' : (i <= 4 ? 'left' : 'bottom'),
+                    to: keys[i], toSide: i <= 2 ? 'bottom' : (i <= 4 ? 'right' : 'top')
+                });
+            }
+        }
+
+        function loadStrategyMapTemplate() {
+            createElement('milestone', 400, 50, { content: '🎯\nVision', width: 120, height: 120 });
+            createElement('strategy', 200, 230, { content: 'Strategy 1\n\nObjective:\nKPIs:' });
+            createElement('strategy', 550, 230, { content: 'Strategy 2\n\nObjective:\nKPIs:' });
+            createElement('note', 100, 430, { content: 'Tactic A\n- Action 1\n- Action 2' });
+            createElement('note', 300, 430, { content: 'Tactic B\n- Action 1\n- Action 2' });
+            createElement('note', 500, 430, { content: 'Tactic C\n- Action 1\n- Action 2' });
+            createElement('note', 700, 430, { content: 'Tactic D\n- Action 1\n- Action 2' });
+
+            const keys = Object.keys(currentElements);
+            currentConnections.push(
+                { from: keys[0], fromSide: 'bottom', to: keys[1], toSide: 'top' },
+                { from: keys[0], fromSide: 'bottom', to: keys[2], toSide: 'top' },
+                { from: keys[1], fromSide: 'bottom', to: keys[3], toSide: 'top' },
+                { from: keys[1], fromSide: 'bottom', to: keys[4], toSide: 'top' },
+                { from: keys[2], fromSide: 'bottom', to: keys[5], toSide: 'top' },
+                { from: keys[2], fromSide: 'bottom', to: keys[6], toSide: 'top' }
+            );
+        }
+
+        // ==================== EXPORT / IMPORT ====================
+        function exportBoard() {
+            saveCurrentBoardData();
+            const data = JSON.stringify(state.boards[state.currentBoard], null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `board_${state.boards[state.currentBoard].name.replace(/\s+/g, '_')}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Board exported! 📥');
+        }
+
+        function importBoard() {
+            document.getElementById('fileInput').click();
+        }
+
+        function handleImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    const id = 'board_' + Date.now();
+                    state.boards[id] = data;
+                    switchBoard(id);
+                    renderBoardList();
+                    saveAll();
+                    showToast('Board imported! 📤');
+                } catch(err) {
+                    showToast('Error importing file');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // ==================== EVENT LISTENERS ====================
+        function setupEventListeners() {
+            const container = document.getElementById('canvasContainer');
+
+            // Mouse move
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging && selectedElement) {
+                    const rect = document.getElementById('canvas').getBoundingClientRect();
+                    const x = (e.clientX - rect.left) / state.zoom - dragOffset.x;
+                    const y = (e.clientY - rect.top) / state.zoom - dragOffset.y;
+                    
+                    currentElements[selectedElement].x = x;
+                    currentElements[selected
