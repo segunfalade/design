@@ -1,217 +1,338 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Strategic Brain Dashboard</title>
-<style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #0f1117;
-    color: white;
-}
-
-header {
-    background: #161b22;
-    padding: 15px;
-    display: flex;
-    gap: 15px;
-    border-bottom: 1px solid #30363d;
-}
-
-button {
-    background: #21262d;
-    border: 1px solid #30363d;
-    color: white;
-    padding: 8px 14px;
-    cursor: pointer;
-}
-
-button:hover {
-    background: #30363d;
-}
-
-.section {
-    display: none;
-    padding: 20px;
-}
-
-.active {
-    display: block;
-}
-
-h2 {
-    border-bottom: 1px solid #30363d;
-    padding-bottom: 10px;
-}
-
-.box {
-    background: #161b22;
-    padding: 15px;
-    margin-bottom: 15px;
-    border: 1px solid #30363d;
-    border-radius: 6px;
-}
-
-.editable {
-    min-height: 100px;
-    padding: 10px;
-    background: #0d1117;
-    border: 1px solid #30363d;
-}
-
-.grid-3 {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 15px;
-}
-
-.grid-5 {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 15px;
-}
-
-.small {
-    min-height: 80px;
-}
-
-.large {
-    min-height: 150px;
-}
-</style>
-
-<script>
-function showSection(id) {
-    let sections = document.querySelectorAll('.section');
-    sections.forEach(sec => sec.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-}
-</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creator Brain Dashboard</title>
+    <!-- Tailwind CSS for sleek, instant visual styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Visual Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SortableJS for Drag-and-Drop Kanban -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    
+    <style>
+        /* Custom Scrollbar & Visual Tweaks */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        body { background-color: #111827; color: #f3f4f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .glass { background: rgba(31, 41, 55, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .hidden { display: none !important; }
+        .note-card { transition: transform 0.2s; }
+        .note-card:hover { transform: translateY(-5px); }
+    </style>
 </head>
+<body class="h-screen flex overflow-hidden">
 
-<body>
-
-<header>
-    <button onclick="showSection('brain')">Brain Dump</button>
-    <button onclick="showSection('brands')">Brand & Funnels</button>
-    <button onclick="showSection('strategy')">Strategy Map</button>
-    <button onclick="showSection('vision')">Vision Board</button>
-    <button onclick="showSection('content')">Content Flow</button>
-</header>
-
-<!-- Brain Dump -->
-<div id="brain" class="section active">
-    <h2>🧠 Brain Dump Playground</h2>
-    <div class="editable large" contenteditable="true">
-        Throw ideas here. No structure. Just thinking space.
-    </div>
-</div>
-
-<!-- Brand & Funnel Library -->
-<div id="brands" class="section">
-    <h2>📚 Brand & Funnel Library</h2>
-
-    <div class="box">
-        <strong>Brand Name</strong>
-        <div class="editable small" contenteditable="true">Name</div>
-
-        <strong>Entry Point</strong>
-        <div class="editable small" contenteditable="true"></div>
-
-        <strong>Lead Magnet</strong>
-        <div class="editable small" contenteditable="true"></div>
-
-        <strong>Core Offer</strong>
-        <div class="editable small" contenteditable="true"></div>
-
-        <strong>Upsells</strong>
-        <div class="editable small" contenteditable="true"></div>
-
-        <strong>Content Angle</strong>
-        <div class="editable small" contenteditable="true"></div>
-
-        <strong>Notes</strong>
-        <div class="editable small" contenteditable="true"></div>
-    </div>
-</div>
-
-<!-- Strategy Map -->
-<div id="strategy" class="section">
-    <h2>🗺 Strategy Map</h2>
-
-    <div class="grid-3">
-        <div class="box">
-            <strong>Now</strong>
-            <div class="editable large" contenteditable="true"></div>
+    <!-- Sidebar -->
+    <aside class="w-64 glass flex flex-col justify-between p-4">
+        <div>
+            <div class="flex items-center gap-3 mb-8 px-2 mt-4">
+                <i class="fa-solid fa-brain text-purple-400 text-2xl"></i>
+                <h1 class="text-xl font-bold tracking-wider">CREATOR<br>BRAIN</h1>
+            </div>
+            
+            <nav class="flex flex-col gap-2">
+                <button onclick="switchTab('playground')" class="tab-btn flex items-center gap-3 w-full text-left p-3 rounded-lg bg-purple-600 hover:bg-purple-500 transition">
+                    <i class="fa-solid fa-lightbulb w-5"></i> Playground
+                </button>
+                <button onclick="switchTab('funnels')" class="tab-btn flex items-center gap-3 w-full text-left p-3 rounded-lg hover:bg-gray-800 transition">
+                    <i class="fa-solid fa-filter w-5"></i> Funnel Flows
+                </button>
+                <button onclick="switchTab('roadmap')" class="tab-btn flex items-center gap-3 w-full text-left p-3 rounded-lg hover:bg-gray-800 transition">
+                    <i class="fa-solid fa-map w-5"></i> Roadmap
+                </button>
+                <button onclick="switchTab('vision')" class="tab-btn flex items-center gap-3 w-full text-left p-3 rounded-lg hover:bg-gray-800 transition">
+                    <i class="fa-solid fa-image w-5"></i> Vision Board
+                </button>
+            </nav>
         </div>
 
-        <div class="box">
-            <strong>Building</strong>
-            <div class="editable large" contenteditable="true"></div>
+        <div class="border-t border-gray-700 pt-4">
+            <p class="text-xs text-gray-400 mb-2">Data Management</p>
+            <button onclick="exportData()" class="w-full text-left p-2 text-sm text-green-400 hover:bg-gray-800 rounded"><i class="fa-solid fa-download mr-2"></i> Backup Data</button>
+            <button onclick="document.getElementById('importFile').click()" class="w-full text-left p-2 text-sm text-blue-400 hover:bg-gray-800 rounded"><i class="fa-solid fa-upload mr-2"></i> Restore Data</button>
+            <input type="file" id="importFile" class="hidden" accept=".json" onchange="importData(event)">
         </div>
+    </aside>
 
-        <div class="box">
-            <strong>Future Vision</strong>
-            <div class="editable large" contenteditable="true"></div>
-        </div>
-    </div>
-</div>
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto p-8 relative">
 
-<!-- Vision Board -->
-<div id="vision" class="section">
-    <h2>🎯 Vision Board</h2>
+        <!-- 1. PLAYGROUND (Sticky Notes) -->
+        <section id="playground" class="tab-content block">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold border-b-2 border-purple-500 pb-2">Ideas & Brainstorming</h2>
+                <button onclick="addIdea()" class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg font-bold shadow-lg shadow-purple-500/30">
+                    + New Idea
+                </button>
+            </div>
+            <div id="idea-grid" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Ideas inject here -->
+            </div>
+        </section>
 
-    <div class="grid-3">
-        <div class="box">
-            <strong>Business Direction</strong>
-            <div class="editable large" contenteditable="true"></div>
-        </div>
+        <!-- 2. FUNNEL FLOWS -->
+        <section id="funnels" class="tab-content hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold border-b-2 border-blue-500 pb-2">Competitor Funnel Flows</h2>
+                <button onclick="addFunnel()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-bold shadow-lg shadow-blue-500/30">
+                    + Log New Funnel
+                </button>
+            </div>
+            <div id="funnel-list" class="flex flex-col gap-4">
+                <!-- Funnels inject here -->
+            </div>
+        </section>
 
-        <div class="box">
-            <strong>Identity</strong>
-            <div class="editable large" contenteditable="true"></div>
-        </div>
+        <!-- 3. ROADMAP (Kanban) -->
+        <section id="roadmap" class="tab-content hidden h-full flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold border-b-2 border-emerald-500 pb-2">Business & Content Flow</h2>
+                <button onclick="addTask()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-bold shadow-lg shadow-emerald-500/30">
+                    + New Task
+                </button>
+            </div>
+            <div class="flex gap-6 flex-1 h-full pb-10">
+                <!-- To Do -->
+                <div class="flex-1 glass rounded-xl p-4 flex flex-col">
+                    <h3 class="font-bold text-gray-400 mb-4 uppercase tracking-wider text-sm"><i class="fa-solid fa-list mr-2"></i>To Do</h3>
+                    <div id="kanban-todo" class="flex-1 flex flex-col gap-3 min-h-[200px]"></div>
+                </div>
+                <!-- Doing -->
+                <div class="flex-1 glass rounded-xl p-4 flex flex-col border-t-4 border-yellow-500">
+                    <h3 class="font-bold text-yellow-500 mb-4 uppercase tracking-wider text-sm"><i class="fa-solid fa-spinner mr-2"></i>In Progress</h3>
+                    <div id="kanban-doing" class="flex-1 flex flex-col gap-3 min-h-[200px]"></div>
+                </div>
+                <!-- Done -->
+                <div class="flex-1 glass rounded-xl p-4 flex flex-col border-t-4 border-emerald-500">
+                    <h3 class="font-bold text-emerald-500 mb-4 uppercase tracking-wider text-sm"><i class="fa-solid fa-check-double mr-2"></i>Completed</h3>
+                    <div id="kanban-done" class="flex-1 flex flex-col gap-3 min-h-[200px]"></div>
+                </div>
+            </div>
+        </section>
 
-        <div class="box">
-            <strong>Revenue Targets</strong>
-            <div class="editable large" contenteditable="true"></div>
-        </div>
-    </div>
+        <!-- 4. VISION BOARD -->
+        <section id="vision" class="tab-content hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold border-b-2 border-pink-500 pb-2">Vision Board</h2>
+                <button onclick="addImage()" class="bg-pink-600 hover:bg-pink-500 text-white px-4 py-2 rounded-lg font-bold shadow-lg shadow-pink-500/30">
+                    + Add Image URL
+                </button>
+            </div>
+            <div id="vision-grid" class="columns-1 md:columns-2 lg:columns-3 gap-4 space-y-4">
+                <!-- Images inject here -->
+            </div>
+        </section>
 
-    <div class="box">
-        <strong>Creative Direction</strong>
-        <div class="editable large" contenteditable="true"></div>
-    </div>
-</div>
+    </main>
 
-<!-- Content Flow -->
-<div id="content" class="section">
-    <h2>📈 Content Funnel Flow</h2>
+    <!-- Vanilla JS Logic -->
+    <script>
+        // --- DATA STATE ---
+        let appData = JSON.parse(localStorage.getItem('creatorBrainData')) || {
+            ideas: [{ id: 1, text: "Welcome to your brain! Click '+ New Idea' to start.", color: "bg-gray-800" }],
+            funnels: [{ id: 1, brand: "Example Brand", flow: "TikTok Ad -> Opt-in -> VSL -> High Ticket Call" }],
+            tasks: { todo: [], doing: [], done: [] },
+            vision: ["https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=500&q=80"]
+        };
 
-    <div class="grid-5">
-        <div class="box">
-            <strong>Awareness</strong>
-            <div class="editable small" contenteditable="true"></div>
-        </div>
-        <div class="box">
-            <strong>Interest</strong>
-            <div class="editable small" contenteditable="true"></div>
-        </div>
-        <div class="box">
-            <strong>Trust</strong>
-            <div class="editable small" contenteditable="true"></div>
-        </div>
-        <div class="box">
-            <strong>Offer</strong>
-            <div class="editable small" contenteditable="true"></div>
-        </div>
-        <div class="box">
-            <strong>Retention</strong>
-            <div class="editable small" contenteditable="true"></div>
-        </div>
-    </div>
-</div>
+        const colors = ['bg-gray-800', 'bg-purple-900', 'bg-blue-900', 'bg-emerald-900', 'bg-rose-900', 'bg-amber-900'];
 
+        // --- NAVIGATION ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-purple-600', 'hover:bg-purple-500');
+                btn.classList.add('hover:bg-gray-800');
+            });
+            event.currentTarget.classList.remove('hover:bg-gray-800');
+            event.currentTarget.classList.add('bg-purple-600', 'hover:bg-purple-500');
+        }
+
+        // --- RENDER FUNCTIONS ---
+        function renderAll() {
+            renderIdeas();
+            renderFunnels();
+            renderKanban();
+            renderVision();
+            saveData();
+        }
+
+        function saveData() {
+            localStorage.setItem('creatorBrainData', JSON.stringify(appData));
+        }
+
+        // 1. Ideas
+        function renderIdeas() {
+            const grid = document.getElementById('idea-grid');
+            grid.innerHTML = '';
+            appData.ideas.forEach(idea => {
+                grid.innerHTML += `
+                    <div class="note-card ${idea.color} p-5 rounded-xl shadow-lg relative group">
+                        <button onclick="deleteIdea(${idea.id})" class="absolute top-2 right-2 text-gray-400 hover:text-red-400 hidden group-hover:block"><i class="fa-solid fa-xmark"></i></button>
+                        <p class="text-sm whitespace-pre-wrap">${idea.text}</p>
+                    </div>`;
+            });
+        }
+
+        function addIdea() {
+            const text = prompt("Brain dump your idea:");
+            if (text) {
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                appData.ideas.unshift({ id: Date.now(), text, color: randomColor });
+                renderAll();
+            }
+        }
+
+        function deleteIdea(id) {
+            appData.ideas = appData.ideas.filter(i => i.id !== id);
+            renderAll();
+        }
+
+        // 2. Funnels
+        function renderFunnels() {
+            const list = document.getElementById('funnel-list');
+            list.innerHTML = '';
+            appData.funnels.forEach(funnel => {
+                // Convert text arrows to visual arrows
+                const flowHTML = funnel.flow.split('->').map(step => 
+                    `<span class="bg-gray-700 px-3 py-1 rounded-full text-xs font-bold text-blue-300">${step.trim()}</span>`
+                ).join('<i class="fa-solid fa-arrow-right text-gray-500 mx-2"></i>');
+
+                list.innerHTML += `
+                    <div class="glass p-5 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative group">
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-2">${funnel.brand}</h3>
+                            <div class="flex flex-wrap items-center mt-2">${flowHTML}</div>
+                        </div>
+                        <button onclick="deleteFunnel(${funnel.id})" class="text-gray-500 hover:text-red-400 p-2"><i class="fa-solid fa-trash"></i></button>
+                    </div>`;
+            });
+        }
+
+        function addFunnel() {
+            const brand = prompt("Brand/Creator Name:");
+            if (!brand) return;
+            const flow = prompt("Enter funnel flow (separate steps with '->')\nExample: IG Reel -> Link in Bio -> Email Capture -> VSL");
+            if (brand && flow) {
+                appData.funnels.unshift({ id: Date.now(), brand, flow });
+                renderAll();
+            }
+        }
+
+        function deleteFunnel(id) {
+            appData.funnels = appData.funnels.filter(f => f.id !== id);
+            renderAll();
+        }
+
+        // 3. Kanban Roadmap
+        function renderKanban() {
+            ['todo', 'doing', 'done'].forEach(status => {
+                const col = document.getElementById(`kanban-${status}`);
+                col.innerHTML = '';
+                appData.tasks[status].forEach(task => {
+                    col.innerHTML += `
+                        <div class="bg-gray-800 p-3 rounded-lg shadow cursor-grab active:cursor-grabbing border-l-4 border-gray-600 relative group" data-id="${task.id}">
+                            <button onclick="deleteTask('${status}', ${task.id})" class="absolute top-1 right-2 text-gray-500 hover:text-red-400 hidden group-hover:block"><i class="fa-solid fa-xmark text-xs"></i></button>
+                            <p class="text-sm">${task.text}</p>
+                        </div>`;
+                });
+            });
+        }
+
+        function addTask() {
+            const text = prompt("New task/content idea:");
+            if (text) {
+                appData.tasks.todo.push({ id: Date.now(), text });
+                renderAll();
+            }
+        }
+
+        function deleteTask(status, id) {
+            appData.tasks[status] = appData.tasks[status].filter(t => t.id !== id);
+            renderAll();
+        }
+
+        // Initialize SortableJS for Drag and Drop
+        ['todo', 'doing', 'done'].forEach(status => {
+            new Sortable(document.getElementById(`kanban-${status}`), {
+                group: 'kanban',
+                animation: 150,
+                onEnd: function (evt) {
+                    const taskId = parseInt(evt.item.getAttribute('data-id'));
+                    const fromList = evt.from.id.replace('kanban-', '');
+                    const toList = evt.to.id.replace('kanban-', '');
+                    
+                    if(fromList !== toList) {
+                        const taskIndex = appData.tasks[fromList].findIndex(t => t.id === taskId);
+                        const task = appData.tasks[fromList].splice(taskIndex, 1)[0];
+                        appData.tasks[toList].splice(evt.newIndex, 0, task);
+                        saveData();
+                    }
+                }
+            });
+        });
+
+        // 4. Vision Board
+        function renderVision() {
+            const grid = document.getElementById('vision-grid');
+            grid.innerHTML = '';
+            appData.vision.forEach((img, index) => {
+                grid.innerHTML += `
+                    <div class="relative group rounded-xl overflow-hidden shadow-lg inline-block w-full mb-4">
+                        <img src="${img}" class="w-full h-auto object-cover hover:scale-105 transition duration-500" alt="Vision">
+                        <button onclick="deleteImage(${index})" class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 opacity-0 group-hover:opacity-100 transition"><i class="fa-solid fa-trash text-sm"></i></button>
+                    </div>`;
+            });
+        }
+
+        function addImage() {
+            const url = prompt("Paste an Image URL:");
+            if (url) {
+                appData.vision.unshift(url);
+                renderAll();
+            }
+        }
+
+        function deleteImage(index) {
+            appData.vision.splice(index, 1);
+            renderAll();
+        }
+
+        // --- EXPORT / IMPORT DATA (Because it's a static site) ---
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "creator-brain-backup.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        appData = JSON.parse(e.target.result);
+                        renderAll();
+                        alert("Brain successfully restored!");
+                    } catch (err) {
+                        alert("Invalid file format.");
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        // Initial Load
+        renderAll();
+    </script>
 </body>
 </html>
