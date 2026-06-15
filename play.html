@@ -1,134 +1,1649 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Strategy Playground</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --bg-dark: #1a1a2e; --bg-medium: #16213e; --accent: #e94560; --text: #eee; --text-dim: #aaa;
-        }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-dark); color: var(--text); overflow: hidden; height: 100vh; }
-        
-        /* Layout */
-        .topbar { position: fixed; top: 0; left: 0; right: 0; height: 50px; background: var(--bg-medium); border-bottom: 1px solid #333; display: flex; align-items: center; padding: 0 16px; z-index: 1000; gap: 10px; }
-        .sidebar { position: fixed; top: 50px; left: 0; width: 260px; height: calc(100vh - 50px); background: var(--bg-medium); border-right: 1px solid #333; overflow-y: auto; padding: 16px; }
-        .canvas-container { position: fixed; top: 50px; left: 260px; right: 0; bottom: 0; overflow: hidden; background: radial-gradient(circle, #2a2a40 1px, transparent 1px); background-size: 30px 30px; cursor: crosshair; }
-        .canvas { position: absolute; transform-origin: 0 0; }
-        
-        /* UI Elements */
-        .canvas-element { position: absolute; width: 180px; padding: 15px; border-radius: 8px; cursor: move; background: #252545; border: 1px solid #444; z-index: 10; user-select: none; }
-        .canvas-element.selected { border: 2px solid var(--accent); }
-        .connect-handle { position: absolute; width: 12px; height: 12px; background: var(--accent); border-radius: 50%; cursor: crosshair; }
-        
-        /* Utilities */
-        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; padding: 10px 20px; border-radius: 5px; z-index: 2000; display: none; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BrainForge — Visual Strategy Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',sans-serif; background:#0a0a0f; color:#e2e8f0; overflow:hidden; height:100vh; }
+::-webkit-scrollbar { width:6px; height:6px; }
+::-webkit-scrollbar-track { background:rgba(255,255,255,0.03); }
+::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.12); border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background:rgba(255,255,255,0.2); }
+
+.sidebar { width:260px; background:rgba(15,15,25,0.95); border-right:1px solid rgba(255,255,255,0.06); display:flex; flex-direction:column; height:100vh; z-index:50; transition: transform 0.3s ease; }
+.sidebar.collapsed { transform:translateX(-260px); width:0; min-width:0; overflow:hidden; }
+
+.canvas-area { flex:1; position:relative; overflow:hidden; cursor:grab; }
+.canvas-area.grabbing { cursor:grabbing; }
+.canvas-inner { position:absolute; width:20000px; height:20000px; transform-origin:0 0; }
+
+.grid-bg {
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0);
+  background-size: 30px 30px;
+}
+
+/* Node styles */
+.node {
+  position:absolute;
+  min-width:180px;
+  max-width:400px;
+  border-radius:16px;
+  cursor:move;
+  user-select:none;
+  transition: box-shadow 0.2s, transform 0.1s;
+  z-index:10;
+}
+.node:hover { z-index:20; }
+.node.selected { z-index:25; }
+.node.dragging { z-index:100; opacity:0.9; }
+
+.node-idea {
+  background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1));
+  border:1px solid rgba(99,102,241,0.3);
+  box-shadow: 0 4px 24px rgba(99,102,241,0.1);
+}
+.node-idea:hover, .node-idea.selected { box-shadow: 0 8px 40px rgba(99,102,241,0.25); border-color:rgba(99,102,241,0.5); }
+
+.node-strategy {
+  background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.1));
+  border:1px solid rgba(16,185,129,0.3);
+  box-shadow: 0 4px 24px rgba(16,185,129,0.1);
+}
+.node-strategy:hover, .node-strategy.selected { box-shadow: 0 8px 40px rgba(16,185,129,0.25); border-color:rgba(16,185,129,0.5); }
+
+.node-brand {
+  background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(217,119,6,0.1));
+  border:1px solid rgba(245,158,11,0.3);
+  box-shadow: 0 4px 24px rgba(245,158,11,0.1);
+}
+.node-brand:hover, .node-brand.selected { box-shadow: 0 8px 40px rgba(245,158,11,0.25); border-color:rgba(245,158,11,0.5); }
+
+.node-content {
+  background: linear-gradient(135deg, rgba(236,72,153,0.15), rgba(219,39,119,0.1));
+  border:1px solid rgba(236,72,153,0.3);
+  box-shadow: 0 4px 24px rgba(236,72,153,0.1);
+}
+.node-content:hover, .node-content.selected { box-shadow: 0 8px 40px rgba(236,72,153,0.25); border-color:rgba(236,72,153,0.5); }
+
+.node-funnel {
+  background: linear-gradient(135deg, rgba(56,189,248,0.15), rgba(14,165,233,0.1));
+  border:1px solid rgba(56,189,248,0.3);
+  box-shadow: 0 4px 24px rgba(56,189,248,0.1);
+}
+.node-funnel:hover, .node-funnel.selected { box-shadow: 0 8px 40px rgba(56,189,248,0.25); border-color:rgba(56,189,248,0.5); }
+
+.node-note {
+  background: linear-gradient(135deg, rgba(148,163,184,0.12), rgba(100,116,139,0.08));
+  border:1px solid rgba(148,163,184,0.2);
+  box-shadow: 0 4px 24px rgba(148,163,184,0.05);
+}
+.node-note:hover, .node-note.selected { box-shadow: 0 8px 40px rgba(148,163,184,0.15); border-color:rgba(148,163,184,0.4); }
+
+.connection-line { pointer-events:none; position:absolute; top:0; left:0; z-index:5; }
+
+.workspace-tab {
+  padding:10px 16px;
+  border-radius:10px;
+  cursor:pointer;
+  transition:all 0.2s;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:13px;
+  font-weight:500;
+  color:rgba(255,255,255,0.5);
+  position:relative;
+}
+.workspace-tab:hover { background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.8); }
+.workspace-tab.active { background:rgba(99,102,241,0.12); color:#a5b4fc; }
+.workspace-tab .tab-dot {
+  width:8px; height:8px; border-radius:50%; flex-shrink:0;
+}
+
+.toolbar-btn {
+  width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+  background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08);
+  cursor:pointer; transition:all 0.2s; color:rgba(255,255,255,0.6);
+}
+.toolbar-btn:hover { background:rgba(255,255,255,0.1); color:#fff; border-color:rgba(255,255,255,0.15); }
+.toolbar-btn.active { background:rgba(99,102,241,0.2); border-color:rgba(99,102,241,0.4); color:#a5b4fc; }
+
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(8px);
+  display:flex; align-items:center; justify-content:center; z-index:1000;
+  opacity:0; pointer-events:none; transition:opacity 0.2s;
+}
+.modal-overlay.show { opacity:1; pointer-events:all; }
+
+.modal {
+  background:#14141f; border:1px solid rgba(255,255,255,0.08); border-radius:20px;
+  padding:32px; width:90%; max-width:500px; transform:scale(0.95); transition:transform 0.2s;
+}
+.modal-overlay.show .modal { transform:scale(1); }
+
+.input-field {
+  width:100%; padding:12px 16px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px; color:#e2e8f0; font-size:14px; font-family:'Inter',sans-serif;
+  outline:none; transition:border-color 0.2s;
+}
+.input-field:focus { border-color:rgba(99,102,241,0.5); }
+.input-field::placeholder { color:rgba(255,255,255,0.25); }
+
+textarea.input-field { min-height:100px; resize:vertical; }
+
+.type-chip {
+  padding:8px 16px; border-radius:10px; cursor:pointer; font-size:12px; font-weight:600;
+  text-transform:uppercase; letter-spacing:0.5px; transition:all 0.2s;
+  border:1px solid transparent;
+}
+.type-chip:hover { transform:scale(1.05); }
+.type-chip.selected { transform:scale(1.05); }
+
+.btn-primary {
+  padding:12px 24px; background:linear-gradient(135deg,#6366f1,#8b5cf6); border:none;
+  border-radius:12px; color:#fff; font-weight:600; cursor:pointer; font-size:14px;
+  transition:all 0.2s; font-family:'Inter',sans-serif;
+}
+.btn-primary:hover { transform:translateY(-1px); box-shadow:0 8px 25px rgba(99,102,241,0.3); }
+
+.btn-secondary {
+  padding:12px 24px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px; color:rgba(255,255,255,0.7); font-weight:500; cursor:pointer; font-size:14px;
+  transition:all 0.2s; font-family:'Inter',sans-serif;
+}
+.btn-secondary:hover { background:rgba(255,255,255,0.08); color:#fff; }
+
+.minimap {
+  position:absolute; bottom:20px; right:20px; width:200px; height:140px;
+  background:rgba(10,10,15,0.9); border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px; overflow:hidden; z-index:40;
+}
+.minimap-viewport {
+  position:absolute; border:1px solid rgba(99,102,241,0.5);
+  background:rgba(99,102,241,0.08); border-radius:2px;
+}
+.minimap-node {
+  position:absolute; border-radius:2px; min-width:3px; min-height:2px;
+}
+
+.zoom-controls {
+  position:absolute; bottom:20px; left:50%; transform:translateX(-50%);
+  display:flex; gap:4px; background:rgba(10,10,15,0.9); border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px; padding:6px; z-index:40;
+}
+
+.connector-port {
+  width:12px; height:12px; border-radius:50%; background:rgba(255,255,255,0.15);
+  border:2px solid rgba(255,255,255,0.3); position:absolute; cursor:crosshair;
+  transition:all 0.2s; opacity:0;
+}
+.node:hover .connector-port, .node.selected .connector-port { opacity:1; }
+.connector-port:hover { background:rgba(99,102,241,0.5); border-color:#6366f1; transform:scale(1.3); }
+.connector-port.port-top { top:-6px; left:50%; transform:translateX(-50%); }
+.connector-port.port-bottom { bottom:-6px; left:50%; transform:translateX(-50%); }
+.connector-port.port-left { left:-6px; top:50%; transform:translateY(-50%); }
+.connector-port.port-right { right:-6px; top:50%; transform:translateY(-50%); }
+.node:hover .connector-port.port-top { transform:translateX(-50%); }
+.node:hover .connector-port.port-bottom { transform:translateX(-50%); }
+.node:hover .connector-port.port-left { transform:translateY(-50%); }
+.node:hover .connector-port.port-right { transform:translateY(-50%); }
+.connector-port:hover.port-top { transform:translateX(-50%) scale(1.3) !important; }
+.connector-port:hover.port-bottom { transform:translateX(-50%) scale(1.3) !important; }
+.connector-port:hover.port-left { transform:translateY(-50%) scale(1.3) !important; }
+.connector-port:hover.port-right { transform:translateY(-50%) scale(1.3) !important; }
+
+.search-container {
+  position:absolute; top:20px; left:50%; transform:translateX(-50%);
+  z-index:40; width:400px; max-width:90%;
+}
+.search-container.hidden { display:none; }
+.search-input {
+  width:100%; padding:12px 20px 12px 44px; background:rgba(10,10,15,0.95);
+  border:1px solid rgba(255,255,255,0.1); border-radius:14px; color:#e2e8f0;
+  font-size:14px; outline:none; font-family:'Inter',sans-serif;
+  backdrop-filter:blur(20px);
+}
+.search-input:focus { border-color:rgba(99,102,241,0.5); }
+
+.context-menu {
+  position:fixed; background:rgba(20,20,35,0.98); border:1px solid rgba(255,255,255,0.1);
+  border-radius:14px; padding:8px; min-width:200px; z-index:200;
+  backdrop-filter:blur(20px); display:none;
+}
+.context-menu.show { display:block; }
+.context-item {
+  padding:10px 16px; border-radius:8px; cursor:pointer; font-size:13px;
+  display:flex; align-items:center; gap:10px; transition:background 0.15s;
+  color:rgba(255,255,255,0.7);
+}
+.context-item:hover { background:rgba(255,255,255,0.08); color:#fff; }
+.context-item.danger { color:#f87171; }
+.context-item.danger:hover { background:rgba(248,113,113,0.1); }
+.context-divider { height:1px; background:rgba(255,255,255,0.06); margin:4px 8px; }
+
+.toast {
+  position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px);
+  background:rgba(20,20,35,0.95); border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px; padding:12px 24px; font-size:13px; z-index:500;
+  backdrop-filter:blur(20px); transition:transform 0.3s ease; pointer-events:none;
+}
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+@keyframes fadeInUp {
+  from { opacity:0; transform:translateY(10px); }
+  to { opacity:1; transform:translateY(0); }
+}
+.fade-in { animation: fadeInUp 0.3s ease; }
+
+.node-resize-handle {
+  position:absolute; bottom:4px; right:4px; width:14px; height:14px; cursor:se-resize;
+  opacity:0; transition:opacity 0.2s;
+}
+.node:hover .node-resize-handle { opacity:0.4; }
+.node-resize-handle:hover { opacity:0.8 !important; }
+</style>
 </head>
 <body>
-
-    <div class="topbar">
-        <strong>Strategy Playground</strong>
-        <button onclick="saveAll()">Save</button>
-        <button onclick="zoomIn()">+</button>
-        <button onclick="zoomOut()">-</button>
-    </div>
-
-    <div class="sidebar">
-        <h3>Elements</h3>
-        <div class="palette-item" draggable="true" ondragstart="handleDragStart(event, 'sticky')">📝 Sticky</div>
-        <div class="palette-item" draggable="true" ondragstart="handleDragStart(event, 'funnel')">🔻 Funnel</div>
-        <div class="palette-item" draggable="true" ondragstart="handleDragStart(event, 'strategy')">🎯 Strategy</div>
-    </div>
-
-    <div class="canvas-container" id="canvasContainer">
-        <div class="canvas" id="canvas">
-            <svg id="connectionsSvg" style="position:absolute; top:0; left:0; width:10000px; height:10000px; pointer-events:none;"></svg>
+<div id="app" class="flex h-screen">
+  <!-- Sidebar -->
+  <div id="sidebar" class="sidebar">
+    <!-- Logo -->
+    <div class="p-5 border-b border-white/5">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 1 4 4c0 1.1-.4 2.1-1 2.9l7 7-1.4 1.4-7-7A4 4 0 1 1 12 2z"/><path d="M9 13l-4 4"/><path d="M15 13l4 4"/><circle cx="12" cy="6" r="1"/></svg>
         </div>
+        <div>
+          <div class="text-sm font-bold tracking-tight">BrainForge</div>
+          <div class="text-[10px] text-white/30 font-medium tracking-wider uppercase">Strategy Hub</div>
+        </div>
+      </div>
     </div>
 
-    <div id="toast" class="toast">Saved!</div>
+    <!-- Workspaces -->
+    <div class="p-4 flex-1 overflow-y-auto">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-[10px] font-semibold tracking-widest uppercase text-white/30">Workspaces</span>
+        <button onclick="createWorkspace()" class="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center hover:bg-white/10 transition cursor-pointer text-white/40 hover:text-white/70">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
+      <div id="workspaceList" class="space-y-1"></div>
+
+      <div class="mt-6 mb-3">
+        <span class="text-[10px] font-semibold tracking-widest uppercase text-white/30">Quick Add</span>
+      </div>
+      <div class="space-y-1">
+        <button onclick="openAddNodeModal('idea')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition text-left cursor-pointer">
+          <div class="w-3 h-3 rounded-full bg-indigo-500"></div>
+          <span class="text-xs text-white/50 hover:text-white/80">New Idea</span>
+        </button>
+        <button onclick="openAddNodeModal('strategy')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition text-left cursor-pointer">
+          <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+          <span class="text-xs text-white/50 hover:text-white/80">New Strategy</span>
+        </button>
+        <button onclick="openAddNodeModal('brand')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition text-left cursor-pointer">
+          <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+          <span class="text-xs text-white/50 hover:text-white/80">New Brand</span>
+        </button>
+        <button onclick="openAddNodeModal('content')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition text-left cursor-pointer">
+          <div class="w-3 h-3 rounded-full bg-pink-500"></div>
+          <span class="text-xs text-white/50 hover:text-white/80">New Content</span>
+        </button>
+        <button onclick="openAddNodeModal('funnel')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition text-left cursor-pointer">
+          <div class="w-3 h-3 rounded-full bg-sky-400"></div>
+          <span class="text-xs text-white/50 hover:text-white/80">New Funnel Step</span>
+        </button>
+        <button onclick="openAddNodeModal('note')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition text-left cursor-pointer">
+          <div class="w-3 h-3 rounded-full bg-slate-400"></div>
+          <span class="text-xs text-white/50 hover:text-white/80">Quick Note</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Bottom -->
+    <div class="p-4 border-t border-white/5 space-y-2">
+      <button onclick="exportData()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition cursor-pointer">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span class="text-xs text-white/40">Export Data</span>
+      </button>
+      <button onclick="importData()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition cursor-pointer">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <span class="text-xs text-white/40">Import Data</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Canvas -->
+  <div class="flex-1 flex flex-col relative">
+    <!-- Top toolbar -->
+    <div class="absolute top-4 left-4 z-40 flex items-center gap-2">
+      <button id="sidebarToggle" onclick="toggleSidebar()" class="toolbar-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <button onclick="toggleConnectMode()" id="connectModeBtn" class="toolbar-btn" title="Connect nodes (C)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </button>
+      <button onclick="toggleSearch()" class="toolbar-btn" title="Search (/)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <button onclick="fitView()" class="toolbar-btn" title="Fit view (F)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+      </button>
+      <button onclick="clearCanvas()" class="toolbar-btn" title="Clear canvas">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+      </button>
+    </div>
+
+    <!-- Workspace title -->
+    <div id="workspaceTitle" class="absolute top-5 right-24 z-40 text-sm font-semibold text-white/30"></div>
+
+    <!-- Search bar -->
+    <div id="searchContainer" class="search-container hidden">
+      <svg class="absolute left-4 top-1/2 -translate-y-1/2" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="searchInput" class="search-input" placeholder="Search nodes..." oninput="searchNodes(this.value)">
+    </div>
+
+    <!-- Canvas -->
+    <div id="canvas" class="canvas-area" oncontextmenu="showCanvasContextMenu(event)">
+      <div id="canvasInner" class="canvas-inner grid-bg">
+        <svg id="connectionsSvg" class="connection-line" width="20000" height="20000"></svg>
+      </div>
+    </div>
+
+    <!-- Zoom controls -->
+    <div class="zoom-controls">
+      <button onclick="zoomOut()" class="toolbar-btn" style="width:36px;height:36px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div id="zoomLevel" class="flex items-center justify-center text-xs text-white/40 font-mono w-14 select-none">100%</div>
+      <button onclick="zoomIn()" class="toolbar-btn" style="width:36px;height:36px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <button onclick="resetZoom()" class="toolbar-btn" style="width:36px;height:36px;">
+        <span class="text-[10px] font-mono">1:1</span>
+      </button>
+    </div>
+
+    <!-- Minimap -->
+    <div id="minimap" class="minimap">
+      <canvas id="minimapCanvas" width="200" height="140"></canvas>
+      <div id="minimapViewport" class="minimap-viewport"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Context Menu -->
+<div id="contextMenu" class="context-menu">
+  <div id="contextMenuItems"></div>
+</div>
+
+<!-- Node Modal -->
+<div id="nodeModal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h3 id="modalTitle" class="text-lg font-bold mb-5">Add Node</h3>
+    <div class="space-y-4">
+      <div>
+        <label class="text-xs text-white/40 font-medium uppercase tracking-wider mb-2 block">Type</label>
+        <div id="typeChips" class="flex flex-wrap gap-2"></div>
+      </div>
+      <div>
+        <label class="text-xs text-white/40 font-medium uppercase tracking-wider mb-2 block">Title</label>
+        <input id="nodeTitle" class="input-field" placeholder="What's on your mind...">
+      </div>
+      <div>
+        <label class="text-xs text-white/40 font-medium uppercase tracking-wider mb-2 block">Description</label>
+        <textarea id="nodeDesc" class="input-field" placeholder="Details, notes, URLs, anything..."></textarea>
+      </div>
+      <div>
+        <label class="text-xs text-white/40 font-medium uppercase tracking-wider mb-2 block">Tags (comma separated)</label>
+        <input id="nodeTags" class="input-field" placeholder="marketing, q1, launch...">
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button onclick="closeModal()" class="btn-secondary flex-1">Cancel</button>
+        <button onclick="saveNode()" class="btn-primary flex-1">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Workspace Modal -->
+<div id="workspaceModal" class="modal-overlay" onclick="if(event.target===this)closeWorkspaceModal()">
+  <div class="modal">
+    <h3 class="text-lg font-bold mb-5">New Workspace</h3>
+    <div class="space-y-4">
+      <div>
+        <label class="text-xs text-white/40 font-medium uppercase tracking-wider mb-2 block">Name</label>
+        <input id="workspaceName" class="input-field" placeholder="e.g. Q1 Strategy, Brand Research...">
+      </div>
+      <div>
+        <label class="text-xs text-white/40 font-medium uppercase tracking-wider mb-2 block">Color</label>
+        <div id="wsColorPicker" class="flex gap-2"></div>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button onclick="closeWorkspaceModal()" class="btn-secondary flex-1">Cancel</button>
+        <button onclick="saveWorkspace()" class="btn-primary flex-1">Create</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<!-- Hidden file input for import -->
+<input type="file" id="fileInput" accept=".json" style="display:none" onchange="handleImport(event)">
 
 <script>
-    let state = { elements: {}, connections: [], zoom: 1, panX: 0, panY: 0 };
-    let isDragging = false, isPanning = false, isConnecting = false;
-    let selectedId = null, dragOffset = {x:0, y:0}, connectionStart = null;
+// ============================================================
+// STATE
+// ============================================================
+const STATE_KEY = 'brainforge_data';
+const NODE_TYPES = {
+  idea:     { label:'Idea',     color:'#6366f1', class:'node-idea',     icon:'💡' },
+  strategy: { label:'Strategy', color:'#10b981', class:'node-strategy', icon:'♟️' },
+  brand:    { label:'Brand',    color:'#f59e0b', class:'node-brand',    icon:'🏷️' },
+  content:  { label:'Content',  color:'#ec4899', class:'node-content',  icon:'📝' },
+  funnel:   { label:'Funnel',   color:'#38bdf8', class:'node-funnel',   icon:'🔻' },
+  note:     { label:'Note',     color:'#94a3b8', class:'node-note',     icon:'📌' },
+};
+const WS_COLORS = ['#6366f1','#10b981','#f59e0b','#ec4899','#38bdf8','#f97316','#a78bfa','#34d399','#fb7185','#94a3b8'];
 
-    // --- Core Logic ---
-    function init() {
-        const saved = localStorage.getItem('playground');
-        if (saved) state = JSON.parse(saved);
-        render();
+let state = loadState();
+let activeWorkspace = state.activeWorkspace || null;
+let scale = 1;
+let panX = 0, panY = 0;
+let isPanning = false;
+let panStartX, panStartY, panStartPanX, panStartPanY;
+let connectMode = false;
+let connectFrom = null;
+let tempLine = null;
+let selectedNode = null;
+let editingNodeId = null;
+let dragNode = null;
+let dragOffsetX, dragOffsetY;
+let resizingNode = null;
+
+function defaultState() {
+  return {
+    workspaces: [{
+      id: generateId(),
+      name: 'Main Board',
+      color: '#6366f1',
+      nodes: [],
+      connections: []
+    }],
+    activeWorkspace: null
+  };
+}
+
+function generateId() {
+  return 'n_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2,6);
+}
+
+function loadState() {
+  try {
+    const d = localStorage.getItem(STATE_KEY);
+    if (d) {
+      const parsed = JSON.parse(d);
+      if (parsed.workspaces && parsed.workspaces.length > 0) return parsed;
     }
+  } catch(e) {}
+  return defaultState();
+}
 
-    function render() {
-        const canvas = document.getElementById('canvas');
-        canvas.innerHTML = '<svg id="connectionsSvg" style="position:absolute; pointer-events:none;"></svg>';
-        Object.entries(state.elements).forEach(([id, el]) => {
-            const div = document.createElement('div');
-            div.className = 'canvas-element';
-            div.id = id;
-            div.style.left = el.x + 'px';
-            div.style.top = el.y + 'px';
-            div.innerText = el.content;
-            div.onmousedown = (e) => startDrag(e, id);
-            canvas.appendChild(div);
-        });
-        updateConnections();
-    }
+function saveState() {
+  state.activeWorkspace = activeWorkspace;
+  localStorage.setItem(STATE_KEY, JSON.stringify(state));
+}
 
-    function startDrag(e, id) {
-        isDragging = true;
-        selectedId = id;
-        const el = state.elements[id];
-        dragOffset = { x: e.clientX - el.x, y: e.clientY - el.y };
-    }
+function getWorkspace(id) {
+  return state.workspaces.find(w => w.id === id);
+}
 
-    function handleDragStart(e, type) {
-        e.dataTransfer.setData("type", type);
-    }
+function currentWorkspace() {
+  return getWorkspace(activeWorkspace);
+}
 
-    document.getElementById('canvasContainer').addEventListener('drop', (e) => {
-        e.preventDefault();
-        const type = e.dataTransfer.getData("type");
-        const x = (e.clientX - 260 - state.panX) / state.zoom;
-        const y = (e.clientY - 50 - state.panY) / state.zoom;
-        const id = 'el_' + Date.now();
-        state.elements[id] = { type, x, y, content: 'New ' + type };
-        render();
-    });
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  if (!activeWorkspace && state.workspaces.length > 0) {
+    activeWorkspace = state.workspaces[0].id;
+  }
+  renderWorkspaceList();
+  renderCanvas();
+  updateMinimap();
+  centerCanvas();
+}
 
-    document.getElementById('canvasContainer').addEventListener('dragover', (e) => e.preventDefault());
+function centerCanvas() {
+  const canvas = document.getElementById('canvas');
+  panX = -10000 + canvas.clientWidth / 2;
+  panY = -10000 + canvas.clientHeight / 2;
+  applyTransform();
+}
 
-    window.onmousemove = (e) => {
-        if (isDragging && selectedId) {
-            state.elements[selectedId].x = (e.clientX - 260) / state.zoom - (dragOffset.x / state.zoom) + (state.panX / state.zoom);
-            state.elements[selectedId].y = (e.clientY - 50) / state.zoom - (dragOffset.y / state.zoom) + (state.panY / state.zoom);
-            document.getElementById(selectedId).style.left = state.elements[selectedId].x + 'px';
-            document.getElementById(selectedId).style.top = state.elements[selectedId].y + 'px';
-            updateConnections();
-        }
+// ============================================================
+// WORKSPACES
+// ============================================================
+function renderWorkspaceList() {
+  const list = document.getElementById('workspaceList');
+  list.innerHTML = '';
+  state.workspaces.forEach(ws => {
+    const div = document.createElement('div');
+    div.className = `workspace-tab ${ws.id === activeWorkspace ? 'active' : ''}`;
+    div.onclick = () => switchWorkspace(ws.id);
+    div.oncontextmenu = (e) => showWorkspaceContextMenu(e, ws.id);
+    div.innerHTML = `
+      <div class="tab-dot" style="background:${ws.color}"></div>
+      <span class="flex-1 truncate">${ws.name}</span>
+      <span class="text-[10px] text-white/20">${ws.nodes ? ws.nodes.length : 0}</span>
+    `;
+    list.appendChild(div);
+  });
+  const ws = currentWorkspace();
+  document.getElementById('workspaceTitle').textContent = ws ? ws.name : '';
+}
+
+function switchWorkspace(id) {
+  activeWorkspace = id;
+  selectedNode = null;
+  saveState();
+  renderWorkspaceList();
+  renderCanvas();
+  updateMinimap();
+}
+
+function createWorkspace() {
+  document.getElementById('workspaceModal').classList.add('show');
+  document.getElementById('workspaceName').value = '';
+  renderWsColorPicker();
+  setTimeout(() => document.getElementById('workspaceName').focus(), 100);
+}
+
+function renderWsColorPicker() {
+  const container = document.getElementById('wsColorPicker');
+  container.innerHTML = '';
+  WS_COLORS.forEach((c, i) => {
+    const div = document.createElement('div');
+    div.className = 'w-8 h-8 rounded-lg cursor-pointer transition hover:scale-110 border-2';
+    div.style.background = c;
+    div.style.borderColor = i === 0 ? 'white' : 'transparent';
+    div.dataset.color = c;
+    div.onclick = () => {
+      container.querySelectorAll('div').forEach(d => d.style.borderColor = 'transparent');
+      div.style.borderColor = 'white';
     };
+    container.appendChild(div);
+  });
+}
 
-    window.onmouseup = () => { isDragging = false; selectedId = null; };
+function getSelectedWsColor() {
+  const selected = document.querySelector('#wsColorPicker div[style*="border-color: white"]') ||
+                   document.querySelector('#wsColorPicker div[style*="border-color:white"]');
+  return selected ? selected.dataset.color : WS_COLORS[0];
+}
 
-    function updateConnections() {
-        const svg = document.getElementById('connectionsSvg');
-        // Logic to draw lines goes here
+function saveWorkspace() {
+  const name = document.getElementById('workspaceName').value.trim();
+  if (!name) return;
+  const ws = {
+    id: generateId(),
+    name,
+    color: getSelectedWsColor(),
+    nodes: [],
+    connections: []
+  };
+  state.workspaces.push(ws);
+  activeWorkspace = ws.id;
+  saveState();
+  closeWorkspaceModal();
+  renderWorkspaceList();
+  renderCanvas();
+  centerCanvas();
+  showToast('Workspace created');
+}
+
+function closeWorkspaceModal() {
+  document.getElementById('workspaceModal').classList.remove('show');
+}
+
+function deleteWorkspace(id) {
+  if (state.workspaces.length <= 1) { showToast('Cannot delete the last workspace'); return; }
+  if (!confirm('Delete this workspace and all its nodes?')) return;
+  state.workspaces = state.workspaces.filter(w => w.id !== id);
+  if (activeWorkspace === id) activeWorkspace = state.workspaces[0].id;
+  saveState();
+  renderWorkspaceList();
+  renderCanvas();
+  showToast('Workspace deleted');
+}
+
+function renameWorkspace(id) {
+  const ws = getWorkspace(id);
+  const name = prompt('Rename workspace:', ws.name);
+  if (name && name.trim()) {
+    ws.name = name.trim();
+    saveState();
+    renderWorkspaceList();
+    showToast('Workspace renamed');
+  }
+}
+
+// ============================================================
+// NODES
+// ============================================================
+function openAddNodeModal(type) {
+  editingNodeId = null;
+  document.getElementById('modalTitle').textContent = 'Add Node';
+  document.getElementById('nodeTitle').value = '';
+  document.getElementById('nodeDesc').value = '';
+  document.getElementById('nodeTags').value = '';
+  renderTypeChips(type);
+  document.getElementById('nodeModal').classList.add('show');
+  setTimeout(() => document.getElementById('nodeTitle').focus(), 100);
+}
+
+function openEditNodeModal(nodeId) {
+  const ws = currentWorkspace();
+  const node = ws.nodes.find(n => n.id === nodeId);
+  if (!node) return;
+  editingNodeId = nodeId;
+  document.getElementById('modalTitle').textContent = 'Edit Node';
+  document.getElementById('nodeTitle').value = node.title;
+  document.getElementById('nodeDesc').value = node.description || '';
+  document.getElementById('nodeTags').value = (node.tags || []).join(', ');
+  renderTypeChips(node.type);
+  document.getElementById('nodeModal').classList.add('show');
+  setTimeout(() => document.getElementById('nodeTitle').focus(), 100);
+}
+
+function renderTypeChips(activeType) {
+  const container = document.getElementById('typeChips');
+  container.innerHTML = '';
+  Object.entries(NODE_TYPES).forEach(([key, val]) => {
+    const chip = document.createElement('div');
+    chip.className = `type-chip ${key === activeType ? 'selected' : ''}`;
+    chip.style.background = key === activeType ? val.color + '30' : 'rgba(255,255,255,0.05)';
+    chip.style.color = key === activeType ? val.color : 'rgba(255,255,255,0.4)';
+    chip.style.borderColor = key === activeType ? val.color : 'transparent';
+    chip.textContent = val.icon + ' ' + val.label;
+    chip.dataset.type = key;
+    chip.onclick = () => renderTypeChips(key);
+    container.appendChild(chip);
+  });
+}
+
+function getSelectedType() {
+  const selected = document.querySelector('#typeChips .type-chip.selected');
+  return selected ? selected.dataset.type : 'idea';
+}
+
+function saveNode() {
+  const ws = currentWorkspace();
+  if (!ws) return;
+  const title = document.getElementById('nodeTitle').value.trim();
+  if (!title) { showToast('Title is required'); return; }
+  const type = getSelectedType();
+  const description = document.getElementById('nodeDesc').value.trim();
+  const tagsStr = document.getElementById('nodeTags').value.trim();
+  const tags = tagsStr ? tagsStr.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+  if (editingNodeId) {
+    const node = ws.nodes.find(n => n.id === editingNodeId);
+    if (node) {
+      node.title = title;
+      node.type = type;
+      node.description = description;
+      node.tags = tags;
+      node.updatedAt = Date.now();
     }
+  } else {
+    const canvas = document.getElementById('canvas');
+    const cx = (-panX + canvas.clientWidth / 2) / scale;
+    const cy = (-panY + canvas.clientHeight / 2) / scale;
+    // Slight random offset so nodes don't stack
+    const ox = (Math.random() - 0.5) * 200;
+    const oy = (Math.random() - 0.5) * 200;
+    ws.nodes.push({
+      id: generateId(),
+      type,
+      title,
+      description,
+      tags,
+      x: cx + ox,
+      y: cy + oy,
+      width: 240,
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    });
+  }
 
-    function saveAll() {
-        localStorage.setItem('playground', JSON.stringify(state));
-        const t = document.getElementById('toast');
-        t.style.display = 'block';
-        setTimeout(() => t.style.display = 'none', 2000);
+  saveState();
+  closeModal();
+  renderCanvas();
+  updateMinimap();
+  renderWorkspaceList();
+  showToast(editingNodeId ? 'Node updated' : 'Node added');
+}
+
+function deleteNode(nodeId) {
+  const ws = currentWorkspace();
+  ws.nodes = ws.nodes.filter(n => n.id !== nodeId);
+  ws.connections = ws.connections.filter(c => c.from !== nodeId && c.to !== nodeId);
+  if (selectedNode === nodeId) selectedNode = null;
+  saveState();
+  renderCanvas();
+  updateMinimap();
+  renderWorkspaceList();
+  showToast('Node deleted');
+}
+
+function duplicateNode(nodeId) {
+  const ws = currentWorkspace();
+  const node = ws.nodes.find(n => n.id === nodeId);
+  if (!node) return;
+  const newNode = { ...node, id: generateId(), x: node.x + 40, y: node.y + 40, createdAt: Date.now(), updatedAt: Date.now() };
+  ws.nodes.push(newNode);
+  saveState();
+  renderCanvas();
+  updateMinimap();
+  renderWorkspaceList();
+  showToast('Node duplicated');
+}
+
+function closeModal() {
+  document.getElementById('nodeModal').classList.remove('show');
+  editingNodeId = null;
+}
+
+// ============================================================
+// CONNECTIONS
+// ============================================================
+function toggleConnectMode() {
+  connectMode = !connectMode;
+  document.getElementById('connectModeBtn').classList.toggle('active', connectMode);
+  document.getElementById('canvas').style.cursor = connectMode ? 'crosshair' : 'grab';
+  if (!connectMode) { connectFrom = null; removeTempLine(); }
+  showToast(connectMode ? 'Connect mode: click two nodes to link them' : 'Connect mode off');
+}
+
+function addConnection(fromId, toId) {
+  const ws = currentWorkspace();
+  if (fromId === toId) return;
+  const exists = ws.connections.some(c => (c.from === fromId && c.to === toId) || (c.from === toId && c.to === fromId));
+  if (exists) return;
+  ws.connections.push({ id: generateId(), from: fromId, to: toId });
+  saveState();
+  renderConnections();
+  showToast('Connected');
+}
+
+function deleteConnection(connId) {
+  const ws = currentWorkspace();
+  ws.connections = ws.connections.filter(c => c.id !== connId);
+  saveState();
+  renderConnections();
+  showToast('Connection removed');
+}
+
+// ============================================================
+// RENDERING
+// ============================================================
+function renderCanvas() {
+  const ws = currentWorkspace();
+  if (!ws) return;
+  const inner = document.getElementById('canvasInner');
+  // Remove existing nodes
+  inner.querySelectorAll('.node').forEach(n => n.remove());
+
+  ws.nodes.forEach(node => {
+    const el = createNodeElement(node);
+    inner.appendChild(el);
+  });
+
+  renderConnections();
+}
+
+function createNodeElement(node) {
+  const typeInfo = NODE_TYPES[node.type] || NODE_TYPES.note;
+  const el = document.createElement('div');
+  el.className = `node ${typeInfo.class} ${selectedNode === node.id ? 'selected' : ''} fade-in`;
+  el.id = 'node_' + node.id;
+  el.style.left = node.x + 'px';
+  el.style.top = node.y + 'px';
+  if (node.width) el.style.width = node.width + 'px';
+
+  const tagsHtml = (node.tags || []).map(t =>
+    `<span style="background:${typeInfo.color}20;color:${typeInfo.color};padding:2px 8px;border-radius:6px;font-size:10px;font-weight:600;">${t}</span>`
+  ).join('');
+
+  const descHtml = node.description ?
+    `<div style="color:rgba(255,255,255,0.45);font-size:12px;line-height:1.5;margin-top:8px;word-break:break-word;white-space:pre-wrap;">${escapeHtml(node.description)}</div>` : '';
+
+  const timeAgo = formatTimeAgo(node.updatedAt || node.createdAt);
+
+  el.innerHTML = `
+    <div class="connector-port port-top" data-port="top" data-node="${node.id}"></div>
+    <div class="connector-port port-bottom" data-port="bottom" data-node="${node.id}"></div>
+    <div class="connector-port port-left" data-port="left" data-node="${node.id}"></div>
+    <div class="connector-port port-right" data-port="right" data-node="${node.id}"></div>
+    <div style="padding:16px 18px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+        <span style="font-size:14px;">${typeInfo.icon}</span>
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:${typeInfo.color};opacity:0.7;">${typeInfo.label}</span>
+        <span style="margin-left:auto;font-size:9px;color:rgba(255,255,255,0.2);font-family:'JetBrains Mono',monospace;">${timeAgo}</span>
+      </div>
+      <div style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.9);line-height:1.4;" class="node-title-text">${escapeHtml(node.title)}</div>
+      ${descHtml}
+      ${tagsHtml ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;">${tagsHtml}</div>` : ''}
+    </div>
+    <div class="node-resize-handle">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M12 2L2 12M12 6L6 12M12 10L10 12" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/></svg>
+    </div>
+  `;
+
+  // Event handlers
+  el.onmousedown = (e) => handleNodeMouseDown(e, node);
+  el.ondblclick = (e) => { e.stopPropagation(); openEditNodeModal(node.id); };
+  el.oncontextmenu = (e) => showNodeContextMenu(e, node.id);
+
+  // Connector port handlers
+  el.querySelectorAll('.connector-port').forEach(port => {
+    port.onmousedown = (e) => {
+      e.stopPropagation();
+      startConnection(node.id, port.dataset.port, e);
+    };
+  });
+
+  // Resize handle
+  const resizeHandle = el.querySelector('.node-resize-handle');
+  resizeHandle.onmousedown = (e) => {
+    e.stopPropagation();
+    startResize(e, node);
+  };
+
+  return el;
+}
+
+function startResize(e, node) {
+  resizingNode = node;
+  const startX = e.clientX;
+  const startW = node.width || 240;
+
+  function onMove(e) {
+    const dx = (e.clientX - startX) / scale;
+    node.width = Math.max(160, Math.min(600, startW + dx));
+    const el = document.getElementById('node_' + node.id);
+    if (el) el.style.width = node.width + 'px';
+  }
+
+  function onUp() {
+    resizingNode = null;
+    saveState();
+    renderConnections();
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+  }
+
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
+function handleNodeMouseDown(e, node) {
+  if (e.target.closest('.connector-port') || e.target.closest('.node-resize-handle')) return;
+  e.stopPropagation();
+
+  if (connectMode) {
+    if (!connectFrom) {
+      connectFrom = node.id;
+      selectNode(node.id);
+      showToast('Now click the target node');
+    } else {
+      addConnection(connectFrom, node.id);
+      connectFrom = null;
     }
+    return;
+  }
 
-    function zoomIn() { state.zoom += 0.1; document.getElementById('canvas').style.transform = `scale(${state.zoom})`; }
-    function zoomOut() { state.zoom -= 0.1; document.getElementById('canvas').style.transform = `scale(${state.zoom})`; }
+  selectNode(node.id);
+  dragNode = node;
+  const el = document.getElementById('node_' + node.id);
+  el.classList.add('dragging');
+  dragOffsetX = (e.clientX - panX) / scale - node.x;
+  dragOffsetY = (e.clientY - panY) / scale - node.y;
 
-    init();
+  function onMove(e) {
+    node.x = (e.clientX - panX) / scale - dragOffsetX;
+    node.y = (e.clientY - panY) / scale - dragOffsetY;
+    el.style.left = node.x + 'px';
+    el.style.top = node.y + 'px';
+    renderConnections();
+    updateMinimap();
+  }
+
+  function onUp() {
+    el.classList.remove('dragging');
+    dragNode = null;
+    saveState();
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+  }
+
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
+function selectNode(id) {
+  selectedNode = id;
+  document.querySelectorAll('.node').forEach(n => n.classList.remove('selected'));
+  const el = document.getElementById('node_' + id);
+  if (el) el.classList.add('selected');
+}
+
+function startConnection(nodeId, port, e) {
+  connectFrom = nodeId;
+  const ws = currentWorkspace();
+  const node = ws.nodes.find(n => n.id === nodeId);
+  const startPos = getPortPosition(node, port);
+
+  const svg = document.getElementById('connectionsSvg');
+  tempLine = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  tempLine.setAttribute('stroke', 'rgba(99,102,241,0.5)');
+  tempLine.setAttribute('stroke-width', '2');
+  tempLine.setAttribute('fill', 'none');
+  tempLine.setAttribute('stroke-dasharray', '6 4');
+  svg.appendChild(tempLine);
+
+  function onMove(ev) {
+    const mx = (ev.clientX - panX) / scale;
+    const my = (ev.clientY - panY) / scale;
+    const path = calcCurvePath(startPos.x, startPos.y, mx, my);
+    tempLine.setAttribute('d', path);
+  }
+
+  function onUp(ev) {
+    // Check if over a port
+    const target = document.elementFromPoint(ev.clientX, ev.clientY);
+    if (target && target.classList.contains('connector-port')) {
+      const targetNodeId = target.dataset.node;
+      if (targetNodeId && targetNodeId !== nodeId) {
+        addConnection(nodeId, targetNodeId);
+      }
+    }
+    removeTempLine();
+    connectFrom = null;
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+  }
+
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
+function removeTempLine() {
+  if (tempLine) { tempLine.remove(); tempLine = null; }
+}
+
+function getPortPosition(node, port) {
+  const el = document.getElementById('node_' + node.id);
+  const w = el ? el.offsetWidth : (node.width || 240);
+  const h = el ? el.offsetHeight : 100;
+  switch(port) {
+    case 'top': return { x: node.x + w/2, y: node.y };
+    case 'bottom': return { x: node.x + w/2, y: node.y + h };
+    case 'left': return { x: node.x, y: node.y + h/2 };
+    case 'right': return { x: node.x + w, y: node.y + h/2 };
+    default: return { x: node.x + w/2, y: node.y + h/2 };
+  }
+}
+
+function getNodeCenter(node) {
+  const el = document.getElementById('node_' + node.id);
+  const w = el ? el.offsetWidth : (node.width || 240);
+  const h = el ? el.offsetHeight : 100;
+  return { x: node.x + w/2, y: node.y + h/2, w, h };
+}
+
+function calcBestPorts(n1, n2) {
+  const c1 = getNodeCenter(n1);
+  const c2 = getNodeCenter(n2);
+  const dx = c2.x - c1.x;
+  const dy = c2.y - c1.y;
+
+  let fromPort, toPort;
+  if (Math.abs(dx) > Math.abs(dy)) {
+    fromPort = dx > 0 ? 'right' : 'left';
+    toPort = dx > 0 ? 'left' : 'right';
+  } else {
+    fromPort = dy > 0 ? 'bottom' : 'top';
+    toPort = dy > 0 ? 'top' : 'bottom';
+  }
+
+  const fromPos = getPortPosition(n1, fromPort);
+  const toPos = getPortPosition(n2, toPort);
+  return { fromPos, toPos };
+}
+
+function calcCurvePath(x1, y1, x2, y2) {
+  const dx = Math.abs(x2 - x1) * 0.5;
+  const dy = Math.abs(y2 - y1) * 0.5;
+  const offset = Math.max(dx, dy, 50);
+  const mx = (x1 + x2) / 2;
+  const my = (y1 + y2) / 2;
+  return `M${x1},${y1} Q${mx},${y1} ${mx},${my} Q${mx},${y2} ${x2},${y2}`;
+}
+
+function renderConnections() {
+  const ws = currentWorkspace();
+  if (!ws) return;
+  const svg = document.getElementById('connectionsSvg');
+  svg.querySelectorAll('.conn-path, .conn-hit').forEach(el => el.remove());
+
+  ws.connections.forEach(conn => {
+    const fromNode = ws.nodes.find(n => n.id === conn.from);
+    const toNode = ws.nodes.find(n => n.id === conn.to);
+    if (!fromNode || !toNode) return;
+
+    const { fromPos, toPos } = calcBestPorts(fromNode, toNode);
+    const pathStr = calcCurvePath(fromPos.x, fromPos.y, toPos.x, toPos.y);
+
+    const fromType = NODE_TYPES[fromNode.type] || NODE_TYPES.note;
+
+    // Visible path
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', pathStr);
+    path.setAttribute('stroke', fromType.color + '60');
+    path.setAttribute('stroke-width', '2');
+    path.setAttribute('fill', 'none');
+    path.classList.add('conn-path');
+    svg.appendChild(path);
+
+    // Hit area (wider invisible path for clicking)
+    const hit = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    hit.setAttribute('d', pathStr);
+    hit.setAttribute('stroke', 'transparent');
+    hit.setAttribute('stroke-width', '14');
+    hit.setAttribute('fill', 'none');
+    hit.style.cursor = 'pointer';
+    hit.style.pointerEvents = 'stroke';
+    hit.classList.add('conn-hit');
+    hit.ondblclick = () => deleteConnection(conn.id);
+    hit.oncontextmenu = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      showConnectionContextMenu(e, conn.id);
+    };
+    hit.onmouseenter = () => { path.setAttribute('stroke', fromType.color); path.setAttribute('stroke-width', '3'); };
+    hit.onmouseleave = () => { path.setAttribute('stroke', fromType.color + '60'); path.setAttribute('stroke-width', '2'); };
+    svg.appendChild(hit);
+
+    // Arrow
+    const arrowSize = 6;
+    const angle = Math.atan2(toPos.y - fromPos.y, toPos.x - fromPos.x);
+    // We place it near the end
+    const ax = toPos.x - Math.cos(angle) * 2;
+    const ay = toPos.y - Math.sin(angle) * 2;
+    const a1x = ax - arrowSize * Math.cos(angle - 0.4);
+    const a1y = ay - arrowSize * Math.sin(angle - 0.4);
+    const a2x = ax - arrowSize * Math.cos(angle + 0.4);
+    const a2y = ay - arrowSize * Math.sin(angle + 0.4);
+    const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    arrow.setAttribute('points', `${ax},${ay} ${a1x},${a1y} ${a2x},${a2y}`);
+    arrow.setAttribute('fill', fromType.color + '80');
+    arrow.classList.add('conn-path');
+    svg.appendChild(arrow);
+  });
+}
+
+// ============================================================
+// PAN & ZOOM
+// ============================================================
+const canvas = document.getElementById('canvas');
+
+canvas.addEventListener('mousedown', (e) => {
+  if (e.target.closest('.node') || e.target.closest('.conn-hit') || connectMode) return;
+  isPanning = true;
+  canvas.classList.add('grabbing');
+  panStartX = e.clientX;
+  panStartY = e.clientY;
+  panStartPanX = panX;
+  panStartPanY = panY;
+  selectedNode = null;
+  document.querySelectorAll('.node').forEach(n => n.classList.remove('selected'));
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  if (!isPanning) return;
+  panX = panStartPanX + (e.clientX - panStartX);
+  panY = panStartPanY + (e.clientY - panStartY);
+  applyTransform();
+  updateMinimap();
+});
+
+canvas.addEventListener('mouseup', () => {
+  isPanning = false;
+  canvas.classList.remove('grabbing');
+});
+
+canvas.addEventListener('mouseleave', () => {
+  isPanning = false;
+  canvas.classList.remove('grabbing');
+});
+
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const delta = e.deltaY > 0 ? 0.92 : 1.08;
+  const newScale = Math.max(0.15, Math.min(3, scale * delta));
+
+  panX = mx - (mx - panX) * (newScale / scale);
+  panY = my - (my - panY) * (newScale / scale);
+  scale = newScale;
+  applyTransform();
+  updateMinimap();
+}, { passive: false });
+
+canvas.addEventListener('dblclick', (e) => {
+  if (e.target.closest('.node')) return;
+  // Double click on canvas = quick add note at that position
+  const ws = currentWorkspace();
+  if (!ws) return;
+  const x = (e.clientX - canvas.getBoundingClientRect().left - panX) / scale;
+  const y = (e.clientY - canvas.getBoundingClientRect().top - panY) / scale;
+  openAddNodeModal('note');
+  // Override position on save
+  const origSave = saveNode;
+  // We'll just set a flag
+  window._quickAddPos = { x, y };
+});
+
+// Override saveNode to use quick add position
+const _origSaveNode = saveNode;
+// We need to patch - let's just check in saveNode above. Let me redo:
+// Actually let's just modify the position after push in saveNode.
+
+function applyTransform() {
+  const inner = document.getElementById('canvasInner');
+  inner.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+  document.getElementById('zoomLevel').textContent = Math.round(scale * 100) + '%';
+}
+
+function zoomIn() { setZoom(scale * 1.2); }
+function zoomOut() { setZoom(scale / 1.2); }
+function resetZoom() { setZoom(1); }
+
+function setZoom(newScale) {
+  const c = document.getElementById('canvas');
+  const cx = c.clientWidth / 2;
+  const cy = c.clientHeight / 2;
+  newScale = Math.max(0.15, Math.min(3, newScale));
+  panX = cx - (cx - panX) * (newScale / scale);
+  panY = cy - (cy - panY) * (newScale / scale);
+  scale = newScale;
+  applyTransform();
+  updateMinimap();
+}
+
+function fitView() {
+  const ws = currentWorkspace();
+  if (!ws || ws.nodes.length === 0) { centerCanvas(); return; }
+  const c = document.getElementById('canvas');
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  ws.nodes.forEach(n => {
+    const el = document.getElementById('node_' + n.id);
+    const w = el ? el.offsetWidth : (n.width || 240);
+    const h = el ? el.offsetHeight : 100;
+    minX = Math.min(minX, n.x);
+    minY = Math.min(minY, n.y);
+    maxX = Math.max(maxX, n.x + w);
+    maxY = Math.max(maxY, n.y + h);
+  });
+  const padding = 100;
+  const contentW = maxX - minX + padding * 2;
+  const contentH = maxY - minY + padding * 2;
+  scale = Math.min(c.clientWidth / contentW, c.clientHeight / contentH, 1.5);
+  scale = Math.max(0.15, Math.min(3, scale));
+  panX = (c.clientWidth - contentW * scale) / 2 - (minX - padding) * scale;
+  panY = (c.clientHeight - contentH * scale) / 2 - (minY - padding) * scale;
+  applyTransform();
+  updateMinimap();
+}
+
+// ============================================================
+// MINIMAP
+// ============================================================
+function updateMinimap() {
+  const ws = currentWorkspace();
+  const mmCanvas = document.getElementById('minimapCanvas');
+  const ctx = mmCanvas.getContext('2d');
+  const mmW = 200, mmH = 140;
+  ctx.clearRect(0, 0, mmW, mmH);
+
+  if (!ws || ws.nodes.length === 0) return;
+
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  ws.nodes.forEach(n => {
+    const w = n.width || 240;
+    minX = Math.min(minX, n.x);
+    minY = Math.min(minY, n.y);
+    maxX = Math.max(maxX, n.x + w);
+    maxY = Math.max(maxY, n.y + 80);
+  });
+
+  const pad = 200;
+  minX -= pad; minY -= pad; maxX += pad; maxY += pad;
+  const rangeW = maxX - minX || 1;
+  const rangeH = maxY - minY || 1;
+  const mmScale = Math.min(mmW / rangeW, mmH / rangeH);
+
+  // Draw connections
+  ws.connections.forEach(conn => {
+    const fromNode = ws.nodes.find(n => n.id === conn.from);
+    const toNode = ws.nodes.find(n => n.id === conn.to);
+    if (!fromNode || !toNode) return;
+    const fx = (fromNode.x + (fromNode.width||240)/2 - minX) * mmScale;
+    const fy = (fromNode.y + 40 - minY) * mmScale;
+    const tx = (toNode.x + (toNode.width||240)/2 - minX) * mmScale;
+    const ty = (toNode.y + 40 - minY) * mmScale;
+    ctx.beginPath();
+    ctx.moveTo(fx, fy);
+    ctx.lineTo(tx, ty);
+    ctx.strokeStyle = 'rgba(99,102,241,0.3)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  });
+
+  // Draw nodes
+  ws.nodes.forEach(n => {
+    const typeInfo = NODE_TYPES[n.type] || NODE_TYPES.note;
+    const nx = (n.x - minX) * mmScale;
+    const ny = (n.y - minY) * mmScale;
+    const nw = Math.max(4, (n.width || 240) * mmScale);
+    const nh = Math.max(3, 60 * mmScale);
+    ctx.fillStyle = typeInfo.color + '80';
+    ctx.fillRect(nx, ny, nw, nh);
+  });
+
+  // Viewport
+  const c = document.getElementById('canvas');
+  const vpX = (-panX / scale - minX) * mmScale;
+  const vpY = (-panY / scale - minY) * mmScale;
+  const vpW = (c.clientWidth / scale) * mmScale;
+  const vpH = (c.clientHeight / scale) * mmScale;
+  const vp = document.getElementById('minimapViewport');
+  vp.style.left = Math.max(0, vpX) + 'px';
+  vp.style.top = Math.max(0, vpY) + 'px';
+  vp.style.width = Math.min(mmW, vpW) + 'px';
+  vp.style.height = Math.min(mmH, vpH) + 'px';
+}
+
+// ============================================================
+// CONTEXT MENUS
+// ============================================================
+function showContextMenu(x, y, items) {
+  const menu = document.getElementById('contextMenu');
+  const itemsContainer = document.getElementById('contextMenuItems');
+  itemsContainer.innerHTML = '';
+
+  items.forEach(item => {
+    if (item.divider) {
+      const div = document.createElement('div');
+      div.className = 'context-divider';
+      itemsContainer.appendChild(div);
+    } else {
+      const el = document.createElement('div');
+      el.className = `context-item ${item.danger ? 'danger' : ''}`;
+      el.innerHTML = `<span>${item.icon || ''}</span><span>${item.label}</span>`;
+      el.onclick = () => { hideContextMenu(); item.action(); };
+      itemsContainer.appendChild(el);
+    }
+  });
+
+  menu.style.left = x + 'px';
+  menu.style.top = y + 'px';
+  menu.classList.add('show');
+
+  setTimeout(() => {
+    document.addEventListener('click', hideContextMenu, { once: true });
+  }, 10);
+}
+
+function hideContextMenu() {
+  document.getElementById('contextMenu').classList.remove('show');
+}
+
+function showCanvasContextMenu(e) {
+  e.preventDefault();
+  if (e.target.closest('.node')) return;
+  const x = (e.clientX - canvas.getBoundingClientRect().left - panX) / scale;
+  const y = (e.clientY - canvas.getBoundingClientRect().top - panY) / scale;
+
+  showContextMenu(e.clientX, e.clientY, [
+    { icon:'💡', label:'Add Idea', action:() => addNodeAt('idea', x, y) },
+    { icon:'♟️', label:'Add Strategy', action:() => addNodeAt('strategy', x, y) },
+    { icon:'🏷️', label:'Add Brand', action:() => addNodeAt('brand', x, y) },
+    { icon:'📝', label:'Add Content', action:() => addNodeAt('content', x, y) },
+    { icon:'🔻', label:'Add Funnel Step', action:() => addNodeAt('funnel', x, y) },
+    { icon:'📌', label:'Add Note', action:() => addNodeAt('note', x, y) },
+    { divider: true },
+    { icon:'🔍', label:'Fit View', action: fitView },
+    { icon:'🔗', label:'Toggle Connect Mode', action: toggleConnectMode },
+  ]);
+}
+
+function showNodeContextMenu(e, nodeId) {
+  e.preventDefault();
+  e.stopPropagation();
+  selectNode(nodeId);
+  showContextMenu(e.clientX, e.clientY, [
+    { icon:'✏️', label:'Edit', action:() => openEditNodeModal(nodeId) },
+    { icon:'📋', label:'Duplicate', action:() => duplicateNode(nodeId) },
+    { icon:'🔗', label:'Connect From Here', action:() => { connectFrom = nodeId; connectMode = true; document.getElementById('connectModeBtn').classList.add('active'); showToast('Click target node to connect'); } },
+    { divider: true },
+    { icon:'🗑️', label:'Delete', danger:true, action:() => deleteNode(nodeId) },
+  ]);
+}
+
+function showConnectionContextMenu(e, connId) {
+  e.preventDefault();
+  showContextMenu(e.clientX, e.clientY, [
+    { icon:'🗑️', label:'Remove Connection', danger:true, action:() => deleteConnection(connId) },
+  ]);
+}
+
+function showWorkspaceContextMenu(e, wsId) {
+  e.preventDefault();
+  e.stopPropagation();
+  showContextMenu(e.clientX, e.clientY, [
+    { icon:'✏️', label:'Rename', action:() => renameWorkspace(wsId) },
+    { divider: true },
+    { icon:'🗑️', label:'Delete Workspace', danger:true, action:() => deleteWorkspace(wsId) },
+  ]);
+}
+
+function addNodeAt(type, x, y) {
+  openAddNodeModal(type);
+  window._quickAddPos = { x, y };
+}
+
+// Patch saveNode to support quick add position
+const __origSave = window.saveNode;
+// Actually let's just use the global _quickAddPos in saveNode. I already have the logic above.
+// Let me re-check: In saveNode, after pushing the node, check window._quickAddPos.
+
+// We need to monkey-patch. Let's just override.
+(function() {
+  const origSaveNode = saveNode;
+  window.saveNode = function() {
+    const qp = window._quickAddPos;
+    origSaveNode.call(this);
+    if (qp) {
+      const ws = currentWorkspace();
+      if (ws && ws.nodes.length > 0) {
+        const lastNode = ws.nodes[ws.nodes.length - 1];
+        lastNode.x = qp.x;
+        lastNode.y = qp.y;
+        saveState();
+        renderCanvas();
+        updateMinimap();
+      }
+      window._quickAddPos = null;
+    }
+  };
+})();
+
+// ============================================================
+// SEARCH
+// ============================================================
+function toggleSearch() {
+  const container = document.getElementById('searchContainer');
+  container.classList.toggle('hidden');
+  if (!container.classList.contains('hidden')) {
+    document.getElementById('searchInput').focus();
+  }
+}
+
+function searchNodes(query) {
+  const ws = currentWorkspace();
+  if (!ws) return;
+  query = query.toLowerCase().trim();
+
+  ws.nodes.forEach(node => {
+    const el = document.getElementById('node_' + node.id);
+    if (!el) return;
+    if (!query) {
+      el.style.opacity = '1';
+      el.style.filter = 'none';
+      return;
+    }
+    const match = node.title.toLowerCase().includes(query) ||
+                  (node.description || '').toLowerCase().includes(query) ||
+                  (node.tags || []).some(t => t.toLowerCase().includes(query)) ||
+                  node.type.includes(query);
+    el.style.opacity = match ? '1' : '0.15';
+    el.style.filter = match ? 'none' : 'grayscale(1)';
+  });
+}
+
+// ============================================================
+// EXPORT / IMPORT
+// ============================================================
+function exportData() {
+  const dataStr = JSON.stringify(state, null, 2);
+  const blob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `brainforge-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Data exported');
+}
+
+function importData() {
+  document.getElementById('fileInput').click();
+}
+
+function handleImport(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.workspaces) {
+        state = data;
+        activeWorkspace = state.activeWorkspace || state.workspaces[0]?.id;
+        saveState();
+        renderWorkspaceList();
+        renderCanvas();
+        updateMinimap();
+        fitView();
+        showToast('Data imported successfully');
+      } else {
+        showToast('Invalid file format');
+      }
+    } catch(err) {
+      showToast('Error reading file');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function clearCanvas() {
+  const ws = currentWorkspace();
+  if (!ws) return;
+  if (ws.nodes.length === 0) { showToast('Canvas is already empty'); return; }
+  if (!confirm(`Clear all ${ws.nodes.length} nodes from "${ws.name}"?`)) return;
+  ws.nodes = [];
+  ws.connections = [];
+  saveState();
+  renderCanvas();
+  updateMinimap();
+  renderWorkspaceList();
+  showToast('Canvas cleared');
+}
+
+// ============================================================
+// SIDEBAR
+// ============================================================
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+}
+
+// ============================================================
+// KEYBOARD SHORTCUTS
+// ============================================================
+document.addEventListener('keydown', (e) => {
+  // Don't trigger shortcuts when typing in inputs
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+    if (e.key === 'Escape') {
+      e.target.blur();
+      const searchC = document.getElementById('searchContainer');
+      if (!searchC.classList.contains('hidden')) searchC.classList.add('hidden');
+      searchNodes('');
+    }
+    return;
+  }
+
+  if (e.key === 'Escape') {
+    closeModal();
+    closeWorkspaceModal();
+    hideContextMenu();
+    const searchC = document.getElementById('searchContainer');
+    if (!searchC.classList.contains('hidden')) { searchC.classList.add('hidden'); searchNodes(''); }
+    if (connectMode) toggleConnectMode();
+    selectedNode = null;
+    document.querySelectorAll('.node').forEach(n => n.classList.remove('selected'));
+  }
+  if (e.key === '/' || (e.ctrlKey && e.key === 'f')) {
+    e.preventDefault();
+    toggleSearch();
+  }
+  if (e.key === 'c' && !e.ctrlKey && !e.metaKey) toggleConnectMode();
+  if (e.key === 'f' && !e.ctrlKey && !e.metaKey) fitView();
+  if (e.key === 'n' && !e.ctrlKey && !e.metaKey) openAddNodeModal('idea');
+  if (e.key === 'Delete' || e.key === 'Backspace') {
+    if (selectedNode) deleteNode(selectedNode);
+  }
+});
+
+// ============================================================
+// UTILS
+// ============================================================
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function formatTimeAgo(ts) {
+  if (!ts) return '';
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + 'm ago';
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return hours + 'h ago';
+  const days = Math.floor(hours / 24);
+  if (days < 30) return days + 'd ago';
+  return new Date(ts).toLocaleDateString();
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// Close context menu on scroll/resize
+window.addEventListener('resize', () => { hideContextMenu(); updateMinimap(); });
+
+// ============================================================
+// TOUCH SUPPORT
+// ============================================================
+let touchStartDist = 0;
+let touchStartScale = 1;
+
+canvas.addEventListener('touchstart', (e) => {
+  if (e.touches.length === 2) {
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    touchStartDist = Math.hypot(dx, dy);
+    touchStartScale = scale;
+  } else if (e.touches.length === 1 && !e.target.closest('.node')) {
+    isPanning = true;
+    panStartX = e.touches[0].clientX;
+    panStartY = e.touches[0].clientY;
+    panStartPanX = panX;
+    panStartPanY = panY;
+  }
+}, { passive: false });
+
+canvas.addEventListener('touchmove', (e) => {
+  e.preventDefault();
+  if (e.touches.length === 2) {
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    const dist = Math.hypot(dx, dy);
+    const newScale = Math.max(0.15, Math.min(3, touchStartScale * (dist / touchStartDist)));
+    scale = newScale;
+    applyTransform();
+    updateMinimap();
+  } else if (isPanning && e.touches.length === 1) {
+    panX = panStartPanX + (e.touches[0].clientX - panStartX);
+    panY = panStartPanY + (e.touches[0].clientY - panStartY);
+    applyTransform();
+    updateMinimap();
+  }
+}, { passive: false });
+
+canvas.addEventListener('touchend', () => {
+  isPanning = false;
+});
+
+// ============================================================
+// BOOT
+// ============================================================
+init();
+
+// If this is first time, add some starter nodes
+if (state.workspaces.length === 1 && currentWorkspace().nodes.length === 0) {
+  const ws = currentWorkspace();
+  const cx = 10000, cy = 10000;
+  ws.nodes = [
+    { id: generateId(), type:'idea', title:'Welcome to BrainForge', description:'Your visual strategy dashboard. Double-click anywhere to add a note. Right-click for more options. Drag nodes to arrange them. Connect them by dragging from the ports that appear on hover.', tags:['getting-started'], x:cx-120, y:cy-180, width:280, createdAt:Date.now(), updatedAt:Date.now() },
+    { id: generateId(), type:'strategy', title:'Business Strategy', description:'Map out your business direction, goals, and key milestones here.', tags:['planning','business'], x:cx+220, y:cy-120, width:240, createdAt:Date.now(), updatedAt:Date.now() },
+    { id: generateId(), type:'brand', title:'Brand Research', description:'Track brands you\'re studying. Note their funnel flows, messaging, and positioning.', tags:['research'], x:cx-200, y:cy+100, width:240, createdAt:Date.now(), updatedAt:Date.now() },
+    { id: generateId(), type:'content', title:'Content Pipeline', description:'Plan your content calendar, topics, and distribution channels.', tags:['content','marketing'], x:cx+180, y:cy+160, width:240, createdAt:Date.now(), updatedAt:Date.now() },
+    { id: generateId(), type:'funnel', title:'Funnel Mapping', description:'Chart the customer journey from awareness to conversion. Add steps as funnel nodes and connect them.', tags:['funnel','conversion'], x:cx+60, y:cy+350, width:260, createdAt:Date.now(), updatedAt:Date.now() },
+  ];
+  // Add some connections
+  ws.connections = [
+    { id: generateId(), from: ws.nodes[0].id, to: ws.nodes[1].id },
+    { id: generateId(), from: ws.nodes[0].id, to: ws.nodes[2].id },
+    { id: generateId(), from: ws.nodes[1].id, to: ws.nodes[3].id },
+    { id: generateId(), from: ws.nodes[2].id, to: ws.nodes[4].id },
+    { id: generateId(), from: ws.nodes[3].id, to: ws.nodes[4].id },
+  ];
+  saveState();
+  renderCanvas();
+  renderWorkspaceList();
+  setTimeout(fitView, 100);
+}
 </script>
 </body>
 </html>
